@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
+import 'device_screen.dart';
+import 'widgets/scan_result_tile.dart';
+import 'utils/extra.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -59,9 +64,12 @@ class _ScanScreenState extends State<ScanScreen> {
     // }
     try {
       // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#control-function-id-when-connected;
-      var withTemperaturServices = [Guid("1F10"), Guid("FCD2")];
+      // Note that using those as service list does not work.
+      var optionalServices = [Guid("fe95"), Guid("181a"), Guid("1f10")];
+      var withTemperaturServiceData = [ServiceDataFilter(Guid("fcd2"))];
       await FlutterBluePlus.startScan(
-        withServices: withTemperaturServices,
+        withServiceData: withTemperaturServiceData,
+        // webOptionalServices: optionalServices,
         timeout: const Duration(seconds: 15),
       );
     } catch (e) {
@@ -80,20 +88,21 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
-  // void onConnectPressed(BluetoothDevice device) {
-  //   device.connectAndUpdateStream().catchError((e) {
-  //     Snackbar.show(
-  //       ABC.c,
-  //       prettyException("Connect Error:", e),
-  //       success: false,
-  //     );
-  //   });
-  //   MaterialPageRoute route = MaterialPageRoute(
-  //     builder: (context) => DeviceScreen(device: device),
-  //     settings: RouteSettings(name: '/DeviceScreen'),
-  //   );
-  //   Navigator.of(context).push(route);
-  // }
+  void onConnectPressed(BluetoothDevice device) {
+    device.connectAndUpdateStream().catchError((e) {
+      log("Connect error: $e");
+      // Snackbar.show(
+      //   ABC.c,
+      //   prettyException("Connect Error:", e),
+      //   success: false,
+      // );
+    });
+    MaterialPageRoute route = MaterialPageRoute(
+      builder: (context) => DeviceScreen(device: device),
+      settings: RouteSettings(name: '/DeviceScreen'),
+    );
+    Navigator.of(context).push(route);
+  }
 
   Future onRefresh() {
     if (_isScanning == false) {
@@ -123,11 +132,10 @@ class _ScanScreenState extends State<ScanScreen> {
   List<Widget> _buildScanResultTiles(BuildContext context) {
     return _scanResults
         .map(
-          (r) => Text(r.device.advName),
-          // (r) => ScanResultTile(
-          //   result: r,
-          //   onTap: () => onConnectPressed(r.device),
-          // ),
+          (r) => ScanResultTile(
+            result: r,
+            onTap: () => onConnectPressed(r.device),
+          ),
         )
         .toList();
   }

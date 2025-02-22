@@ -88,8 +88,6 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   }
 }
 
-void _scanForThermometers() {}
-
 // This observer listens for Bluetooth Off and dismisses the DeviceScreen
 class BluetoothAdapterStateObserver extends NavigatorObserver {
   StreamSubscription<BluetoothAdapterState>? _adapterStateSubscription;
