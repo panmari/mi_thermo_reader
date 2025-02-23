@@ -20,6 +20,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
   BluetoothConnectionState _connectionState =
       BluetoothConnectionState.disconnected;
   List<BluetoothService> _services = [];
+  BluetoothService? _memoService;
+  BluetoothCharacteristic? _memoCharacteristic;
   bool _isDiscoveringServices = false;
   bool _isConnecting = false;
   bool _isDisconnecting = false;
@@ -139,23 +141,68 @@ class _DeviceScreenState extends State<DeviceScreen> {
         success: false,
       );
       print(e);
+      return;
+    }
+    try {
+      _memoService = _services.firstWhere(
+        (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
+      );
+    } catch (e) {
+      print("Could not find memo service: $e");
+      return;
     }
     // Inspired by https://pvvx.github.io/ATC_MiThermometer/GraphMemo.html.
-    final characteristic = _services
-        .firstWhere(
-          (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
-        )
-        .characteristics
-        .firstWhere((c) => c.characteristicUuid == Guid("1f1f"));
+    try {
+      _memoCharacteristic = _memoService!.characteristics.firstWhere(
+        (c) => c.characteristicUuid == Guid("1f1f"),
+      );
+    } catch (e) {
+      print("Could not find memo characteristic: $e");
+      return;
+    }
     print("found characteristic");
-    _valueSubscription = characteristic.onValueReceived.listen((v) {
-      if (v.length == 0) {
+    _valueSubscription = _memoCharacteristic!.onValueReceived.listen((v) {
+      if (v.isEmpty) {
         return;
       }
-        print("got data: $v");
+      print("got nonempty data: $v");
       final blkid = v[0];
       if (blkid == 0x35) {
         print("blkid 35");
+        if (v.length >= 13) {
+          // Add to memory
+          return;
+        }
+        if (v.length >= 3) {
+          // Done with reading.
+          // Set dev time
+          return;
+        }
+        if (v.length == 2) {
+          // Number of samples, as uint16.
+          return;
+        }
+      }
+      if (blkid == 0x23 && v.length >= 4) {
+        print("blkid 23");
+        // Log device time, then disconnect
+        return;
+      }
+      if (blkid == 0x55) {
+        // Initiate get-memo
+        final numMemo = 5000;
+        try {
+          _memoCharacteristic!.write([
+            0x35,
+            numMemo & 0xff,
+            (numMemo >> 8) & 0xff,
+            0,
+            0,
+          ]);
+        } catch (e) {
+          print("Failed get-memo $e");
+        }
+        return;
       }
     });
     widget.device.cancelWhenDisconnected(_valueSubscription);
@@ -163,10 +210,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
     // subscribe
     // Note: If a characteristic supports both **notifications** and **indications**,
     // it will default to **notifications**. This matches how CoreBluetooth works on iOS.
-    await characteristic.setNotifyValue(true);
+    await _memoCharacteristic!.setNotifyValue(true);
 
-    final numMemo = 5000;
-    characteristic.write([0x35, numMemo & 0xff, (numMemo >> 8) & 0xff, 0, 0]);
     if (mounted) {
       setState(() {
         _isDiscoveringServices = false;

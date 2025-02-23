@@ -64,7 +64,7 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text("Adapter state is $_adapterState"),
+        title: Text("Mi Thermometer Reader"),
       ),
       body: Center(
         child: Column(
