@@ -69,7 +69,7 @@ class _ScanScreenState extends State<ScanScreen> {
       var withTemperaturServiceData = [ServiceDataFilter(Guid("fcd2"))];
       await FlutterBluePlus.startScan(
         withServiceData: withTemperaturServiceData,
-        // webOptionalServices: optionalServices,
+        webOptionalServices: optionalServices,
         timeout: const Duration(seconds: 15),
       );
     } catch (e) {

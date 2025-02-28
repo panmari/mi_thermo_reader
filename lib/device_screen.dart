@@ -25,6 +25,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDiscoveringServices = false;
   bool _isConnecting = false;
   bool _isDisconnecting = false;
+  String _status = "Not initiated.";
 
   late StreamSubscription<BluetoothConnectionState>
   _connectionStateSubscription;
@@ -143,6 +144,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
       print(e);
       return;
     }
+    if (mounted) {
+      setState(() {
+        _isDiscoveringServices = false;
+      });
+    }
+
     try {
       _memoService = _services.firstWhere(
         (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
@@ -161,6 +168,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
       return;
     }
     print("found characteristic");
+    if (mounted) {
+      setState(() {
+        _status = "found characteristic";
+      });
+    }
+
     _valueSubscription = _memoCharacteristic!.onValueReceived.listen((v) {
       if (v.isEmpty) {
         return;
@@ -210,13 +223,24 @@ class _DeviceScreenState extends State<DeviceScreen> {
     // subscribe
     // Note: If a characteristic supports both **notifications** and **indications**,
     // it will default to **notifications**. This matches how CoreBluetooth works on iOS.
-    await _memoCharacteristic!.setNotifyValue(true);
-
+    await _memoCharacteristic!.setNotifyValue(true, timeout: 30);
+    print("");
     if (mounted) {
       setState(() {
-        _isDiscoveringServices = false;
+        _status = "Getting device config";
       });
     }
+
+    try {
+      await _memoCharacteristic!.write([0x55]);
+    } catch (e) {
+      setState(() {
+        _status = "Getting device config failed: $e";
+      });
+    }
+    setState(() {
+      _status = "Got device config.";
+    });
   }
 
   Widget buildSpinner(BuildContext context) {
@@ -314,6 +338,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                 title: Text(
                   'Device is ${_connectionState.toString().split('.')[1]}.',
                 ),
+                subtitle: Text('Status is ${_status}'),
                 trailing: buildGetServices(context),
               ),
             ],
