@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'device_screen.dart';
 import 'widgets/scan_result_tile.dart';
+import 'widgets/system_device_tile.dart';
 import 'utils/extra.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -54,26 +56,33 @@ class _ScanScreenState extends State<ScanScreen> {
     super.dispose();
   }
 
-  Future onScanPressed() async {
-    // try {
-    //   // `withServices` is required on iOS for privacy purposes, ignored on android.
-    //   var withServices = [Guid("180f")]; // Battery Level Service
-    //   _systemDevices = await FlutterBluePlus.systemDevices(withServices);
-    // } catch (e) {
-    //   print(e);
-    // }
-    try {
+  List<Guid> optionalServices() {
+    if (kIsWeb) {
       // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#control-function-id-when-connected;
       // Note that using those as service list does not work.
-      var optionalServices = [Guid("fe95"), Guid("181a"), Guid("1f10")];
+      // If this is specified on Android, the plugin throws an exception.
+      return  [Guid("fe95"), Guid("181a"), Guid("1f10")];
+    }
+    return [];
+  }
+
+  Future onScanPressed() async {
+    try {
+      // `withServices` is required on iOS for privacy purposes, ignored on android.
+      var withServices = [Guid("1f10")]; // Temperature history service.
+      _systemDevices = await FlutterBluePlus.systemDevices(withServices);
+    } catch (e) {
+      print("Retrieving system devices failed: $e");
+    }
+    try {
       var withTemperaturServiceData = [ServiceDataFilter(Guid("fcd2"))];
       await FlutterBluePlus.startScan(
         withServiceData: withTemperaturServiceData,
-        webOptionalServices: optionalServices,
+        webOptionalServices: optionalServices(),
         timeout: const Duration(seconds: 15),
       );
     } catch (e) {
-      print(e);
+      print("Start scan failed: $e");
     }
     if (mounted) {
       setState(() {});
@@ -140,6 +149,24 @@ class _ScanScreenState extends State<ScanScreen> {
         .toList();
   }
 
+  List<Widget> _buildSystemDeviceTiles(BuildContext context) {
+    return _systemDevices
+        .map(
+          (d) => SystemDeviceTile(
+            device: d,
+            onOpen:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => DeviceScreen(device: d),
+                    settings: RouteSettings(name: '/DeviceScreen'),
+                  ),
+                ),
+            onConnect: () => onConnectPressed(d),
+          ),
+        )
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -149,7 +176,10 @@ class _ScanScreenState extends State<ScanScreen> {
         body: RefreshIndicator(
           onRefresh: onRefresh,
           child: ListView(
-            children: <Widget>[..._buildScanResultTiles(context)],
+            children: <Widget>[
+              ..._buildSystemDeviceTiles(context),
+              ..._buildScanResultTiles(context),
+            ],
           ),
         ),
         floatingActionButton: buildScanButton(context),
