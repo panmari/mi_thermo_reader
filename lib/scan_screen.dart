@@ -66,6 +66,14 @@ class _ScanScreenState extends State<ScanScreen> {
     return [];
   }
 
+  List<ServiceDataFilter> withServiceData() {
+    if (kIsWeb) {
+      // Causes 'Failed to execute 'requestDevice' on 'Bluetooth'' on web. 
+      return [];
+    }
+    return [ServiceDataFilter(Guid("fcd2"))];
+  }
+
   Future onScanPressed() async {
     try {
       // `withServices` is required on iOS for privacy purposes, ignored on android.
@@ -75,9 +83,8 @@ class _ScanScreenState extends State<ScanScreen> {
       print("Retrieving system devices failed: $e");
     }
     try {
-      var withTemperaturServiceData = [ServiceDataFilter(Guid("fcd2"))];
       await FlutterBluePlus.startScan(
-        withServiceData: withTemperaturServiceData,
+        withServiceData: withServiceData(),
         webOptionalServices: optionalServices(),
         timeout: const Duration(seconds: 15),
       );

@@ -141,13 +141,14 @@ class _DeviceScreenState extends State<DeviceScreen> {
         prettyException("Discover Services Error:", e),
         success: false,
       );
-      print(e);
+      print("discoverServices: $e");
       return;
-    }
-    if (mounted) {
-      setState(() {
-        _isDiscoveringServices = false;
-      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDiscoveringServices = false;
+        });
+      }
     }
 
     try {
