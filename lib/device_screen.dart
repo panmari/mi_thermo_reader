@@ -6,6 +6,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import '../utils/snackbar.dart';
 import '../utils/extra.dart';
+import 'utils/sensor_entry.dart';
+import 'widgets/sensor_chart.dart';
 
 class DeviceScreen extends StatefulWidget {
   final BluetoothDevice device;
@@ -229,11 +231,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
     widget.device.cancelWhenDisconnected(_valueSubscription);
 
-    // subscribe
-    // Note: If a characteristic supports both **notifications** and **indications**,
-    // it will default to **notifications**. This matches how CoreBluetooth works on iOS.
-    // Surprisingly, this is not needed.
     try {
+      // Subscribe to events. Two surprising facts:\
+      // 1. No await needed, in all my testing this took affect in time.
+      // 2. The code might time out, but things still work.
       _memoCharacteristic!.setNotifyValue(true, timeout: 5);
     } catch (e) {
       print("failed setting notifyValue");
@@ -292,8 +293,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
       index: (_isDiscoveringServices) ? 1 : 0,
       children: <Widget>[
         TextButton(
-          child: const Text("Get Services"),
           onPressed: onDiscoverServicesPressed,
+          child: const Text("Get Services"),
         ),
         const IconButton(
           icon: SizedBox(
@@ -335,50 +336,21 @@ class _DeviceScreenState extends State<DeviceScreen> {
         ),
         body: SingleChildScrollView(
           child: Column(
-            children: <Widget>[
-              buildRemoteId(context),
-              ListTile(
-                leading: buildRssiTile(context),
-                title: Text(
-                  'Device is ${_connectionState.toString().split('.')[1]}, retrieval: ${_status}',
-                ),
-                subtitle: buildGetServices(context),
-),
-            ] + _sensorEntries.map((e) => Text(e.toString())).toList(),
+            children:
+                <Widget>[
+                  buildRemoteId(context),
+                  ListTile(
+                    leading: buildRssiTile(context),
+                    title: Text(
+                      'Device is ${_connectionState.toString().split('.')[1]}, retrieval: ${_status}',
+                    ),
+                    subtitle: buildGetServices(context),
+                  ),
+                  SensorChart(sensorEntries: _sensorEntries),
+                ],
           ),
         ),
       ),
     );
   }
-}
-
-class SensorEntry {
-  final int index;
-  final int timestamp;
-  final int temperature;
-  final int humidity;
-  final int voltageBattery;
-
-  @override
-  String toString() {
-    return 'Index: $index, t: $timestamp, temp: $temperature, h: $humidity, v: $voltageBattery';
-  }
-
-  static SensorEntry parse(ByteData data) {
-    return SensorEntry(
-            index: data.getUint16(1, Endian.little),
-            timestamp: data.getUint32(3, Endian.little),
-            temperature: data.getInt16(7, Endian.little),
-            humidity: data.getUint16(9, Endian.little),
-            voltageBattery: data.getUint16(11, Endian.little),
-          );
-  }
-
-  SensorEntry({
-    required this.index,
-    required this.timestamp,
-    required this.temperature,
-    required this.humidity,
-    required this.voltageBattery,
-  });
 }
