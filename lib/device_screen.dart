@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -25,7 +26,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDiscoveringServices = false;
   bool _isConnecting = false;
   bool _isDisconnecting = false;
-  String _status = "Not initiated.";
+  String _status = "N/A";
+  List<SensorEntry> _sensorEntries = [];
 
   late StreamSubscription<BluetoothConnectionState>
   _connectionStateSubscription;
@@ -126,14 +128,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   Future onDiscoverServicesPressed() async {
+    _sensorEntries.clear();
     if (mounted) {
       setState(() {
         _isDiscoveringServices = true;
       });
     }
-
     try {
-      _services = await widget.device.discoverServices();
+      _services = await widget.device.discoverServices(
+        subscribeToServicesChanged: false,
+      );
       Snackbar.show(ABC.c, "Discover Services: Success", success: true);
     } catch (e) {
       Snackbar.show(
@@ -179,20 +183,24 @@ class _DeviceScreenState extends State<DeviceScreen> {
       if (v.isEmpty) {
         return;
       }
-      print("got nonempty data: $v");
-      final blkid = v[0];
+      final data = ByteData.view(Uint8List.fromList(v).buffer);
+      final blkid = data.getInt8(0);
       if (blkid == 0x35) {
-        print("blkid 35");
         if (v.length >= 13) {
-          // Add to memory
+          // Got an entry from memory. Convert it to a SensorEntry.
+          _sensorEntries.add(SensorEntry.parse(data));
           return;
         }
         if (v.length >= 3) {
-          // Done with reading.
+          print('Done with reading.');
+          if (mounted) {
+            setState(() {});
+          }
           // Set dev time
           return;
         }
         if (v.length == 2) {
+          print("got number of samples");
           // Number of samples, as uint16.
           return;
         }
@@ -224,8 +232,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
     // subscribe
     // Note: If a characteristic supports both **notifications** and **indications**,
     // it will default to **notifications**. This matches how CoreBluetooth works on iOS.
-    await _memoCharacteristic!.setNotifyValue(true, timeout: 30);
-    print("");
+    // Surprisingly, this is not needed.
+    try {
+      _memoCharacteristic!.setNotifyValue(true, timeout: 5);
+    } catch (e) {
+      print("failed setting notifyValue");
+    }
+    print("Past setting notifyValue");
     if (mounted) {
       setState(() {
         _status = "Getting device config";
@@ -233,6 +246,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
 
     try {
+      // Initiate sending of data.
       await _memoCharacteristic!.write([0x55]);
     } catch (e) {
       setState(() {
@@ -247,13 +261,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   Widget buildSpinner(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(14.0),
-      child: AspectRatio(
-        aspectRatio: 1.0,
-        child: CircularProgressIndicator(
-          backgroundColor: Colors.black12,
-          color: Colors.black26,
-        ),
-      ),
+      child: AspectRatio(aspectRatio: 1.0, child: CircularProgressIndicator()),
     );
   }
 
@@ -289,11 +297,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
         ),
         const IconButton(
           icon: SizedBox(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(Colors.grey),
-            ),
             width: 18.0,
             height: 18.0,
+            child: CircularProgressIndicator(),
           ),
           onPressed: null,
         ),
@@ -312,9 +318,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
                   : (isConnected ? onDisconnectPressed : onConnectPressed),
           child: Text(
             _isConnecting ? "CANCEL" : (isConnected ? "DISCONNECT" : "CONNECT"),
-            style: Theme.of(
-              context,
-            ).primaryTextTheme.labelLarge?.copyWith(color: Colors.white),
           ),
         ),
       ],
@@ -337,15 +340,45 @@ class _DeviceScreenState extends State<DeviceScreen> {
               ListTile(
                 leading: buildRssiTile(context),
                 title: Text(
-                  'Device is ${_connectionState.toString().split('.')[1]}.',
+                  'Device is ${_connectionState.toString().split('.')[1]}, retrieval: ${_status}',
                 ),
-                subtitle: Text('Status is ${_status}'),
-                trailing: buildGetServices(context),
-              ),
-            ],
+                subtitle: buildGetServices(context),
+),
+            ] + _sensorEntries.map((e) => Text(e.toString())).toList(),
           ),
         ),
       ),
     );
   }
+}
+
+class SensorEntry {
+  final int index;
+  final int timestamp;
+  final int temperature;
+  final int humidity;
+  final int voltageBattery;
+
+  @override
+  String toString() {
+    return 'Index: $index, t: $timestamp, temp: $temperature, h: $humidity, v: $voltageBattery';
+  }
+
+  static SensorEntry parse(ByteData data) {
+    return SensorEntry(
+            index: data.getUint16(1, Endian.little),
+            timestamp: data.getUint32(3, Endian.little),
+            temperature: data.getInt16(7, Endian.little),
+            humidity: data.getUint16(9, Endian.little),
+            voltageBattery: data.getUint16(11, Endian.little),
+          );
+  }
+
+  SensorEntry({
+    required this.index,
+    required this.timestamp,
+    required this.temperature,
+    required this.humidity,
+    required this.voltageBattery,
+  });
 }

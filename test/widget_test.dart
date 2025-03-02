@@ -5,26 +5,25 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mi_thermo_reader/main.dart';
+import 'package:mi_thermo_reader/device_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  group('Parsing of response', () {
+    test('Does something', () {
+      // [53, 122, 0, 207, 161, 195, 103, 175, 8, 6, 17, 120, 11]
+      final values = <int>[53, 122, 0, 207, 161, 195, 103, 175, 8, 6, 17, 120, 11];
+      final uint8List = Uint8List.fromList(values);
+      final data = ByteData.view(uint8List.buffer);
+      final parsed = SensorEntry.parse(data);
+      expect(parsed.index, equals(122));
+      expect(parsed.temperature, equals(2223));
+      expect(parsed.humidity, equals(4358));
+      expect(parsed.voltageBattery, equals(2936));
+    });
   });
 }
