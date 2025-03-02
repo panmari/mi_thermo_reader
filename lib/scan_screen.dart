@@ -61,7 +61,7 @@ class _ScanScreenState extends State<ScanScreen> {
       // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#control-function-id-when-connected;
       // Note that using those as service list does not work.
       // If this is specified on Android, the plugin throws an exception.
-      return  [Guid("fe95"), Guid("181a"), Guid("1f10")];
+      return  [Guid("181a"), Guid("1f10")];
     }
     return [];
   }
