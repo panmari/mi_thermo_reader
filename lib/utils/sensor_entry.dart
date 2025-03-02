@@ -2,9 +2,10 @@ import 'dart:typed_data';
 
 class SensorEntry {
   final int index;
-  final int timestamp;
-  final int temperature;
-  final int humidity;
+  final DateTime timestamp;
+  // In degrees.
+  final double temperature;
+  final double humidity;
   final int voltageBattery;
 
   @override
@@ -15,9 +16,9 @@ class SensorEntry {
   static SensorEntry parse(ByteData data) {
     return SensorEntry(
             index: data.getUint16(1, Endian.little),
-            timestamp: data.getUint32(3, Endian.little),
-            temperature: data.getInt16(7, Endian.little),
-            humidity: data.getUint16(9, Endian.little),
+            timestamp: DateTime.fromMillisecondsSinceEpoch(data.getUint32(3, Endian.little) * 1000),
+            temperature: data.getInt16(7, Endian.little) / 100,
+            humidity: data.getUint16(9, Endian.little) / 100,
             voltageBattery: data.getUint16(11, Endian.little),
           );
   }

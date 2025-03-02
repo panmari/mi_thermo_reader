@@ -7,10 +7,9 @@
 
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
 void main() {
   group('Parsing of response', () {
@@ -21,8 +20,9 @@ void main() {
       final data = ByteData.view(uint8List.buffer);
       final parsed = SensorEntry.parse(data);
       expect(parsed.index, equals(122));
-      expect(parsed.temperature, equals(2223));
-      expect(parsed.humidity, equals(4358));
+      expect(parsed.timestamp, equals(DateTime(2025, 03, 02, 01, 09, 51)));
+      expect(parsed.temperature, equals(22.23));
+      expect(parsed.humidity, equals(43.58));
       expect(parsed.voltageBattery, equals(2936));
     });
   });

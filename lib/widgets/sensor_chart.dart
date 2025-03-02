@@ -17,8 +17,8 @@ class SensorChart extends StatelessWidget {
                             // Renders line chart
                             LineSeries<SensorEntry, DateTime>(
                                 dataSource: sensorEntries,
-                                xValueMapper: (SensorEntry e, _) => DateTime.fromMillisecondsSinceEpoch(e.timestamp),
-                                yValueMapper: (SensorEntry e, _) => e.temperature / 100,
+                                xValueMapper: (SensorEntry e, _) => e.timestamp,
+                                yValueMapper: (SensorEntry e, _) => e.temperature,
                             )
                         ]
                     );
