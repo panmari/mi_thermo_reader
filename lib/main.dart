@@ -38,7 +38,6 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
-  List<BluetoothDevice> _systemDevices = [];
 
   @override
   void initState() {
@@ -46,9 +45,10 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
     _adapterStateStateSubscription = FlutterBluePlus.adapterState.listen((
       state,
     ) {
-      _adapterState = state;
       if (mounted) {
-        setState(() {});
+        setState(() {
+          _adapterState = state;
+        });
       }
     });
   }
@@ -57,6 +57,13 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   void dispose() {
     _adapterStateStateSubscription.cancel();
     super.dispose();
+  }
+
+  Widget _centerContent() {
+    if (_adapterState == BluetoothAdapterState.on) {
+      return const Text('Start by adding devices by clicking on +');
+    }
+    return Text('Bluetooth adapter state is ${_adapterState.name}, please enable.');
   }
 
   @override
@@ -70,7 +77,7 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('Start by adding devices by clicking on +'),
+            _centerContent(),
           ],
         ),
       ),
