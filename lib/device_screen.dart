@@ -158,6 +158,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
 
     try {
+      // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#bluetooth-connection-mode
       _memoService = _services.firstWhere(
         (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
       );
@@ -194,7 +195,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
         if (v.length >= 3) {
-          print('Done with reading.');
+          print('Done with reading. Got ${_sensorEntries.length} samples');
           if (mounted) {
             setState(() {});
           }
@@ -213,7 +214,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
         return;
       }
       if (blkid == 0x55) {
-        // Initiate get-memo
+        // Received device config.
+        // Send command to read memory measures.
+        // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
+        print(v);
         final numMemo = 5000;
         try {
           _memoCharacteristic!.write([
@@ -232,10 +236,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
     widget.device.cancelWhenDisconnected(_valueSubscription);
 
     try {
-      // Subscribe to events. Two surprising facts:\
+      // Subscribe to events. Two surprising facts:
       // 1. No await needed, in all my testing this took affect in time.
       // 2. The code might time out, but things still work.
-      _memoCharacteristic!.setNotifyValue(true, timeout: 5);
+      await _memoCharacteristic!.setNotifyValue(true, timeout: 5);
     } catch (e) {
       print("failed setting notifyValue");
     }
@@ -247,7 +251,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
 
     try {
-      // Initiate sending of data.
+      // Send command to read device config
+      // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
       await _memoCharacteristic!.write([0x55]);
     } catch (e) {
       setState(() {
