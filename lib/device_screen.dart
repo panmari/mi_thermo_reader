@@ -28,8 +28,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDiscoveringServices = false;
   bool _isConnecting = false;
   bool _isDisconnecting = false;
-  String _status = "N/A";
-  List<SensorEntry> _sensorEntries = [];
+  final List<String> _statusUpdates = [];
+  final List<SensorEntry> _sensorEntries = [];
 
   late StreamSubscription<BluetoothConnectionState>
   _connectionStateSubscription;
@@ -131,6 +131,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Future onDiscoverServicesPressed() async {
     _sensorEntries.clear();
+    _statusUpdates.clear();
     if (mounted) {
       setState(() {
         _isDiscoveringServices = true;
@@ -140,6 +141,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
       _services = await widget.device.discoverServices(
         subscribeToServicesChanged: false,
       );
+      _statusUpdates.add("Discover Services: Success");
       Snackbar.show(ABC.c, "Discover Services: Success", success: true);
     } catch (e) {
       Snackbar.show(
@@ -147,7 +149,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         prettyException("Discover Services Error:", e),
         success: false,
       );
-      print("discoverServices: $e");
+      _statusUpdates.add("Discover Services Error: $e");
       return;
     } finally {
       if (mounted) {
@@ -175,10 +177,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
       print("Could not find memo characteristic: $e");
       return;
     }
-    print("found characteristic");
     if (mounted) {
       setState(() {
-        _status = "found characteristic";
+        _statusUpdates.add('Found characteristic, properties: ${_memoCharacteristic!.properties}');
       });
     }
 
@@ -195,6 +196,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
         if (v.length >= 3) {
+          _statusUpdates.add(
+            'Done with reading. Got ${_sensorEntries.length} samples',
+          );
           print('Done with reading. Got ${_sensorEntries.length} samples');
           if (mounted) {
             setState(() {});
@@ -203,8 +207,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
         if (v.length == 2) {
-          print("got number of samples");
-          // Number of samples, as uint16.
+          final numSamples = data.getUint16(1, Endian.little);
+           _statusUpdates.add('Got number of samples: $numSamples');
           return;
         }
       }
@@ -219,6 +223,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
         print(v);
         final numMemo = 5000;
+        _statusUpdates.add('Sending command getMemo');
         try {
           _memoCharacteristic!.write([
             0x35,
@@ -226,7 +231,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
             (numMemo >> 8) & 0xff,
             0,
             0,
-          ]);
+          ], withoutResponse: true);
         } catch (e) {
           print("Failed get-memo $e");
         }
@@ -244,23 +249,24 @@ class _DeviceScreenState extends State<DeviceScreen> {
       print("failed setting notifyValue");
     }
     print("Past setting notifyValue");
+
     if (mounted) {
       setState(() {
-        _status = "Getting device config";
+          _statusUpdates.add('Sent command getDeviceConfig');
       });
     }
-
     try {
       // Send command to read device config
       // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
-      await _memoCharacteristic!.write([0x55]);
+      await _memoCharacteristic!.write([0x55], withoutResponse: true);
     } catch (e) {
       setState(() {
-        _status = "Getting device config failed: $e";
+        _statusUpdates.add("Getting device config failed: $e");
       });
+      return;
     }
     setState(() {
-      _status = "Got device config.";
+      _statusUpdates.add("Got device config.");
     });
   }
 
@@ -341,18 +347,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
         ),
         body: SingleChildScrollView(
           child: Column(
-            children:
-                <Widget>[
-                  buildRemoteId(context),
-                  ListTile(
-                    leading: buildRssiTile(context),
-                    title: Text(
-                      'Device is ${_connectionState.toString().split('.')[1]}, retrieval: ${_status}',
-                    ),
-                    subtitle: buildGetServices(context),
-                  ),
-                  SensorChart(sensorEntries: _sensorEntries),
-                ],
+            children: <Widget>[
+              buildRemoteId(context),
+              ListTile(
+                leading: buildRssiTile(context),
+                title: Text(
+                  'Device is ${_connectionState.toString().split('.')[1]}',
+                ),
+                subtitle: buildGetServices(context),
+              ),
+              SensorChart(sensorEntries: _sensorEntries),
+            ] + _statusUpdates.map((e) => Text(e)).toList(),
           ),
         ),
       ),
