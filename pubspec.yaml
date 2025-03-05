@@ -38,6 +38,7 @@ dependencies:
   syncfusion_flutter_charts: ^28.2.7
   path_provider: ^2.1.5
   proto_annotations: 
+  protobuf:
 
 dev_dependencies:
   flutter_test:
