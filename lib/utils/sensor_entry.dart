@@ -46,3 +46,11 @@ class SensorEntry {
     required this.voltageBattery,
   });
 }
+
+@proto
+class SensorHistory {
+  @ProtoField(2)
+  final List<SensorEntry> sensorEntries;
+
+  SensorHistory({required this.sensorEntries});
+}

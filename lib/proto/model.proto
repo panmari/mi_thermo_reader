@@ -1,7 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-
-syntax = "proto3";
   
+syntax = "proto3";
+    
 message GSensorEntry
 {
   int32 index = 2;
@@ -9,4 +9,9 @@ message GSensorEntry
   double temperature = 4;
   double humidity = 5;
   int32 voltage_battery = 6;
+}
+
+message GSensorHistory
+{
+  repeated GSensorEntry sensor_entries = 2;
 }
