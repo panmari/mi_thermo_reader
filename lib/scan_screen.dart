@@ -13,6 +13,8 @@ import 'utils/extra.dart';
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
 
+  static const routeName = '/ScanScreen';
+
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
@@ -113,11 +115,7 @@ class _ScanScreenState extends State<ScanScreen> {
       //   success: false,
       // );
     });
-    MaterialPageRoute route = MaterialPageRoute(
-      builder: (context) => DeviceScreen(device: device),
-      settings: RouteSettings(name: '/DeviceScreen'),
-    );
-    Navigator.of(context).push(route);
+    Navigator.of(context).pushNamed(DeviceScreen.routeName, arguments: device);
   }
 
   Future onRefresh() {

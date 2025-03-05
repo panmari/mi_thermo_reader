@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/device_screen.dart';
 
 import 'scan_screen.dart';
 
@@ -19,10 +20,30 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Mi Thermometer Reader',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.orange,
+          brightness: Brightness.dark,
+        ),
       ),
       home: const MiThermoReaderHomePage(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
+
+      onGenerateRoute: (settings) {
+        if (settings.name == DeviceScreen.routeName) {
+          final device = settings.arguments as BluetoothDevice;
+          return MaterialPageRoute(
+            builder: (context) {
+              return DeviceScreen(device: device);
+            },
+          );
+        }
+        if (settings.name == ScanScreen.routeName) {
+          return MaterialPageRoute(builder: (context) => ScanScreen());
+        }
+
+        assert(false, 'Need to implement ${settings.name}');
+        return null;
+      },
     );
   }
 }
@@ -63,7 +84,9 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
     if (_adapterState == BluetoothAdapterState.on) {
       return const Text('Start by adding devices by clicking on +');
     }
-    return Text('Bluetooth adapter state is ${_adapterState.name}, please enable.');
+    return Text(
+      'Bluetooth adapter state is ${_adapterState.name}, please enable.',
+    );
   }
 
   @override
@@ -76,16 +99,14 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _centerContent(),
-          ],
+          children: <Widget>[_centerContent()],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(builder: (context) => const ScanScreen()),
+            ScanScreen.routeName,
           );
         },
         tooltip: 'Scan for devices',

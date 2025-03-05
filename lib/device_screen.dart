@@ -12,6 +12,8 @@ import 'widgets/sensor_chart.dart';
 class DeviceScreen extends StatefulWidget {
   final BluetoothDevice device;
 
+  static const routeName = '/DeviceScreen';
+
   const DeviceScreen({super.key, required this.device});
 
   @override
