@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/utils/disk.dart';
 
 import '../utils/snackbar.dart';
 import '../utils/extra.dart';
@@ -73,6 +74,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
         setState(() {});
       }
     });
+
+    try {
+      DiskOperations.load(widget.device).then((entries) {
+        setState(() {
+          _sensorEntries.addAll(entries);
+          _statusUpdates.add('Loaded ${entries.length} entries');
+        });
+      });
+    } catch (e) {
+      setState(() {
+        _statusUpdates.add('Failed loading entries from file: ${e}');
+      });
+    }
   }
 
   @override
@@ -181,7 +195,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
     if (mounted) {
       setState(() {
-        _statusUpdates.add('Found characteristic, properties: ${_memoCharacteristic!.properties}');
+        _statusUpdates.add(
+          'Found characteristic, properties: ${_memoCharacteristic!.properties}',
+        );
       });
     }
 
@@ -198,19 +214,26 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
         if (v.length >= 3) {
-          _statusUpdates.add(
-            'Done with reading. Got ${_sensorEntries.length} samples',
-          );
-          print('Done with reading. Got ${_sensorEntries.length} samples');
           if (mounted) {
-            setState(() {});
+            setState(() {
+              _statusUpdates.add(
+                'Done with reading. Got ${_sensorEntries.length} samples',
+              );
+            });
           }
+          DiskOperations.save(widget.device, _sensorEntries).then((f) {
+            setState(() {
+              _statusUpdates.add('Saved to ${f.path}');
+            });
+          });
           // Set dev time
           return;
         }
         if (v.length == 2) {
           final numSamples = data.getUint16(1, Endian.little);
-           _statusUpdates.add('Got number of samples: $numSamples');
+          setState(() {
+            _statusUpdates.add('Number of samples in memory: $numSamples');
+          });
           return;
         }
       }
@@ -254,7 +277,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
     if (mounted) {
       setState(() {
-          _statusUpdates.add('Sent command getDeviceConfig');
+        _statusUpdates.add('Sent command getDeviceConfig');
       });
     }
     try {
@@ -349,17 +372,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
         ),
         body: SingleChildScrollView(
           child: Column(
-            children: <Widget>[
-              buildRemoteId(context),
-              ListTile(
-                leading: buildRssiTile(context),
-                title: Text(
-                  'Device is ${_connectionState.toString().split('.')[1]}',
-                ),
-                subtitle: buildGetServices(context),
-              ),
-              SensorChart(sensorEntries: _sensorEntries),
-            ] + _statusUpdates.map((e) => Text(e)).toList(),
+            children:
+                <Widget>[
+                  buildRemoteId(context),
+                  ListTile(
+                    leading: buildRssiTile(context),
+                    title: Text(
+                      'Device is ${_connectionState.toString().split('.')[1]}',
+                    ),
+                    subtitle: buildGetServices(context),
+                  ),
+                  SensorChart(sensorEntries: _sensorEntries),
+                ] +
+                _statusUpdates.map((e) => Text(e)).toList(),
           ),
         ),
       ),
