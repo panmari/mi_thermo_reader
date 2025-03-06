@@ -271,7 +271,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
       // 2. The code might time out, but things still work.
       await _memoCharacteristic!.setNotifyValue(true, timeout: 5);
     } catch (e) {
-      print("failed setting notifyValue");
+      setState(() {
+        _statusUpdates.add('Failed setNotifyValue: $e');
+      });
     }
     print("Past setting notifyValue");
 
