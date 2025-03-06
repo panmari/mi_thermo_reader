@@ -37,6 +37,7 @@ dependencies:
   flutter_blue_plus: ^1.35.3
   syncfusion_flutter_charts: ^28.2.7
   path_provider: ^2.1.5
+  path:
   proto_annotations: 
   protobuf:
 

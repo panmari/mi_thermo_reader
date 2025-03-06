@@ -1,14 +1,20 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class DiskOperations {
   static Future<String> _filepath(BluetoothDevice device) {
-    return getApplicationDocumentsDirectory().then(
-      (d) => '$d/${device.remoteId.str}/sensor_entries.pb',
+    return getApplicationCacheDirectory().then(
+      (d) => p.join(
+        d.path,
+        device.remoteId.hashCode.toString(),
+        'sensor_entries.pb',
+      ),
     );
   }
 
@@ -26,8 +32,13 @@ class DiskOperations {
 
   static Future<List<SensorEntry>> load(BluetoothDevice device) async {
     final filePath = await _filepath(device);
-    final bytes = File(filePath).readAsBytesSync();
-
+    List<int> bytes;
+    try {
+      bytes = File(filePath).readAsBytesSync();
+    } on PathNotFoundException {
+      log('No cache at $filePath');
+      return [];
+    }
     return GSensorHistory.fromBuffer(bytes).toSensorHistory().sensorEntries;
   }
 }
