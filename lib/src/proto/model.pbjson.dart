@@ -32,3 +32,16 @@ final $typed_data.Uint8List gSensorEntryDescriptor = $convert.base64Decode(
     'eRgFIAEoAVIIaHVtaWRpdHkSJwoPdm9sdGFnZV9iYXR0ZXJ5GAYgASgFUg52b2x0YWdlQmF0dG'
     'VyeQ==');
 
+@$core.Deprecated('Use gSensorHistoryDescriptor instead')
+const GSensorHistory$json = {
+  '1': 'GSensorHistory',
+  '2': [
+    {'1': 'sensor_entries', '3': 2, '4': 3, '5': 11, '6': '.GSensorEntry', '10': 'sensorEntries'},
+  ],
+};
+
+/// Descriptor for `GSensorHistory`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List gSensorHistoryDescriptor = $convert.base64Decode(
+    'Cg5HU2Vuc29ySGlzdG9yeRI0Cg5zZW5zb3JfZW50cmllcxgCIAMoCzINLkdTZW5zb3JFbnRyeV'
+    'INc2Vuc29yRW50cmllcw==');
+

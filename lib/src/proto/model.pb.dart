@@ -120,6 +120,50 @@ class GSensorEntry extends $pb.GeneratedMessage {
   void clearVoltageBattery() => clearField(6);
 }
 
+class GSensorHistory extends $pb.GeneratedMessage {
+  factory GSensorHistory({
+    $core.Iterable<GSensorEntry>? sensorEntries,
+  }) {
+    final $result = create();
+    if (sensorEntries != null) {
+      $result.sensorEntries.addAll(sensorEntries);
+    }
+    return $result;
+  }
+  GSensorHistory._() : super();
+  factory GSensorHistory.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GSensorHistory.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GSensorHistory', createEmptyInstance: create)
+    ..pc<GSensorEntry>(2, _omitFieldNames ? '' : 'sensorEntries', $pb.PbFieldType.PM, subBuilder: GSensorEntry.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GSensorHistory clone() => GSensorHistory()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GSensorHistory copyWith(void Function(GSensorHistory) updates) => super.copyWith((message) => updates(message as GSensorHistory)) as GSensorHistory;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GSensorHistory create() => GSensorHistory._();
+  GSensorHistory createEmptyInstance() => create();
+  static $pb.PbList<GSensorHistory> createRepeated() => $pb.PbList<GSensorHistory>();
+  @$core.pragma('dart2js:noInline')
+  static GSensorHistory getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GSensorHistory>(create);
+  static GSensorHistory? _defaultInstance;
+
+  @$pb.TagNumber(2)
+  $core.List<GSensorEntry> get sensorEntries => $_getList(0);
+}
+
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
