@@ -128,17 +128,16 @@ class _ScanScreenState extends State<ScanScreen> {
     return Future.delayed(Duration(milliseconds: 500));
   }
 
-  Widget buildScanButton(BuildContext context) {
+  Widget _buildScanButton(BuildContext context) {
     if (FlutterBluePlus.isScanningNow) {
       return FloatingActionButton(
         onPressed: onStopPressed,
-        backgroundColor: Colors.red,
         child: const Icon(Icons.stop),
       );
     } else {
       return FloatingActionButton(
         onPressed: onScanPressed,
-        child: const Text("SCAN"),
+        child: const Icon(Icons.bluetooth_searching),
       );
     }
   }
@@ -171,21 +170,24 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldMessenger(
-      // key: Snackbar.snackBarKeyB,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Find Devices')),
-        body: RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ListView(
-            children: <Widget>[
-              ..._buildSystemDeviceTiles(context),
-              ..._buildScanResultTiles(context),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Find Devices'),
+        bottom: PreferredSize(
+          preferredSize: Size.zero,
+          child: _isScanning ? LinearProgressIndicator() : SizedBox(),
         ),
-        floatingActionButton: buildScanButton(context),
       ),
+      body: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: <Widget>[
+            ..._buildSystemDeviceTiles(context),
+            ..._buildScanResultTiles(context),
+          ],
+        ),
+      ),
+      floatingActionButton: _buildScanButton(context),
     );
   }
 }
