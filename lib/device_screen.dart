@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:mi_thermo_reader/utils/disk.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/snackbar.dart';
 import '../utils/extra.dart';
@@ -12,10 +12,13 @@ import 'widgets/sensor_chart.dart';
 
 class DeviceScreen extends StatefulWidget {
   final BluetoothDevice device;
+  late final String cacheKeyName;
 
   static const routeName = '/DeviceScreen';
 
-  const DeviceScreen({super.key, required this.device});
+  DeviceScreen({super.key, required this.device}) {
+    cacheKeyName = device.remoteId.str;
+  }
 
   @override
   State<DeviceScreen> createState() => _DeviceScreenState();
@@ -33,6 +36,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDisconnecting = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
+  late final Future<SharedPreferencesWithCache> _preferences;
 
   late StreamSubscription<BluetoothConnectionState>
   _connectionStateSubscription;
@@ -43,7 +47,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
   @override
   void initState() {
     super.initState();
-
+    _preferences = SharedPreferencesWithCache.create(
+      cacheOptions: SharedPreferencesWithCacheOptions(
+        allowList: <String>{widget.cacheKeyName},
+      ),
+    );
     _connectionStateSubscription = widget.device.connectionState.listen((
       state,
     ) async {
@@ -76,15 +84,26 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
 
     try {
-      DiskOperations.load(widget.device).then((entries) {
-        setState(() {
-          _sensorEntries.addAll(entries);
-          _statusUpdates.add('Loaded ${entries.length} entries');
-        });
+      _preferences.then((p) {
+        final encodedEntries = p.getString(widget.cacheKeyName);
+        if (encodedEntries != null) {
+          _sensorEntries.addAll(
+            SensorHistory.from(encodedEntries).sensorEntries,
+          );
+          setState(() {
+            _statusUpdates.add(
+              'Read ${_sensorEntries.length} entries from preferences.',
+            );
+          });
+        }
+      });
+    } on ArgumentError {
+      setState(() {
+        _statusUpdates.add('No entries in preferences.');
       });
     } catch (e) {
       setState(() {
-        _statusUpdates.add('Failed loading entries from file: ${e}');
+        _statusUpdates.add('Failed loading entries from preferences: $e');
       });
     }
   }
@@ -221,9 +240,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
               );
             });
           }
-          DiskOperations.save(widget.device, _sensorEntries).then((f) {
+          _preferences.then((p) {
+            final encodedEntries =
+                SensorHistory(
+                  sensorEntries: _sensorEntries,
+                ).toBase64ProtoString();
+            p.setString(widget.cacheKeyName, encodedEntries);
             setState(() {
-              _statusUpdates.add('Saved to ${f.path}');
+              _statusUpdates.add(
+                'Saved ${_sensorEntries.length} entries to preferences.',
+              );
             });
           });
           // Set dev time
