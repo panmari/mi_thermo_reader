@@ -8,7 +8,9 @@
         {
             "name": "mi_thermo_reader",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            // Keep port stable so window.localStorage persists.
+            "args": ["--web-port", "8686"]
         },
         {
             "name": "mi_thermo_reader (profile mode)",
