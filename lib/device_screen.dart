@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/snackbar.dart';
 import '../utils/extra.dart';
@@ -11,10 +12,13 @@ import 'widgets/sensor_chart.dart';
 
 class DeviceScreen extends StatefulWidget {
   final BluetoothDevice device;
+  late final String cacheKeyName;
 
   static const routeName = '/DeviceScreen';
 
-  const DeviceScreen({super.key, required this.device});
+  DeviceScreen({super.key, required this.device}) {
+    cacheKeyName = device.remoteId.str;
+  }
 
   @override
   State<DeviceScreen> createState() => _DeviceScreenState();
@@ -32,6 +36,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDisconnecting = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
+  late final Future<SharedPreferencesWithCache> _preferences;
 
   late StreamSubscription<BluetoothConnectionState>
   _connectionStateSubscription;
@@ -42,7 +47,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
   @override
   void initState() {
     super.initState();
-
+    _preferences = SharedPreferencesWithCache.create(
+      cacheOptions: SharedPreferencesWithCacheOptions(
+        allowList: <String>{widget.cacheKeyName},
+      ),
+    );
     _connectionStateSubscription = widget.device.connectionState.listen((
       state,
     ) async {
@@ -73,6 +82,30 @@ class _DeviceScreenState extends State<DeviceScreen> {
         setState(() {});
       }
     });
+
+    try {
+      _preferences.then((p) {
+        final encodedEntries = p.getString(widget.cacheKeyName);
+        if (encodedEntries != null) {
+          _sensorEntries.addAll(
+            SensorHistory.from(encodedEntries).sensorEntries,
+          );
+          setState(() {
+            _statusUpdates.add(
+              'Read ${_sensorEntries.length} entries from preferences.',
+            );
+          });
+        }
+      });
+    } on ArgumentError {
+      setState(() {
+        _statusUpdates.add('No entries in preferences.');
+      });
+    } catch (e) {
+      setState(() {
+        _statusUpdates.add('Failed loading entries from preferences: $e');
+      });
+    }
   }
 
   @override
@@ -181,7 +214,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
     if (mounted) {
       setState(() {
-        _statusUpdates.add('Found characteristic, properties: ${_memoCharacteristic!.properties}');
+        _statusUpdates.add(
+          'Found characteristic, properties: ${_memoCharacteristic!.properties}',
+        );
       });
     }
 
@@ -198,19 +233,33 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
         if (v.length >= 3) {
-          _statusUpdates.add(
-            'Done with reading. Got ${_sensorEntries.length} samples',
-          );
-          print('Done with reading. Got ${_sensorEntries.length} samples');
           if (mounted) {
-            setState(() {});
+            setState(() {
+              _statusUpdates.add(
+                'Done with reading. Got ${_sensorEntries.length} samples',
+              );
+            });
           }
+          _preferences.then((p) {
+            final encodedEntries =
+                SensorHistory(
+                  sensorEntries: _sensorEntries,
+                ).toBase64ProtoString();
+            p.setString(widget.cacheKeyName, encodedEntries);
+            setState(() {
+              _statusUpdates.add(
+                'Saved ${_sensorEntries.length} entries to preferences.',
+              );
+            });
+          });
           // Set dev time
           return;
         }
         if (v.length == 2) {
           final numSamples = data.getUint16(1, Endian.little);
-           _statusUpdates.add('Got number of samples: $numSamples');
+          setState(() {
+            _statusUpdates.add('Number of samples in memory: $numSamples');
+          });
           return;
         }
       }
@@ -248,13 +297,15 @@ class _DeviceScreenState extends State<DeviceScreen> {
       // 2. The code might time out, but things still work.
       await _memoCharacteristic!.setNotifyValue(true, timeout: 5);
     } catch (e) {
-      print("failed setting notifyValue");
+      setState(() {
+        _statusUpdates.add('Failed setNotifyValue: $e');
+      });
     }
     print("Past setting notifyValue");
 
     if (mounted) {
       setState(() {
-          _statusUpdates.add('Sent command getDeviceConfig');
+        _statusUpdates.add('Sent command getDeviceConfig');
       });
     }
     try {
@@ -349,17 +400,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
         ),
         body: SingleChildScrollView(
           child: Column(
-            children: <Widget>[
-              buildRemoteId(context),
-              ListTile(
-                leading: buildRssiTile(context),
-                title: Text(
-                  'Device is ${_connectionState.toString().split('.')[1]}',
-                ),
-                subtitle: buildGetServices(context),
-              ),
-              SensorChart(sensorEntries: _sensorEntries),
-            ] + _statusUpdates.map((e) => Text(e)).toList(),
+            children:
+                <Widget>[
+                  buildRemoteId(context),
+                  ListTile(
+                    leading: buildRssiTile(context),
+                    title: Text(
+                      'Device is ${_connectionState.toString().split('.')[1]}',
+                    ),
+                    subtitle: buildGetServices(context),
+                  ),
+                  SensorChart(sensorEntries: _sensorEntries),
+                ] +
+                _statusUpdates.map((e) => Text(e)).toList(),
           ),
         ),
       ),
