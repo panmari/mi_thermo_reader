@@ -274,14 +274,15 @@ class _DeviceScreenState extends State<DeviceScreen> {
         // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
         print(v);
         final numMemo = 5000;
+        final start = 0; // TODO(panmari): Figure out  how this affects getMemo.
         _statusUpdates.add('Sending command getMemo');
         try {
           _memoCharacteristic!.write([
             0x35,
             numMemo & 0xff,
             (numMemo >> 8) & 0xff,
-            0,
-            0,
+            start & 0xff,
+            (start >> 8) & 0xff,
           ], withoutResponse: true);
         } catch (e) {
           print("Failed get-memo $e");
