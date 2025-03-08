@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/utils/known_devices.dart';
 
 import 'device_screen.dart';
 import 'widgets/scan_result_tile.dart';
@@ -114,6 +115,9 @@ class _ScanScreenState extends State<ScanScreen> {
       //   prettyException("Connect Error:", e),
       //   success: false,
       // );
+    });
+    KnownDevices.addKnownDevice(context, device).then((_) {
+      log('Added to $device known devices');
     });
     Navigator.of(context).pushNamed(DeviceScreen.routeName, arguments: device);
   }
