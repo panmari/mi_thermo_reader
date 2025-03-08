@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'scan_screen.dart';
 
@@ -58,6 +59,10 @@ class MiThermoReaderHomePage extends StatefulWidget {
 class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
+  late final Future<SharedPreferencesWithCache> _preferences;
+  static const String _knownDevicesKeyName = 'known_devices';
+  List<BluetoothDevice> _knownDevices = [];
+
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
   @override
@@ -71,6 +76,20 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
           _adapterState = state;
         });
       }
+    });
+    _preferences = SharedPreferencesWithCache.create(
+      cacheOptions: SharedPreferencesWithCacheOptions(
+        allowList: <String>{_knownDevicesKeyName},
+      ),
+    );
+    _preferences.then((p) {
+      _knownDevices =
+          p
+              .getStringList(_knownDevicesKeyName)!
+              .map((id) => BluetoothDevice.fromId(id))
+              .toList();
+      // TODO(panmari): setState, because this fetch is async.
+      // TODO(panmari): Exception handling.
     });
   }
 
@@ -104,10 +123,7 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(
-            context,
-            ScanScreen.routeName,
-          );
+          Navigator.pushNamed(context, ScanScreen.routeName);
         },
         tooltip: 'Scan for devices',
         child: const Icon(Icons.add),
