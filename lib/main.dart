@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/utils/known_devices.dart';
-import 'package:mi_thermo_reader/widgets/system_device_tile.dart';
+import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -109,19 +109,7 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
         return const Text('Start by adding devices by clicking on +');
       }
       return ListView(
-        children:
-            _knownDevices
-                .map(
-                  (d) => SystemDeviceTile(
-                    device: d,
-                    onOpen:
-                        () => Navigator.of(
-                          context,
-                        ).pushNamed(DeviceScreen.routeName, arguments: d),
-                    onConnect: () => log('woops'),
-                  ),
-                )
-                .toList(),
+        children: _knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
       );
     }
     return Text(
