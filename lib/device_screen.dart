@@ -42,7 +42,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   _connectionStateSubscription;
   late StreamSubscription<bool> _isConnectingSubscription;
   late StreamSubscription<bool> _isDisconnectingSubscription;
-  late StreamSubscription<List<int>> _valueSubscription;
+  StreamSubscription<List<int>>? _valueSubscription;
 
   @override
   void initState() {
@@ -113,7 +113,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     _connectionStateSubscription.cancel();
     _isConnectingSubscription.cancel();
     _isDisconnectingSubscription.cancel();
-    _valueSubscription.cancel();
+    _valueSubscription?.cancel();
     super.dispose();
   }
 
@@ -125,7 +125,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     try {
       await widget.device.connectAndUpdateStream();
       Snackbar.show(ABC.c, "Connect: Success", success: true);
-    } catch (e) {
+    } catch (e, backtrace) {
       if (e is FlutterBluePlusException &&
           e.code == FbpErrorCode.connectionCanceled.index) {
         // ignore connections canceled by the user
@@ -136,6 +136,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           success: false,
         );
         print(e);
+        print(backtrace);
       }
     }
   }
@@ -290,7 +291,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         return;
       }
     });
-    widget.device.cancelWhenDisconnected(_valueSubscription);
+    widget.device.cancelWhenDisconnected(_valueSubscription!);
 
     try {
       // Subscribe to events. Two surprising facts:
