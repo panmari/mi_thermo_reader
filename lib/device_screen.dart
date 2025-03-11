@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDisconnecting = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
+  int lastNdaysFilter = -1;
   late final Future<SharedPreferencesWithCache> _preferences;
 
   late StreamSubscription<BluetoothConnectionState>
@@ -234,6 +236,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
         if (v.length >= 3) {
+          // They are sent in reverse chronological order, and might be received out of order.
+          // Plus there might be retries. Be very defensive about keeping each value only once.
+          _sensorEntries.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+          final alreadyPresent = Set<DateTime>();
+          _sensorEntries.retainWhere((e) => alreadyPresent.add(e.timestamp));
           if (mounted) {
             setState(() {
               _statusUpdates.add(
@@ -391,6 +398,67 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
+  List<SensorEntry> _filteredSensorEntries() {
+    if (_sensorEntries.isEmpty) {
+      return [];
+    }
+    if (lastNdaysFilter == -1) {
+      return _sensorEntries;
+    }
+    final firstIncludedTimestamp = _sensorEntries.last.timestamp.subtract(
+      Duration(days: lastNdaysFilter),
+    );
+    final firstIndex = _sensorEntries.indexWhere(
+      (e) => e.timestamp.isAfter(firstIncludedTimestamp),
+    );
+    log("Entries: ${_sensorEntries.sublist(0, 10)}");
+    log("for $firstIncludedTimestamp index starting at $firstIndex");
+    return _sensorEntries.sublist(firstIndex);
+  }
+
+  Widget _makeDayFilterBar() {
+    return Row(
+      children: [
+        ChoiceChip(
+          label: Text("All"),
+          selected: lastNdaysFilter == -1,
+          onSelected: (bool selected) {
+            setState(() {
+              lastNdaysFilter = -1;
+            });
+          },
+        ),
+        ChoiceChip(
+          label: Text("Last day"),
+          selected: lastNdaysFilter == 1,
+          onSelected: (bool selected) {
+            setState(() {
+              lastNdaysFilter = selected ? 1 : -1;
+            });
+          },
+        ),
+        ChoiceChip(
+          label: Text("7 days"),
+          selected: lastNdaysFilter == 7,
+          onSelected: (bool selected) {
+            setState(() {
+              lastNdaysFilter = selected ? 7 : -1;
+            });
+          },
+        ),
+        ChoiceChip(
+          label: Text("30 days"),
+          selected: lastNdaysFilter == 30,
+          onSelected: (bool selected) {
+            setState(() {
+              lastNdaysFilter = selected ? 30 : -1;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -412,7 +480,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
                     ),
                     subtitle: buildGetServices(context),
                   ),
-                  SensorChart(sensorEntries: _sensorEntries),
+                  _makeDayFilterBar(),
+                  SensorChart(sensorEntries: _filteredSensorEntries()),
                 ] +
                 _statusUpdates.map((e) => Text(e)).toList(),
           ),
