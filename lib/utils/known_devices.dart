@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KnownDevices {
-  static const cacheKey = 'known_devies';
+  static const cacheKey = 'known_devices';
 
   static Future<SharedPreferencesWithCache> _getSharedPreferences(
     BuildContext context,
@@ -24,8 +24,8 @@ class KnownDevices {
 
     try {
       return preferences
-          .getStringList(cacheKey)!
-          .map((id) => BluetoothDevice.fromId(id));
+          .getStringList(cacheKey)
+          ?.map((id) => BluetoothDevice.fromId(id)) ?? [];
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
