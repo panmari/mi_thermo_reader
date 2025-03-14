@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
-import 'package:mi_thermo_reader/utils/known_devices.dart';
+import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +18,7 @@ void main() {
       create:
           (_) => SharedPreferencesWithCache.create(
             cacheOptions: SharedPreferencesWithCacheOptions(
-              allowList: <String>{KnownDevices.cacheKey},
+              allowList: <String>{KnownDevice.cacheKey},
             ),
           ),
       child: const MyApp(),
@@ -90,7 +90,7 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
       }
     });
 
-    KnownDevices.getKnownDevices(context).then((loadedDevices) {
+    KnownDevice.getAll(context).then((loadedDevices) {
       setState(() {
         _knownDevices.addAll(loadedDevices);
       });

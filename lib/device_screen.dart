@@ -137,7 +137,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           prettyException("Connect Error:", e),
           success: false,
         );
-        print(e);
+        print("Connect error: $e");
         print(backtrace);
       }
     }
