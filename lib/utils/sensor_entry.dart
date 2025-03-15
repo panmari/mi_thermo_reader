@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:convert'; // For base64 encoding
 
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
 import 'package:proto_annotations/proto_annotations.dart';

@@ -39,6 +39,7 @@ dependencies:
   proto_annotations: 
   protobuf:
   shared_preferences: ^2.5.2
+  provider: ^6.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

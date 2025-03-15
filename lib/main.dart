@@ -1,14 +1,29 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 import 'scan_screen.dart';
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
-  runApp(const MyApp());
+  runApp(
+    Provider<Future<SharedPreferencesWithCache>>(
+      create:
+          (_) => SharedPreferencesWithCache.create(
+            cacheOptions: SharedPreferencesWithCacheOptions(
+              allowList: <String>{KnownDevice.cacheKey},
+            ),
+          ),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -58,6 +73,8 @@ class MiThermoReaderHomePage extends StatefulWidget {
 class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
+  final List<KnownDevice> _knownDevices = [];
+
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
   @override
@@ -72,6 +89,12 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
         });
       }
     });
+
+    KnownDevice.getAll(context).then((loadedDevices) {
+      setState(() {
+        _knownDevices.addAll(loadedDevices);
+      });
+    });
   }
 
   @override
@@ -82,7 +105,12 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
 
   Widget _centerContent() {
     if (_adapterState == BluetoothAdapterState.on) {
-      return const Text('Start by adding devices by clicking on +');
+      if (_knownDevices.isEmpty) {
+        return const Text('Start by adding devices by clicking on +');
+      }
+      return ListView(
+        children: _knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
+      );
     }
     return Text(
       'Bluetooth adapter state is ${_adapterState.name}, please enable.',
@@ -96,18 +124,10 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Mi Thermometer Reader"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[_centerContent()],
-        ),
-      ),
+      body: _centerContent(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(
-            context,
-            ScanScreen.routeName,
-          );
+          Navigator.pushNamed(context, ScanScreen.routeName);
         },
         tooltip: 'Scan for devices',
         child: const Icon(Icons.add),

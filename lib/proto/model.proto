@@ -2,16 +2,45 @@
   
 syntax = "proto3";
     
+
+    
+
+    
+
+
+
+
+  
+message GKnownDevice
+{
+
+  string adv_name = 2;
+  string platform_name = 3;
+  string remote_id = 4;
+
+}   
+
+
+
+  
 message GSensorEntry
 {
+
   int32 index = 2;
   int64 timestamp = 3;
   double temperature = 4;
   double humidity = 5;
   int32 voltage_battery = 6;
-}
 
+}   
+
+
+
+  
 message GSensorHistory
 {
+
   repeated GSensorEntry sensor_entries = 2;
-}
+
+}   
+

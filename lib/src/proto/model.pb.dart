@@ -14,6 +14,84 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+class GKnownDevice extends $pb.GeneratedMessage {
+  factory GKnownDevice({
+    $core.String? advName,
+    $core.String? platformName,
+    $core.String? remoteId,
+  }) {
+    final $result = create();
+    if (advName != null) {
+      $result.advName = advName;
+    }
+    if (platformName != null) {
+      $result.platformName = platformName;
+    }
+    if (remoteId != null) {
+      $result.remoteId = remoteId;
+    }
+    return $result;
+  }
+  GKnownDevice._() : super();
+  factory GKnownDevice.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GKnownDevice.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GKnownDevice', createEmptyInstance: create)
+    ..aOS(2, _omitFieldNames ? '' : 'advName')
+    ..aOS(3, _omitFieldNames ? '' : 'platformName')
+    ..aOS(4, _omitFieldNames ? '' : 'remoteId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GKnownDevice clone() => GKnownDevice()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GKnownDevice copyWith(void Function(GKnownDevice) updates) => super.copyWith((message) => updates(message as GKnownDevice)) as GKnownDevice;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GKnownDevice create() => GKnownDevice._();
+  GKnownDevice createEmptyInstance() => create();
+  static $pb.PbList<GKnownDevice> createRepeated() => $pb.PbList<GKnownDevice>();
+  @$core.pragma('dart2js:noInline')
+  static GKnownDevice getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GKnownDevice>(create);
+  static GKnownDevice? _defaultInstance;
+
+  @$pb.TagNumber(2)
+  $core.String get advName => $_getSZ(0);
+  @$pb.TagNumber(2)
+  set advName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAdvName() => $_has(0);
+  @$pb.TagNumber(2)
+  void clearAdvName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get platformName => $_getSZ(1);
+  @$pb.TagNumber(3)
+  set platformName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPlatformName() => $_has(1);
+  @$pb.TagNumber(3)
+  void clearPlatformName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get remoteId => $_getSZ(2);
+  @$pb.TagNumber(4)
+  set remoteId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRemoteId() => $_has(2);
+  @$pb.TagNumber(4)
+  void clearRemoteId() => clearField(4);
+}
+
 class GSensorEntry extends $pb.GeneratedMessage {
   factory GSensorEntry({
     $core.int? index,
