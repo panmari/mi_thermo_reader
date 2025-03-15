@@ -37,13 +37,18 @@ class KnownDevice {
     );
   }
 
-  static Future<Iterable<BluetoothDevice>> getAll(BuildContext context) async {
+  static Future<Iterable<KnownDevice>> getAll(BuildContext context) async {
     final preferences = await _getSharedPreferences(context);
 
     try {
       return preferences
               .getStringList(cacheKey)
-              ?.map((id) => BluetoothDevice.fromId(id)) ??
+              ?.map(
+                (encodedDevice) =>
+                    GKnownDevice.fromBuffer(
+                      base64Decode(encodedDevice),
+                    ).toKnownDevice(),
+              ) ??
           [];
     } on ArgumentError {
       log('No known devices in shared preferences.');
@@ -60,14 +65,15 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final identifier =
-        KnownDevice(
-          advName: device.advName,
-          platformName: device.platformName,
-          remoteId: device.remoteId.str,
-        ).remoteId; // TODO:proto
-    if (!previousKnown.contains(identifier)) {
-      previousKnown.add(identifier);
+    final encodedDevice = base64Encode(
+      KnownDevice(
+        advName: device.advName,
+        platformName: device.platformName,
+        remoteId: device.remoteId.str,
+      ).toProto().writeToBuffer(),
+    );
+    if (!previousKnown.contains(encodedDevice)) {
+      previousKnown.add(encodedDevice);
       return preferences.setStringList(cacheKey, previousKnown);
     }
   }

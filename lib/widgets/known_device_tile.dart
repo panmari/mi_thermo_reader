@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:mi_thermo_reader/utils/known_device.dart';
 
 class KnownDeviceTile extends StatefulWidget {
-  final BluetoothDevice device;
+  final KnownDevice device;
 
   const KnownDeviceTile({required this.device, super.key});
 
@@ -24,7 +25,7 @@ class _KnownDeviceTileState extends State<KnownDeviceTile> {
     if (widget.device.platformName.isNotEmpty) {
       return widget.device.platformName;
     }
-    return widget.device.remoteId.str;
+    return widget.device.remoteId;
   }
 
   @override
@@ -38,9 +39,10 @@ class _KnownDeviceTileState extends State<KnownDeviceTile> {
             Text(_bestName()),
             ElevatedButton(
               onPressed:
-                  () => Navigator.of(
-                    context,
-                  ).pushNamed(DeviceScreen.routeName, arguments: widget.device),
+                  () => Navigator.of(context).pushNamed(
+                    DeviceScreen.routeName,
+                    arguments: BluetoothDevice.fromId(widget.device.remoteId),
+                  ),
               child: const Text('Open'),
             ),
           ],

@@ -73,7 +73,7 @@ class MiThermoReaderHomePage extends StatefulWidget {
 class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
-  final List<BluetoothDevice> _knownDevices = [];
+  final List<KnownDevice> _knownDevices = [];
 
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
