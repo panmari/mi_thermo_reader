@@ -15,6 +15,7 @@ class SensorChart extends StatelessWidget {
       tooltipBehavior: TooltipBehavior(enable: true),
       primaryXAxis: DateTimeAxis(),
       primaryYAxis: const NumericAxis(
+        name: 'Temperature',
         minimum: 20, // TODO(panmari): Compute.
       ),
       series: <CartesianSeries>[

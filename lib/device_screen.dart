@@ -35,6 +35,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   bool _isDiscoveringServices = false;
   bool _isConnecting = false;
   bool _isDisconnecting = false;
+  bool _readingEntries = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
   int lastNdaysFilter = -1;
@@ -172,6 +173,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     _statusUpdates.clear();
     if (mounted) {
       setState(() {
+        _readingEntries = true;
         _isDiscoveringServices = true;
       });
     }
@@ -255,6 +257,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                 ).toBase64ProtoString();
             p.setString(widget.cacheKeyName, encodedEntries);
             setState(() {
+              _readingEntries = false;
               _statusUpdates.add(
                 'Saved ${_sensorEntries.length} entries to preferences.',
               );
@@ -467,6 +470,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
         appBar: AppBar(
           title: Text(widget.device.platformName),
           actions: [buildConnectButton(context)],
+          bottom: PreferredSize(
+            preferredSize: Size.zero,
+            child: _readingEntries ? LinearProgressIndicator() : SizedBox(),
+          ),
         ),
         body: SingleChildScrollView(
           child: Column(
