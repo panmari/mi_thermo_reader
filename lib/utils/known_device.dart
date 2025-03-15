@@ -5,6 +5,9 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:proto_annotations/proto_annotations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mi_thermo_reader/src/proto/model.pb.dart';
+
+part 'known_device.g.dart';
 
 // After changing this file, also regenerate the proto definition. See
 // https://pub.dev/packages/proto_generator#getting-started.
