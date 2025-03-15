@@ -124,51 +124,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     return _connectionState == BluetoothConnectionState.connected;
   }
 
-  Future onConnectPressed() async {
-    try {
-      await widget.device.connectAndUpdateStream();
-      Snackbar.show(ABC.c, "Connect: Success", success: true);
-    } catch (e, backtrace) {
-      if (e is FlutterBluePlusException &&
-          e.code == FbpErrorCode.connectionCanceled.index) {
-        // ignore connections canceled by the user
-      } else {
-        Snackbar.show(
-          ABC.c,
-          prettyException("Connect Error:", e),
-          success: false,
-        );
-        print("Connect error: $e");
-        print(backtrace);
-      }
-    }
-  }
-
-  Future onCancelPressed() async {
-    try {
-      await widget.device.disconnectAndUpdateStream(queue: false);
-      Snackbar.show(ABC.c, "Cancel: Success", success: true);
-    } catch (e) {
-      Snackbar.show(ABC.c, prettyException("Cancel Error:", e), success: false);
-      print(e);
-    }
-  }
-
-  Future onDisconnectPressed() async {
-    try {
-      await widget.device.disconnectAndUpdateStream();
-      Snackbar.show(ABC.c, "Disconnect: Success", success: true);
-    } catch (e) {
-      Snackbar.show(
-        ABC.c,
-        prettyException("Disconnect Error:", e),
-        success: false,
-      );
-      print(e);
-    }
-  }
-
-  Future onDiscoverServicesPressed() async {
+  Future onUpdateDataPressed() async {
     _sensorEntries.clear();
     _statusUpdates.clear();
     if (mounted) {
@@ -178,17 +134,21 @@ class _DeviceScreenState extends State<DeviceScreen> {
       });
     }
     try {
+      await widget.device.connectAndUpdateStream();
+      _statusUpdates.add("Connect: Success");
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _statusUpdates.add("Connect Error: $e");
+        });
+      }
+    }
+    try {
       _services = await widget.device.discoverServices(
         subscribeToServicesChanged: false,
       );
       _statusUpdates.add("Discover Services: Success");
-      Snackbar.show(ABC.c, "Discover Services: Success", success: true);
     } catch (e) {
-      Snackbar.show(
-        ABC.c,
-        prettyException("Discover Services Error:", e),
-        success: false,
-      );
       _statusUpdates.add("Discover Services Error: $e");
       return;
     } finally {
@@ -263,7 +223,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
               );
             });
           });
-          // Set dev time
+          // Original code sets dev time here.
+          // Disconnect here, we're done.
+          widget.device.disconnect().then((_) {
+            setState(() {
+              _statusUpdates.add("Disconected");
+            });
+          });
           return;
         }
         if (v.length == 2) {
@@ -283,7 +249,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         // Received device config.
         // Send command to read memory measures.
         // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
-        print(v);
+        log("Received device config: $v");
         final numMemo = 5000;
         final start = 0; // TODO(panmari): Figure out  how this affects getMemo.
         _statusUpdates.add('Sending command getMemo');
@@ -296,7 +262,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
             (start >> 8) & 0xff,
           ], withoutResponse: true);
         } catch (e) {
-          print("Failed get-memo $e");
+          _statusUpdates.add('Failed get-memo $e');
         }
         return;
       }
@@ -335,69 +301,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
   }
 
-  Widget buildSpinner(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(14.0),
-      child: AspectRatio(aspectRatio: 1.0, child: CircularProgressIndicator()),
-    );
-  }
-
-  Widget buildRemoteId(BuildContext context) {
+  Widget _buildRemoteId(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text('${widget.device.remoteId}'),
-    );
-  }
-
-  Widget buildRssiTile(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        isConnected
-            ? const Icon(Icons.bluetooth_connected)
-            : const Icon(Icons.bluetooth_disabled),
-        Text(
-          ((isConnected && _rssi != null) ? '${_rssi!} dBm' : ''),
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
-    );
-  }
-
-  Widget buildGetServices(BuildContext context) {
-    return IndexedStack(
-      index: (_isDiscoveringServices) ? 1 : 0,
-      children: <Widget>[
-        TextButton(
-          onPressed: onDiscoverServicesPressed,
-          child: const Text("Get Services"),
-        ),
-        const IconButton(
-          icon: SizedBox(
-            width: 18.0,
-            height: 18.0,
-            child: CircularProgressIndicator(),
-          ),
-          onPressed: null,
-        ),
-      ],
-    );
-  }
-
-  Widget buildConnectButton(BuildContext context) {
-    return Row(
-      children: [
-        if (_isConnecting || _isDisconnecting) buildSpinner(context),
-        TextButton(
-          onPressed:
-              _isConnecting
-                  ? onCancelPressed
-                  : (isConnected ? onDisconnectPressed : onConnectPressed),
-          child: Text(
-            _isConnecting ? "CANCEL" : (isConnected ? "DISCONNECT" : "CONNECT"),
-          ),
-        ),
-      ],
     );
   }
 
@@ -414,8 +321,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     final firstIndex = _sensorEntries.indexWhere(
       (e) => e.timestamp.isAfter(firstIncludedTimestamp),
     );
-    log("Entries: ${_sensorEntries.sublist(0, 10)}");
-    log("for $firstIncludedTimestamp index starting at $firstIndex");
     return _sensorEntries.sublist(firstIndex);
   }
 
@@ -462,31 +367,37 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
+  Widget _buildTitle() {
+    final res = StringBuffer();
+    if (widget.device.platformName.isNotEmpty) {
+      res.write(widget.device.platformName);
+    } else {
+      res.write("N/A");
+    }
+    res.write(', (${widget.device.remoteId})');
+    return Text(res.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: Snackbar.snackBarKeyC,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.device.platformName),
-          actions: [buildConnectButton(context)],
+          title: _buildTitle(),
           bottom: PreferredSize(
             preferredSize: Size.zero,
             child: _readingEntries ? LinearProgressIndicator() : SizedBox(),
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: onUpdateDataPressed,
+          child: Icon(Icons.update),
+        ),
         body: SingleChildScrollView(
           child: Column(
             children:
                 <Widget>[
-                  buildRemoteId(context),
-                  ListTile(
-                    leading: buildRssiTile(context),
-                    title: Text(
-                      'Device is ${_connectionState.toString().split('.')[1]}',
-                    ),
-                    subtitle: buildGetServices(context),
-                  ),
                   _makeDayFilterBar(),
                   SensorChart(sensorEntries: _filteredSensorEntries()),
                 ] +
