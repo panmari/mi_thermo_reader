@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:proto_annotations/proto_annotations.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
@@ -41,15 +42,19 @@ class KnownDevice {
     final preferences = await _getSharedPreferences(context);
 
     try {
-      return preferences
-              .getStringList(cacheKey)
-              ?.map(
-                (encodedDevice) =>
-                    GKnownDevice.fromBuffer(
-                      base64Decode(encodedDevice),
-                    ).toKnownDevice(),
-              ) ??
+      final withNulls = preferences.getStringList(cacheKey)?.map((encodedDevice) {
+            try {
+              final deviceProto = GKnownDevice.fromBuffer(
+                base64Decode(encodedDevice),
+              );
+              return deviceProto.toKnownDevice();
+            } on InvalidProtocolBufferException catch (e) {
+              log("Could not decode known device.", error: e);
+              return null;
+            }
+          }) ??
           [];
+        return withNulls.where((d) => d != null).cast<KnownDevice>();
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
