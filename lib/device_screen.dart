@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../utils/snackbar.dart';
 import '../utils/extra.dart';
 import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
@@ -26,25 +25,15 @@ class DeviceScreen extends StatefulWidget {
 }
 
 class _DeviceScreenState extends State<DeviceScreen> {
-  int? _rssi;
-  BluetoothConnectionState _connectionState =
-      BluetoothConnectionState.disconnected;
   List<BluetoothService> _services = [];
   BluetoothService? _memoService;
   BluetoothCharacteristic? _memoCharacteristic;
-  bool _isDiscoveringServices = false;
-  bool _isConnecting = false;
-  bool _isDisconnecting = false;
-  bool _readingEntries = false;
+  bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
   int lastNdaysFilter = -1;
   late final Future<SharedPreferencesWithCache> _preferences;
 
-  late StreamSubscription<BluetoothConnectionState>
-  _connectionStateSubscription;
-  late StreamSubscription<bool> _isConnectingSubscription;
-  late StreamSubscription<bool> _isDisconnectingSubscription;
   StreamSubscription<List<int>>? _valueSubscription;
 
   @override
@@ -55,36 +44,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
         allowList: <String>{widget.cacheKeyName},
       ),
     );
-    _connectionStateSubscription = widget.device.connectionState.listen((
-      state,
-    ) async {
-      _connectionState = state;
-      if (state == BluetoothConnectionState.connected) {
-        _services = []; // must rediscover services
-      }
-      if (state == BluetoothConnectionState.connected && _rssi == null) {
-        _rssi = await widget.device.readRssi();
-      }
-      if (mounted) {
-        setState(() {});
-      }
-    });
-
-    _isConnectingSubscription = widget.device.isConnecting.listen((value) {
-      _isConnecting = value;
-      if (mounted) {
-        setState(() {});
-      }
-    });
-
-    _isDisconnectingSubscription = widget.device.isDisconnecting.listen((
-      value,
-    ) {
-      _isDisconnecting = value;
-      if (mounted) {
-        setState(() {});
-      }
-    });
 
     try {
       _preferences.then((p) {
@@ -113,59 +72,64 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   @override
   void dispose() {
-    _connectionStateSubscription.cancel();
-    _isConnectingSubscription.cancel();
-    _isDisconnectingSubscription.cancel();
     _valueSubscription?.cancel();
     super.dispose();
   }
 
-  bool get isConnected {
-    return _connectionState == BluetoothConnectionState.connected;
+  void onUpdateDataPressed() {
+    if (mounted) {
+      setState(() {
+        _isUpdatingData = true;
+      });
+    }
+    updateData().then((e) {
+      if (mounted) {
+        setState(() {
+          _isUpdatingData = false;
+        });
+      }
+    });
   }
 
-  Future onUpdateDataPressed() async {
+  Future updateData() async {
     _sensorEntries.clear();
     _statusUpdates.clear();
     if (mounted) {
       setState(() {
-        _readingEntries = true;
-        _isDiscoveringServices = true;
+        _isUpdatingData = true;
       });
     }
     try {
       await widget.device.connectAndUpdateStream();
-      _statusUpdates.add("Connect: Success");
     } catch (e) {
       _statusUpdates.add("Connect Error: $e");
-    } finally {
-      if (mounted) {
-        setState(() {});
-      }
+      return;
+    }
+    if (mounted) {
+      setState(() {
+        _statusUpdates.add("Connect: Success");
+      });
     }
     try {
       _services = await widget.device.discoverServices(
         subscribeToServicesChanged: false,
       );
-      _statusUpdates.add("Discover Services: Success");
     } catch (e) {
       _statusUpdates.add("Discover Services Error: $e");
       return;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isDiscoveringServices = false;
-        });
-      }
     }
-
+    if (mounted) {
+      setState(() {
+        _statusUpdates.add("Discover Services: Success");
+      });
+    }
     try {
       // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#bluetooth-connection-mode
       _memoService = _services.firstWhere(
         (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
       );
     } catch (e) {
-      print("Could not find memo service: $e");
+      _statusUpdates.add("Could not find memo service in $_memoService");
       return;
     }
     // Inspired by https://pvvx.github.io/ATC_MiThermometer/GraphMemo.html.
@@ -174,14 +138,14 @@ class _DeviceScreenState extends State<DeviceScreen> {
         (c) => c.characteristicUuid == Guid("1f1f"),
       );
     } catch (e) {
-      print("Could not find memo characteristic: $e");
+      _statusUpdates.add(
+        "Could not find memo characteristic in ${_memoService!.characteristics}",
+      );
       return;
     }
     if (mounted) {
       setState(() {
-        _statusUpdates.add(
-          'Found characteristic, properties: ${_memoCharacteristic!.properties}',
-        );
+        _statusUpdates.add('Found memo characteristic');
       });
     }
 
@@ -217,17 +181,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
                 ).toBase64ProtoString();
             p.setString(widget.cacheKeyName, encodedEntries);
             setState(() {
-              _readingEntries = false;
+              _isUpdatingData = false;
               _statusUpdates.add(
                 'Saved ${_sensorEntries.length} entries to preferences.',
               );
             });
           });
           // Original code sets dev time here.
-          // Disconnect here, we're done.
+          // Disconnect here, we're done. Not using await, since the listener can't be async.
           widget.device.disconnect().then((_) {
             setState(() {
-              _statusUpdates.add("Disconected");
+              _statusUpdates.add("Disconnected");
             });
           });
           return;
@@ -252,7 +216,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
         log("Received device config: $v");
         final numMemo = 5000;
         final start = 0; // TODO(panmari): Figure out  how this affects getMemo.
-        _statusUpdates.add('Sending command getMemo');
+        setState(() {
+          _statusUpdates.add('Sending command getMemo');
+        });
         try {
           _memoCharacteristic!.write([
             0x35,
@@ -299,13 +265,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     setState(() {
       _statusUpdates.add("Got device config.");
     });
-  }
-
-  Widget _buildRemoteId(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text('${widget.device.remoteId}'),
-    );
   }
 
   List<SensorEntry> _filteredSensorEntries() {
@@ -366,17 +325,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
-      key: Snackbar.snackBarKeyC,
       child: Scaffold(
         appBar: AppBar(
           title: _buildTitle(),
           bottom: PreferredSize(
             preferredSize: Size.zero,
-            child: _readingEntries ? LinearProgressIndicator() : SizedBox(),
+            child: _isUpdatingData ? LinearProgressIndicator() : SizedBox(),
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: onUpdateDataPressed,
+          onPressed: _isUpdatingData ? null : onUpdateDataPressed,
           child: Icon(Icons.update),
         ),
         body: Column(
