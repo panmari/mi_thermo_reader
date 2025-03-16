@@ -149,19 +149,55 @@ class _DeviceScreenState extends State<DeviceScreen> {
       });
     }
 
-    _valueSubscription = _memoCharacteristic!.onValueReceived.listen((v) {
-      if (v.isEmpty) {
+    _valueSubscription = _memoCharacteristic!.onValueReceived.listen(processReceivedData);
+    widget.device.cancelWhenDisconnected(_valueSubscription!);
+
+    try {
+      // Subscribe to events.
+      await _memoCharacteristic!.setNotifyValue(true);
+    } catch (e) {
+      _statusUpdates.add('Failed setNotifyValue: $e');
+      return;
+    }
+    print("Past setting notifyValue");
+
+    if (mounted) {
+      setState(() {
+        _statusUpdates.add('Subscribed to memo notifications');
+      });
+    }
+    try {
+      // Send command to read memory measures.
+      // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
+      final numMemo = 5000;
+      final start = 0; // TODO(panmari): Figure out  how this affects getMemo.
+      _memoCharacteristic!.write([
+        0x35,
+        numMemo & 0xff,
+        (numMemo >> 8) & 0xff,
+        start & 0xff,
+        (start >> 8) & 0xff,
+      ], withoutResponse: true);
+    } catch (e) {
+      _statusUpdates.add("Start get memo failed: $e");
+      return;
+    }
+    _statusUpdates.add("Start get memo: Success");
+  }
+
+  void processReceivedData(List<int> values) {
+      if (values.isEmpty) {
         return;
       }
-      final data = ByteData.view(Uint8List.fromList(v).buffer);
+      final data = ByteData.view(Uint8List.fromList(values).buffer);
       final blkid = data.getInt8(0);
       if (blkid == 0x35) {
-        if (v.length >= 13) {
+        if (data.lengthInBytes >= 13) {
           // Got an entry from memory. Convert it to a SensorEntry.
           _sensorEntries.add(SensorEntry.parse(data));
           return;
         }
-        if (v.length >= 3) {
+        if (data.lengthInBytes >= 3) {
           // They are sent in reverse chronological order, and might be received out of order.
           // Plus there might be retries. Be very defensive about keeping each value only once.
           _sensorEntries.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -196,7 +232,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           });
           return;
         }
-        if (v.length == 2) {
+        if (data.lengthInBytes == 2) {
           final numSamples = data.getUint16(1, Endian.little);
           setState(() {
             _statusUpdates.add('Number of samples in memory: $numSamples');
@@ -204,68 +240,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           return;
         }
       }
-      if (blkid == 0x23 && v.length >= 4) {
-        print("blkid 23");
-        // Log device time, then disconnect
-        return;
-      }
-      if (blkid == 0x55) {
-        // Received device config.
-        // Send command to read memory measures.
-        // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
-        log("Received device config: $v");
-        final numMemo = 5000;
-        final start = 0; // TODO(panmari): Figure out  how this affects getMemo.
-        setState(() {
-          _statusUpdates.add('Sending command getMemo');
-        });
-        try {
-          _memoCharacteristic!.write([
-            0x35,
-            numMemo & 0xff,
-            (numMemo >> 8) & 0xff,
-            start & 0xff,
-            (start >> 8) & 0xff,
-          ], withoutResponse: true);
-        } catch (e) {
-          _statusUpdates.add('Failed get-memo $e');
-        }
-        return;
-      }
-    });
-    widget.device.cancelWhenDisconnected(_valueSubscription!);
-
-    try {
-      // Subscribe to events. Two surprising facts:
-      // 1. No await needed, in all my testing this took affect in time.
-      // 2. The code might time out, but things still work.
-      await _memoCharacteristic!.setNotifyValue(true, timeout: 5);
-    } catch (e) {
-      setState(() {
-        _statusUpdates.add('Failed setNotifyValue: $e');
-      });
     }
-    print("Past setting notifyValue");
-
-    if (mounted) {
-      setState(() {
-        _statusUpdates.add('Sent command getDeviceConfig');
-      });
-    }
-    try {
-      // Send command to read device config
-      // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
-      await _memoCharacteristic!.write([0x55], withoutResponse: true);
-    } catch (e) {
-      setState(() {
-        _statusUpdates.add("Getting device config failed: $e");
-      });
-      return;
-    }
-    setState(() {
-      _statusUpdates.add("Got device config.");
-    });
-  }
 
   List<SensorEntry> _filteredSensorEntries() {
     if (_sensorEntries.isEmpty) {
