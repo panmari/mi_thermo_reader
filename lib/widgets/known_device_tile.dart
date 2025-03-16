@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 
-class KnownDeviceTile extends StatelessWidget {
+class KnownDeviceTile extends ConsumerWidget {
   final KnownDevice device;
 
   const KnownDeviceTile({required this.device, super.key});
@@ -44,17 +45,17 @@ class KnownDeviceTile extends StatelessWidget {
     );
   }
 
-  Future _maybeRemoveKnownDevice(BuildContext context) async {
+  Future _maybeRemoveKnownDevice(BuildContext context, WidgetRef ref) async {
     final shouldDelete = await showDeleteConfirmationDialog(context);
     if (shouldDelete == null || !shouldDelete) {
       return;
     }
 
-    return KnownDevice.remove(context, device);
+    return KnownDevice.remove(ref, device);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       margin: EdgeInsets.all(16.0),
       child: Stack(
@@ -85,7 +86,7 @@ class KnownDeviceTile extends StatelessWidget {
             right: 0.0,
             child: IconButton(
               onPressed: () async {
-                await _maybeRemoveKnownDevice(context);
+                await _maybeRemoveKnownDevice(context, ref);
               },
               icon: Icon(Icons.close, size: 20.0),
             ),

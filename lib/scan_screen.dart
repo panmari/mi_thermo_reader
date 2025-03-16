@@ -5,22 +5,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 
 import 'device_screen.dart';
 import 'widgets/scan_result_tile.dart';
 import 'widgets/system_device_tile.dart';
 
-class ScanScreen extends StatefulWidget {
+class ScanScreen extends ConsumerStatefulWidget {
   const ScanScreen({super.key});
 
   static const routeName = '/ScanScreen';
 
   @override
-  State<ScanScreen> createState() => _ScanScreenState();
+  ConsumerState<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class _ScanScreenState extends ConsumerState<ScanScreen> {
   List<BluetoothDevice> _systemDevices = [];
   List<ScanResult> _scanResults = [];
   bool _isScanning = false;
@@ -110,7 +111,7 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   void onOpenPressed(BluetoothDevice device) {
-    KnownDevice.add(context, device).then((_) {
+    KnownDevice.add(ref, device).then((_) {
       log('Added to $device known devices');
     });
     Navigator.of(context).pushNamed(DeviceScreen.routeName, arguments: device);
