@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -26,25 +27,15 @@ class DeviceScreen extends StatefulWidget {
 }
 
 class _DeviceScreenState extends State<DeviceScreen> {
-  int? _rssi;
-  BluetoothConnectionState _connectionState =
-      BluetoothConnectionState.disconnected;
   List<BluetoothService> _services = [];
   BluetoothService? _memoService;
   BluetoothCharacteristic? _memoCharacteristic;
-  bool _isDiscoveringServices = false;
-  bool _isConnecting = false;
-  bool _isDisconnecting = false;
-  bool _readingEntries = false;
+  bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
   int lastNdaysFilter = -1;
   late final Future<SharedPreferencesWithCache> _preferences;
 
-  late StreamSubscription<BluetoothConnectionState>
-  _connectionStateSubscription;
-  late StreamSubscription<bool> _isConnectingSubscription;
-  late StreamSubscription<bool> _isDisconnectingSubscription;
   StreamSubscription<List<int>>? _valueSubscription;
 
   @override
@@ -55,36 +46,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
         allowList: <String>{widget.cacheKeyName},
       ),
     );
-    _connectionStateSubscription = widget.device.connectionState.listen((
-      state,
-    ) async {
-      _connectionState = state;
-      if (state == BluetoothConnectionState.connected) {
-        _services = []; // must rediscover services
-      }
-      if (state == BluetoothConnectionState.connected && _rssi == null) {
-        _rssi = await widget.device.readRssi();
-      }
-      if (mounted) {
-        setState(() {});
-      }
-    });
-
-    _isConnectingSubscription = widget.device.isConnecting.listen((value) {
-      _isConnecting = value;
-      if (mounted) {
-        setState(() {});
-      }
-    });
-
-    _isDisconnectingSubscription = widget.device.isDisconnecting.listen((
-      value,
-    ) {
-      _isDisconnecting = value;
-      if (mounted) {
-        setState(() {});
-      }
-    });
 
     try {
       _preferences.then((p) {
@@ -113,28 +74,83 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   @override
   void dispose() {
-    _connectionStateSubscription.cancel();
-    _isConnectingSubscription.cancel();
-    _isDisconnectingSubscription.cancel();
     _valueSubscription?.cancel();
     super.dispose();
   }
 
-  bool get isConnected {
-    return _connectionState == BluetoothConnectionState.connected;
+  Future<BluetoothDevice?> _getWorkableDevice() async {
+    if (Platform.isAndroid) {
+      // On android, you can directly use the device always.
+      return widget.device;
+    }
+    if (widget.device.servicesList.isNotEmpty) {
+      // Device was correctly initialized with services. It's ready to use.
+      return widget.device;
+    }
+    // For platforms such as linux, scan until the device is discovered
+    // before attempting to connect. Otherwise the connect call runs into
+    // a "Bad Element" exception.
+    final withServices = [Guid("1f10")]; // Temperature history service.
+    final systemDevices = await FlutterBluePlus.systemDevices(withServices);
+    for (BluetoothDevice d in systemDevices) {
+      if (d.remoteId == widget.device.remoteId) {
+        return d;
+      }
+    }
+
+    FlutterBluePlus.startScan(
+      withServiceData: [ServiceDataFilter(Guid("fcd2"))],
+      // webOptionalServices: optionalServices(),
+      timeout: const Duration(seconds: 15),
+      oneByOne: true,
+    );
+    final result = await FlutterBluePlus.scanResults.firstWhere((results) {
+      for (ScanResult r in results) {
+        log(r.toString());
+        if (r.device.remoteId.str == widget.device.remoteId.str) {
+          return true;
+        }
+      }
+      return false;
+    });
+    return result.first.device;
   }
 
-  Future onUpdateDataPressed() async {
-    _sensorEntries.clear();
-    _statusUpdates.clear();
+  void onUpdateDataPressed() {
     if (mounted) {
       setState(() {
-        _readingEntries = true;
-        _isDiscoveringServices = true;
+        _isUpdatingData = true;
+      });
+    }
+    updateData().then((e) {
+      if (mounted) {
+        setState(() {
+          _isUpdatingData = false;
+        });
+      }
+    });
+  }
+
+  Future<void> updateData() async {
+    _sensorEntries.clear();
+    _statusUpdates.clear();
+
+    BluetoothDevice? device = await _getWorkableDevice();
+    if (device == null) {
+      if (mounted) {
+        setState(() {
+          _statusUpdates.add("Could not find device.");
+        });
+      }
+      return;
+    }
+    if (mounted) {
+      setState(() {
+        _statusUpdates.add('Found device.');
       });
     }
     try {
-      await widget.device.connectAndUpdateStream();
+      await device.connectAndUpdateStream();
       _statusUpdates.add("Connect: Success");
     } catch (e) {
       _statusUpdates.add("Connect Error: $e");
@@ -144,7 +160,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
       }
     }
     try {
-      _services = await widget.device.discoverServices(
+      _services = await device.discoverServices(
         subscribeToServicesChanged: false,
       );
       _statusUpdates.add("Discover Services: Success");
@@ -153,9 +169,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
       return;
     } finally {
       if (mounted) {
-        setState(() {
-          _isDiscoveringServices = false;
-        });
+        setState(() {});
       }
     }
 
@@ -165,7 +179,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
       );
     } catch (e) {
-      print("Could not find memo service: $e");
+      _statusUpdates.add("Could not find memo service in $_services");
       return;
     }
     // Inspired by https://pvvx.github.io/ATC_MiThermometer/GraphMemo.html.
@@ -174,14 +188,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
         (c) => c.characteristicUuid == Guid("1f1f"),
       );
     } catch (e) {
-      print("Could not find memo characteristic: $e");
+      _statusUpdates.add("Could not find memo characteristic: $e");
       return;
     }
     if (mounted) {
       setState(() {
-        _statusUpdates.add(
-          'Found characteristic, properties: ${_memoCharacteristic!.properties}',
-        );
+        _statusUpdates.add('Found characteristic');
       });
     }
 
@@ -217,7 +229,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                 ).toBase64ProtoString();
             p.setString(widget.cacheKeyName, encodedEntries);
             setState(() {
-              _readingEntries = false;
+              _isUpdatingData = false;
               _statusUpdates.add(
                 'Saved ${_sensorEntries.length} entries to preferences.',
               );
@@ -267,7 +279,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         return;
       }
     });
-    widget.device.cancelWhenDisconnected(_valueSubscription!);
+    device.cancelWhenDisconnected(_valueSubscription!);
 
     try {
       // Subscribe to events. Two surprising facts:
@@ -299,13 +311,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     setState(() {
       _statusUpdates.add("Got device config.");
     });
-  }
-
-  Widget _buildRemoteId(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text('${widget.device.remoteId}'),
-    );
   }
 
   List<SensorEntry> _filteredSensorEntries() {
@@ -372,11 +377,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
           title: _buildTitle(),
           bottom: PreferredSize(
             preferredSize: Size.zero,
-            child: _readingEntries ? LinearProgressIndicator() : SizedBox(),
+            child: _isUpdatingData ? LinearProgressIndicator() : SizedBox(),
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: onUpdateDataPressed,
+          onPressed: _isUpdatingData ? null : onUpdateDataPressed,
           child: Icon(Icons.update),
         ),
         body: Column(

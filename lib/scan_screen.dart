@@ -39,8 +39,7 @@ class _ScanScreenState extends State<ScanScreen> {
         }
       },
       onError: (e) {
-        print(e);
-        // Snackbar.show(ABC.b, prettyException("Scan Error:", e), success: false);
+        log("Error from ScanResuls: $e");
       },
     );
 
