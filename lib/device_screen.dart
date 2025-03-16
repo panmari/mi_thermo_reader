@@ -137,10 +137,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
       await widget.device.connectAndUpdateStream();
       _statusUpdates.add("Connect: Success");
     } catch (e) {
+      _statusUpdates.add("Connect Error: $e");
+    } finally {
       if (mounted) {
-        setState(() {
-          _statusUpdates.add("Connect Error: $e");
-        });
+        setState(() {});
       }
     }
     try {
@@ -325,45 +325,30 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   Widget _makeDayFilterBar() {
-    return Row(
-      children: [
-        ChoiceChip(
-          label: Text("All"),
-          selected: lastNdaysFilter == -1,
-          onSelected: (bool selected) {
-            setState(() {
-              lastNdaysFilter = -1;
-            });
-          },
-        ),
-        ChoiceChip(
-          label: Text("Last day"),
-          selected: lastNdaysFilter == 1,
-          onSelected: (bool selected) {
-            setState(() {
-              lastNdaysFilter = selected ? 1 : -1;
-            });
-          },
-        ),
-        ChoiceChip(
-          label: Text("7 days"),
-          selected: lastNdaysFilter == 7,
-          onSelected: (bool selected) {
-            setState(() {
-              lastNdaysFilter = selected ? 7 : -1;
-            });
-          },
-        ),
-        ChoiceChip(
-          label: Text("30 days"),
-          selected: lastNdaysFilter == 30,
-          onSelected: (bool selected) {
-            setState(() {
-              lastNdaysFilter = selected ? 30 : -1;
-            });
-          },
-        ),
-      ],
+    return SizedBox(
+      height: 60,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: DayFilterOption.values.length,
+        itemBuilder: (context, index) {
+          final option = DayFilterOption.values[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ChoiceChip(
+              label: Text(option.label),
+              selected: lastNdaysFilter == option.numDays,
+              onSelected: (bool selected) {
+                if (selected) {
+                  setState(() {
+                    lastNdaysFilter = option.numDays;
+                  });
+                }
+              },
+            ),
+          );
+        },
+        padding: EdgeInsets.all(5),
+      ),
     );
   }
 
@@ -394,17 +379,27 @@ class _DeviceScreenState extends State<DeviceScreen> {
           onPressed: onUpdateDataPressed,
           child: Icon(Icons.update),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children:
-                <Widget>[
-                  _makeDayFilterBar(),
-                  SensorChart(sensorEntries: _filteredSensorEntries()),
-                ] +
-                _statusUpdates.map((e) => Text(e)).toList(),
-          ),
+        body: Column(
+          children:
+              <Widget>[
+                _makeDayFilterBar(),
+                SensorChart(sensorEntries: _filteredSensorEntries()),
+              ] +
+              _statusUpdates.map((e) => Text(e)).toList(),
         ),
       ),
     );
   }
+}
+
+enum DayFilterOption {
+  all(numDays: -1, label: 'All'),
+  lastDay(numDays: 1, label: 'last day'),
+  oneWeek(numDays: 7, label: '7 days'),
+  oneMonth(numDays: 30, label: '30 days');
+
+  final int numDays;
+  final String label;
+
+  const DayFilterOption({required this.numDays, required this.label});
 }
