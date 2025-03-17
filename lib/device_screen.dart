@@ -315,13 +315,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _isUpdatingData ? null : onUpdateDataPressed,
+          tooltip: "Updates data by connecting to the device.",
           child: Icon(Icons.update),
         ),
         body: Column(
           children:
               <Widget>[
                 _makeDayFilterBar(),
-                SensorChart(sensorEntries: _filteredSensorEntries()),
+                _filteredSensorEntries().isEmpty
+                    ? Text("No entries available, click [Update] to fetch data")
+                    : SensorChart(sensorEntries: _filteredSensorEntries()),
               ] +
               _statusUpdates.map((e) => Text(e)).toList(),
         ),
