@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,6 +38,21 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   StreamSubscription<List<int>>? _valueSubscription;
 
+  List<SensorEntry> _createFakeSensorData(int nElements) {
+    return List.generate(
+      nElements,
+      (i) => SensorEntry(
+        index: i,
+        timestamp: DateTime.now().subtract(
+          Duration(minutes: (nElements - i) * 10),
+        ),
+        temperature: math.Random().nextDouble() * 2 + 21,
+        humidity: 0,
+        voltageBattery: 0,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -48,16 +65,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
     try {
       _preferences.then((p) {
         final encodedEntries = p.getString(widget.cacheKeyName);
-        if (encodedEntries != null) {
-          _sensorEntries.addAll(
-            SensorHistory.from(encodedEntries).sensorEntries,
-          );
-          setState(() {
-            _statusUpdates.add(
-              'Read ${_sensorEntries.length} entries from preferences.',
-            );
-          });
+        if (encodedEntries == null) {
+          log("No entries for device");
+          return;
         }
+        _sensorEntries.addAll(SensorHistory.from(encodedEntries).sensorEntries);
+        setState(() {
+          _statusUpdates.add(
+            'Read ${_sensorEntries.length} entries from preferences.',
+          );
+        });
       });
     } on ArgumentError {
       setState(() {
@@ -67,6 +84,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
       setState(() {
         _statusUpdates.add('Failed loading entries from preferences: $e');
       });
+    }
+    if (_sensorEntries.isEmpty && kDebugMode) {
+      _sensorEntries.addAll(_createFakeSensorData(2000));
     }
   }
 
@@ -322,9 +342,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
           children:
               <Widget>[
                 _makeDayFilterBar(),
-                _filteredSensorEntries().isEmpty
-                    ? Text("No entries available, click [Update] to fetch data")
-                    : SensorChart(sensorEntries: _filteredSensorEntries()),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child:
+                      _filteredSensorEntries().isEmpty
+                          ? Text(
+                            "No entries available, click [Update] to fetch data",
+                          )
+                          : SensorChart(
+                            sensorEntries: _filteredSensorEntries(),
+                          ),
+                ),
               ] +
               _statusUpdates.map((e) => Text(e)).toList(),
         ),
