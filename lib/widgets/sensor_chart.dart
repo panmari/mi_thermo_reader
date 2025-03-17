@@ -15,51 +15,69 @@ class SensorChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: AspectRatio(
-        aspectRatio: 1.7,
-        child: LineChart(
-          LineChartData(
-            gridData: FlGridData(show: true),
-            titlesData: FlTitlesData(
-              show: true,
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget:
-                      (value, meta) => Text(
-                        _formatDate(value),
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                  // reservedSize: 22,
-                  // interval:
-                  //     _chartData.length > 1
-                  //         ? (_chartData.last.x - _chartData.first.x) /
-                  //             (_chartData.length - 1)
-                  //         : 1, // Ensure all labels show
-                ),
+    return AspectRatio(
+      aspectRatio: 2,
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(show: true),
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) => Text(_formatDate(value)),
+                reservedSize: 70,
               ),
             ),
-            minX:
-                sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble(),
-            maxX:
-                sensorEntries.last.timestamp.millisecondsSinceEpoch.toDouble(),
-            minY: 20,
-            maxY: 25,
-            lineBarsData: [
-              LineChartBarData(
-                spots:
-                    sensorEntries
-                        .map(
-                          (s) => FlSpot(
-                            s.timestamp.millisecondsSinceEpoch.toDouble(),
-                            s.temperature,
-                          ),
-                        )
-                        .toList(),
+            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 28,
+                interval: 1,
               ),
-            ],
+            ),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          minX: sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble(),
+          maxX: sensorEntries.last.timestamp.millisecondsSinceEpoch.toDouble(),
+          minY: 20,
+          maxY: 25,
+          lineBarsData: [
+            LineChartBarData(
+              dotData: FlDotData(show: false),
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+              spots:
+                  sensorEntries
+                      .map(
+                        (s) => FlSpot(
+                          s.timestamp.millisecondsSinceEpoch.toDouble(),
+                          s.temperature,
+                        ),
+                      )
+                      .toList(),
+            ),
+          ],
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (_) => Theme.of(context).cardColor,
+              tooltipBorder: BorderSide(color: Theme.of(context).dividerColor),
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  final dateTime = DateTime.fromMillisecondsSinceEpoch(
+                    spot.x.toInt(),
+                  );
+                  final formattedDate = DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(dateTime);
+                  final formattedTime = DateFormat.Hm().format(dateTime);
+                  return LineTooltipItem(
+                    'Date: $formattedDate\nTime $formattedTime\nTemp: ${spot.y.toStringAsFixed(2)}',
+                    Theme.of(context).textTheme.labelMedium!,
+                  );
+                }).toList();
+              },
+            ),
           ),
         ),
       ),
