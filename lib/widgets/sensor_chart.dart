@@ -13,13 +13,21 @@ class SensorChart extends StatelessWidget {
     return DateFormat('MMM d').format(dateTime); // Format as "Month Day"
   }
 
+  double get _firstTimestampAsMilliseconds =>
+      sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble();
+  double get _lastTimestampAsMilliseconds =>
+      sensorEntries.last.timestamp.millisecondsSinceEpoch.toDouble();
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 2,
       child: LineChart(
         LineChartData(
-          gridData: FlGridData(show: true),
+          gridData: FlGridData(
+            show: true,
+            verticalInterval: Duration(hours: 24).inMilliseconds.toDouble(),
+          ),
           titlesData: FlTitlesData(
             show: true,
             bottomTitles: AxisTitles(
@@ -27,6 +35,11 @@ class SensorChart extends StatelessWidget {
                 showTitles: true,
                 getTitlesWidget: (value, meta) => Text(_formatDate(value)),
                 reservedSize: 70,
+                interval:
+                    (_lastTimestampAsMilliseconds -
+                        _firstTimestampAsMilliseconds) /
+                    10,
+                minIncluded: false,
               ),
             ),
             leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -39,8 +52,8 @@ class SensorChart extends StatelessWidget {
             ),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-          minX: sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble(),
-          maxX: sensorEntries.last.timestamp.millisecondsSinceEpoch.toDouble(),
+          minX: _firstTimestampAsMilliseconds,
+          maxX: _lastTimestampAsMilliseconds,
           minY: 20,
           maxY: 25,
           lineBarsData: [
