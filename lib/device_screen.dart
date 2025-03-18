@@ -80,13 +80,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
       setState(() {
         _statusUpdates.add('No entries in preferences.');
       });
+      if (_sensorEntries.isEmpty && kDebugMode) {
+        _sensorEntries.addAll(_createFakeSensorData(2000));
+      }
     } catch (e) {
       setState(() {
         _statusUpdates.add('Failed loading entries from preferences: $e');
       });
-    }
-    if (_sensorEntries.isEmpty && kDebugMode) {
-      _sensorEntries.addAll(_createFakeSensorData(2000));
     }
   }
 
