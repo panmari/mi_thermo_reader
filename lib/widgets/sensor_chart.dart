@@ -24,6 +24,10 @@ class SensorChart extends StatelessWidget {
       aspectRatio: 2,
       child: LineChart(
         LineChartData(
+          borderData: FlBorderData(
+            show: true,
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
           gridData: FlGridData(
             show: true,
             verticalInterval: Duration(hours: 24).inMilliseconds.toDouble(),
@@ -85,8 +89,9 @@ class SensorChart extends StatelessWidget {
                   ).format(dateTime);
                   final formattedTime = DateFormat.Hm().format(dateTime);
                   return LineTooltipItem(
-                    'Date: $formattedDate\nTime $formattedTime\nTemp: ${spot.y.toStringAsFixed(2)}',
+                    'Date: $formattedDate\nTime $formattedTime\nTemp: ${spot.y.toStringAsFixed(2)}° C',
                     Theme.of(context).textTheme.labelMedium!,
+                    textAlign: TextAlign.left,
                   );
                 }).toList();
               },
