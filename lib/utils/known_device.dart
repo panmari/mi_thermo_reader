@@ -42,21 +42,25 @@ class KnownDevice {
     final preferences = await _getSharedPreferences(context);
 
     try {
-      final withNulls = preferences.getStringList(cacheKey)?.map((encodedDevice) {
-            try {
-              final deviceProto = GKnownDevice.fromBuffer(
-                base64Decode(encodedDevice),
-              );
-              return deviceProto.toKnownDevice();
-            } on InvalidProtocolBufferException catch (e) {
-              log("Could not decode known device.", error: e);
-              return null;
-            }
-          }) ??
-          [];
-        return withNulls.where((d) => d != null).cast<KnownDevice>();
+      final encodedDevices = preferences.getStringList(cacheKey);
+      if (encodedDevices == null) {
+        log('Shared preferences returned null.');
+        return [];
+      }
+      final withNulls = encodedDevices.map((encodedDevice) {
+        try {
+          final deviceProto = GKnownDevice.fromBuffer(
+            base64Decode(encodedDevice),
+          );
+          return deviceProto.toKnownDevice();
+        } on InvalidProtocolBufferException catch (e) {
+          log("Could not decode known device.", error: e);
+          return null;
+        }
+      });
+      return withNulls.where((d) => d != null).cast<KnownDevice>();
     } on ArgumentError {
-      log('No known devices in shared preferences.');
+      log('Key "$cacheKey" is not in shared preferences.');
     }
     return [];
   }

@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mi Thermometer Reader',
-      theme: ThemeData(
+      theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.orange,
           brightness: Brightness.dark,
