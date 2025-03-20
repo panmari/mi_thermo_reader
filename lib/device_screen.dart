@@ -175,13 +175,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
     widget.device.cancelWhenDisconnected(_valueSubscription!);
 
     try {
-      // Subscribe to events.
       await _memoCharacteristic!.setNotifyValue(true);
     } catch (e) {
       _statusUpdates.add('Failed setNotifyValue: $e');
       return;
     }
-    print("Past setting notifyValue");
 
     if (mounted) {
       setState(() {
@@ -195,18 +193,25 @@ class _DeviceScreenState extends State<DeviceScreen> {
       final lastNumMemo =
           5000; // How many records to fetch, starting with the most recent.
       final skipNumMemo = 0; // How many records to skip from the start.
-      _memoCharacteristic!.write([
-        0x35,
-        lastNumMemo & 0xff,
-        (lastNumMemo >> 8) & 0xff,
-        skipNumMemo & 0xff,
-        (skipNumMemo >> 8) & 0xff,
-      ], withoutResponse: true);
+      const getmMemoBlk = 0x35;
+      final request = Uint8List(5).buffer.asByteData();
+      request.setInt8(0, getmMemoBlk);
+      request.setUint16(1, lastNumMemo, Endian.little);
+      request.setUint16(3, skipNumMemo, Endian.little);
+
+      _memoCharacteristic!.write(
+        request.buffer.asUint8List(),
+        withoutResponse: true,
+      );
     } catch (e) {
       _statusUpdates.add("Start get memo failed: $e");
       return;
     }
-    _statusUpdates.add("Start get memo: Success");
+    if (mounted) {
+      setState(() {
+        _statusUpdates.add("Start get memo: Success");
+      });
+    }
   }
 
   void processReceivedData(List<int> values) {
@@ -253,13 +258,22 @@ class _DeviceScreenState extends State<DeviceScreen> {
           );
         });
       });
-      // Original code sets dev time here.
-      // Disconnect here, we're done. Not using await, since the listener can't be async.
-      widget.device.disconnect().then((_) {
-        setState(() {
-          _statusUpdates.add("Disconnected");
-        });
-      });
+      // There's a time drift on the device, correct time since we
+      // have the opportunity.
+      _setDeviceTime()
+          .then(
+            (_) async {
+              await widget.device.disconnect();
+            },
+            onError: (e) {
+              _statusUpdates.add("Set device time failed with $e");
+            },
+          )
+          .then((_) {
+            setState(() {
+              _statusUpdates.add("Disconnected");
+            });
+          });
       return;
     }
     if (data.lengthInBytes == 2) {
@@ -270,6 +284,25 @@ class _DeviceScreenState extends State<DeviceScreen> {
       });
       return;
     }
+  }
+
+  Future<void> _setDeviceTime() {
+    final request = Uint8List(5).buffer.asByteData();
+
+    const setTimeBlk = 0x23;
+    request.setInt8(0, setTimeBlk);
+
+    final secondsSinceEpoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // The original code adjusted to timezone. That doesn't seem necessary,
+    // as Epoch is independent of timezone. Timezone should be applied when converting back.
+    request.setUint32(1, secondsSinceEpoch, Endian.little);
+    setState(() {
+      _statusUpdates.add('Setting device time to ${DateTime.now()}');
+    });
+    return _memoCharacteristic!.write(
+      request.buffer.asUint8List(),
+      withoutResponse: true,
+    );
   }
 
   List<SensorEntry> _filteredSensorEntries() {
