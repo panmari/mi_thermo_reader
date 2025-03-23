@@ -235,6 +235,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
           _statusUpdates.add(
             'Done with reading. Got ${_sensorEntries.length} samples',
           );
+          if (_sensorEntries.isNotEmpty) {
+            _statusUpdates.add(
+              'Last timestamp read: ${_sensorEntries.last.timestamp}',
+            );
+          }
         });
       }
       _preferences.then((p) {
