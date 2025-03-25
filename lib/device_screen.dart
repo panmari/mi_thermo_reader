@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../utils/extra.dart';
 import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
 
@@ -27,8 +26,6 @@ class DeviceScreen extends StatefulWidget {
 }
 
 class _DeviceScreenState extends State<DeviceScreen> {
-  List<BluetoothService> _services = [];
-  BluetoothService? _memoService;
   BluetoothCharacteristic? _memoCharacteristic;
   bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
@@ -112,180 +109,39 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   Future updateData() async {
-    _sensorEntries.clear();
-    _statusUpdates.clear();
     if (mounted) {
       setState(() {
+        _sensorEntries.clear();
+        _statusUpdates.clear();
         _isUpdatingData = true;
       });
     }
     try {
-      await widget.device.connectAndUpdateStream();
-    } catch (e) {
-      _statusUpdates.add("Connect Error: $e");
-      return;
-    }
-    if (mounted) {
-      setState(() {
-        _statusUpdates.add("Connect: Success");
-      });
-    }
-    try {
-      _services = await widget.device.discoverServices(
-        subscribeToServicesChanged: false,
-      );
-    } catch (e) {
-      _statusUpdates.add("Discover Services Error: $e");
-      return;
-    }
-    if (mounted) {
-      setState(() {
-        _statusUpdates.add("Discover Services: Success");
-      });
-    }
-    try {
-      // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#bluetooth-connection-mode
-      _memoService = _services.firstWhere(
-        (service) => service.isPrimary && service.serviceUuid == Guid("1f10"),
-      );
-    } catch (e) {
-      _statusUpdates.add("Could not find memo service in $_memoService");
-      return;
-    }
-    // Inspired by https://pvvx.github.io/ATC_MiThermometer/GraphMemo.html.
-    try {
-      _memoCharacteristic = _memoService!.characteristics.firstWhere(
-        (c) => c.characteristicUuid == Guid("1f1f"),
-      );
-    } catch (e) {
-      _statusUpdates.add(
-        "Could not find memo characteristic in ${_memoService!.characteristics}",
-      );
-      return;
-    }
-    if (mounted) {
-      setState(() {
-        _statusUpdates.add('Found memo characteristic');
-      });
-    }
-
-    _valueSubscription = _memoCharacteristic!.onValueReceived.listen(
-      processReceivedData,
-    );
-    widget.device.cancelWhenDisconnected(_valueSubscription!);
-
-    try {
-      await _memoCharacteristic!.setNotifyValue(true);
-    } catch (e) {
-      _statusUpdates.add('Failed setNotifyValue: $e');
-      return;
-    }
-
-    if (mounted) {
-      setState(() {
-        _statusUpdates.add('Subscribed to memo notifications');
-      });
-    }
-    try {
-      // Send command to read memory measures.
-      // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#primary-service-uuid-0x1f10-characteristic-uuid-0x1f1f
-      // The two parameters are:
-      final lastNumMemo =
-          5000; // How many records to fetch, starting with the most recent.
-      final skipNumMemo = 0; // How many records to skip from the start.
-      const getmMemoBlk = 0x35;
-      final request = Uint8List(5).buffer.asByteData();
-      request.setInt8(0, getmMemoBlk);
-      request.setUint16(1, lastNumMemo, Endian.little);
-      request.setUint16(3, skipNumMemo, Endian.little);
-
-      _memoCharacteristic!.write(
-        request.buffer.asUint8List(),
-        withoutResponse: true,
-      );
-    } catch (e) {
-      _statusUpdates.add("Start get memo failed: $e");
-      return;
-    }
-    if (mounted) {
-      setState(() {
-        _statusUpdates.add("Start get memo: Success");
-      });
-    }
-  }
-
-  void processReceivedData(List<int> values) {
-    if (values.isEmpty) {
-      return;
-    }
-    final data = ByteData.view(Uint8List.fromList(values).buffer);
-    final blkid = data.getInt8(0);
-    if (blkid != 0x35) {
-      log("data with unexpected blkid $blkid: $data");
-      return;
-    }
-    if (data.lengthInBytes >= 13) {
-      // Got an entry from memory. Convert it to a SensorEntry.
-      _sensorEntries.add(SensorEntry.parse(data));
-      return;
-    }
-    if (data.lengthInBytes >= 3) {
-      // They are sent in reverse chronological order, and might be received out of order.
-      // Plus there might be retries. Be very defensive about keeping each value only once.
-      _sensorEntries.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-      final alreadyPresent = Set<DateTime>();
-      _sensorEntries.retainWhere((e) => alreadyPresent.add(e.timestamp));
-      if (mounted) {
-        setState(() {
-          _statusUpdates.add(
-            'Done with reading. Got ${_sensorEntries.length} samples',
-          );
-          if (_sensorEntries.isNotEmpty) {
-            _statusUpdates.add(
-              'Last timestamp read: ${_sensorEntries.last.timestamp}',
-            );
-          }
-        });
-      }
-      _preferences.then((p) {
-        final encodedEntries =
-            SensorHistory(sensorEntries: _sensorEntries).toBase64ProtoString();
-        p.setString(widget.cacheKeyName, encodedEntries);
-        setState(() {
-          _isUpdatingData = false;
-          _statusUpdates.add(
-            'Saved ${_sensorEntries.length} entries to preferences.',
-          );
-        });
-      });
-      // There's a time drift on the device, correct time since we
-      // have the opportunity.
-      _setDeviceTime()
-          .then(
-            (_) async {
-              await widget.device.disconnect();
-            },
-            onError: (e) {
-              _statusUpdates.add("Set device time failed with $e");
-            },
-          )
-          .then((_) {
-            setState(() {
-              _statusUpdates.add("Disconnected");
-            });
+      final newEntries = await BluetoothManager(
+        device: widget.device,
+      ).getMemoryData((update) {
+        if (mounted) {
+          setState(() {
+            _statusUpdates.add(update);
           });
-      return;
-    }
-    if (data.lengthInBytes == 2) {
-      // TODO(panmari): This message seems pointless. Seems to be mostly 0 if received.
-      final numSamples = data.getUint16(1, Endian.little);
-      setState(() {
-        _statusUpdates.add('Number of samples in memory: $numSamples');
+        }
       });
-      return;
+      _sensorEntries.addAll(newEntries);
+    } catch (e, trace) {
+      setState(() {
+        _statusUpdates.add("Updating data failed: $e");
+      });
+      log('Updating data failed: $e', stackTrace: trace);
+    }
+    // TODO(panmari): Write newly retrieved data to preferences (if success);
+    if (mounted) {
+      setState(() {
+        _isUpdatingData = false;
+      });
     }
   }
 
+  // TODO(panmari): Make use of this at some point.
   Future<void> _setDeviceTime() {
     final request = Uint8List(5).buffer.asByteData();
 
