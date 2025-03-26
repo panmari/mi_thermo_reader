@@ -4,12 +4,12 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 
 import 'device_screen.dart';
 import 'widgets/scan_result_tile.dart';
 import 'widgets/system_device_tile.dart';
-import 'utils/extra.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -39,8 +39,7 @@ class _ScanScreenState extends State<ScanScreen> {
         }
       },
       onError: (e) {
-        print(e);
-        // Snackbar.show(ABC.b, prettyException("Scan Error:", e), success: false);
+        log(e);
       },
     );
 
@@ -64,7 +63,7 @@ class _ScanScreenState extends State<ScanScreen> {
       // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#control-function-id-when-connected;
       // Note that using those as service list does not work.
       // If this is specified on Android, the plugin throws an exception.
-      return [Guid("181a"), Guid("1f10")];
+      return [Guid("181a"), BluetoothConstants.memoServiceGuid];
     }
     return [];
   }
@@ -80,10 +79,10 @@ class _ScanScreenState extends State<ScanScreen> {
   Future onScanPressed() async {
     try {
       // `withServices` is required on iOS for privacy purposes, ignored on android.
-      var withServices = [Guid("1f10")]; // Temperature history service.
+      var withServices = [BluetoothConstants.memoServiceGuid];
       _systemDevices = await FlutterBluePlus.systemDevices(withServices);
     } catch (e) {
-      print("Retrieving system devices failed: $e");
+      log("Retrieving system devices failed: $e");
     }
     try {
       await FlutterBluePlus.startScan(
@@ -92,7 +91,7 @@ class _ScanScreenState extends State<ScanScreen> {
         timeout: const Duration(seconds: 15),
       );
     } catch (e) {
-      print("Start scan failed: $e");
+      log("Start scan failed: $e");
     }
     if (mounted) {
       setState(() {});
@@ -103,19 +102,11 @@ class _ScanScreenState extends State<ScanScreen> {
     try {
       FlutterBluePlus.stopScan();
     } catch (e) {
-      print(e);
+      log('Stop scan failed: $e');
     }
   }
 
-  void onConnectPressed(BluetoothDevice device) {
-    device.connectAndUpdateStream().catchError((e) {
-      log("Connect error: $e");
-      // Snackbar.show(
-      //   ABC.c,
-      //   prettyException("Connect Error:", e),
-      //   success: false,
-      // );
-    });
+  void onOpenPressed(BluetoothDevice device) {
     KnownDevice.add(context, device).then((_) {
       log('Added to $device known devices');
     });
@@ -149,26 +140,15 @@ class _ScanScreenState extends State<ScanScreen> {
   List<Widget> _buildScanResultTiles(BuildContext context) {
     return _scanResults
         .map(
-          (r) => ScanResultTile(
-            result: r,
-            onTap: () => onConnectPressed(r.device),
-          ),
+          (r) =>
+              ScanResultTile(result: r, onTap: () => onOpenPressed(r.device)),
         )
         .toList();
   }
 
   List<Widget> _buildSystemDeviceTiles(BuildContext context) {
     return _systemDevices
-        .map(
-          (d) => SystemDeviceTile(
-            device: d,
-            onOpen:
-                () => Navigator.of(
-                  context,
-                ).pushNamed(DeviceScreen.routeName, arguments: d),
-            onConnect: () => onConnectPressed(d),
-          ),
-        )
+        .map((d) => SystemDeviceTile(device: d, onOpen: () => onOpenPressed(d)))
         .toList();
   }
 
