@@ -17,6 +17,12 @@ class BluetoothCommands {
     return request.buffer.asUint8List();
   }
 
+  static List<int> getDeviceTime(DateTime time) {
+    final request = Uint8List(1).buffer.asByteData();
+    request.setUint8(0, BluetoothConstants.setTimeBlk);
+    return request.buffer.asUint8List();
+  }
+
   static List<int> setDeviceTime(DateTime time) {
     // The original code adjusted to timezone. That doesn't seem necessary,
     // as Epoch is independent of timezone. Timezone should be applied when converting back.

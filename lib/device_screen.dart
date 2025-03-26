@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:mi_thermo_reader/services/bluetooth_commands.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,14 +26,12 @@ class DeviceScreen extends StatefulWidget {
 }
 
 class _DeviceScreenState extends State<DeviceScreen> {
-  BluetoothCharacteristic? _memoCharacteristic;
   bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
   final List<SensorEntry> _sensorEntries = [];
   int lastNdaysFilter = -1;
   late final Future<SharedPreferencesWithCache> _preferences;
-
-  StreamSubscription<List<int>>? _valueSubscription;
+  late final BluetoothManager _bluetoothManager;
 
   List<SensorEntry> _createFakeSensorData(int nElements) {
     return List.generate(
@@ -54,6 +51,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   @override
   void initState() {
     super.initState();
+    _bluetoothManager = BluetoothManager(device: widget.device);
     _preferences = SharedPreferencesWithCache.create(
       cacheOptions: SharedPreferencesWithCacheOptions(
         allowList: <String>{widget.cacheKeyName},
@@ -90,41 +88,37 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   @override
   void dispose() {
-    _valueSubscription?.cancel();
     super.dispose();
+    _bluetoothManager.dispose();
   }
 
   void onUpdateDataPressed() {
+    _sensorEntries.clear();
+    _statusUpdates.clear();
+    _isUpdatingData = true;
     if (mounted) {
-      setState(() {
-        _isUpdatingData = true;
-      });
+      setState(() {});
     }
     updateData().then((e) {
+      _isUpdatingData = false;
       if (mounted) {
-        setState(() {
-          _isUpdatingData = false;
-        });
+        setState(() {});
       }
     });
   }
 
   Future updateData() async {
-    if (mounted) {
-      setState(() {
-        _sensorEntries.clear();
-        _statusUpdates.clear();
-        _isUpdatingData = true;
-      });
-    }
     try {
-      final newEntries = await BluetoothManager(
-        device: widget.device,
-      ).getMemoryData((update) {
+      await _bluetoothManager.init((update) {
+        _statusUpdates.add(update);
         if (mounted) {
-          setState(() {
-            _statusUpdates.add(update);
-          });
+          setState(() {});
+        }
+      });
+      final newEntries = await _bluetoothManager.getMemoryData((update) {
+        _statusUpdates.add(update);
+        if (mounted) {
+          setState(() {});
         }
       });
       _sensorEntries.addAll(newEntries);
@@ -134,28 +128,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
         p.setString(widget.cacheKeyName, encodedEntries);
       });
     } catch (e, trace) {
-      setState(() {
-        _statusUpdates.add("Updating data failed: $e");
-      });
+      _statusUpdates.add("Updating data failed: $e");
+      if (mounted) {
+        setState(() {});
+      }
       log('Updating data failed: $e', stackTrace: trace);
     }
-    if (mounted) {
-      setState(() {
-        _isUpdatingData = false;
-      });
-    }
-  }
-
-  // TODO(panmari): Make use of this at some point.
-  Future<void> _setDeviceTime() {
-    final now = DateTime.now();
-    setState(() {
-      _statusUpdates.add('Setting device time to ${now}');
-    });
-    return _memoCharacteristic!.write(
-      BluetoothCommands.setDeviceTime(now),
-      withoutResponse: true,
-    );
   }
 
   List<SensorEntry> _filteredSensorEntries() {
