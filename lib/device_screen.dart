@@ -127,13 +127,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
         }
       });
       _sensorEntries.addAll(newEntries);
+      _preferences.then((p) {
+        final encodedEntries =
+            SensorHistory(sensorEntries: _sensorEntries).toBase64ProtoString();
+        p.setString(widget.cacheKeyName, encodedEntries);
+      });
     } catch (e, trace) {
       setState(() {
         _statusUpdates.add("Updating data failed: $e");
       });
       log('Updating data failed: $e', stackTrace: trace);
     }
-    // TODO(panmari): Write newly retrieved data to preferences (if success);
     if (mounted) {
       setState(() {
         _isUpdatingData = false;
