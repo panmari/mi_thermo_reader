@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/services/bluetooth_commands.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -147,20 +148,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   // TODO(panmari): Make use of this at some point.
   Future<void> _setDeviceTime() {
-    final request = Uint8List(5).buffer.asByteData();
-
-    const setTimeBlk = 0x23;
-    request.setInt8(0, setTimeBlk);
-
-    final secondsSinceEpoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    // The original code adjusted to timezone. That doesn't seem necessary,
-    // as Epoch is independent of timezone. Timezone should be applied when converting back.
-    request.setUint32(1, secondsSinceEpoch, Endian.little);
+    final now = DateTime.now();
     setState(() {
-      _statusUpdates.add('Setting device time to ${DateTime.now()}');
+      _statusUpdates.add('Setting device time to ${now}');
     });
     return _memoCharacteristic!.write(
-      request.buffer.asUint8List(),
+      BluetoothCommands.setDeviceTime(now),
       withoutResponse: true,
     );
   }
