@@ -60,12 +60,12 @@ class BluetoothManager {
     statusUpdate("Start get memo: Success");
 
     final result = await processor.waitForResults();
-    await valueSubscription.cancel();
+    valueSubscription.cancel();
 
     return result;
   }
 
-  Future<void> getDeviceTime() async {
+  Future<Duration> getDeviceTimeAndDrift() async {
     if (_characteristic == null) {
       throw "Not initialized";
     }
@@ -80,8 +80,10 @@ class BluetoothManager {
       withoutResponse: true,
     );
 
-    await processor.waitForResults();
-    await valueSubscription.cancel();
+    final drift = processor.waitForResults();
+    valueSubscription.cancel();
+
+    return drift;
   }
 
   // Because of time drifts on the device, calling this occasionally is necessary.

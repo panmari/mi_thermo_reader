@@ -116,16 +116,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
   }
 
-  Future getTime() async {
+  void getTime() async {
     try {
       await initBluetooth();
-      return _bluetoothManager.getDeviceTime();
+      final drift = await _bluetoothManager.getDeviceTimeAndDrift();
+      _statusUpdates.add("Device time drift: $drift");
     } catch (e, trace) {
       _statusUpdates.add("Get time failed: $e");
-      if (mounted) {
-        setState(() {});
-      }
       log('Get time failed: $e', stackTrace: trace);
+    }
+    if (mounted) {
+      setState(() {});
     }
   }
 
