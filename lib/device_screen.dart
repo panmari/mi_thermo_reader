@@ -107,14 +107,31 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
   }
 
+  Future initBluetooth() async {
+    await _bluetoothManager.init((update) {
+      _statusUpdates.add(update);
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  Future getTime() async {
+    try {
+      await initBluetooth();
+      return _bluetoothManager.getDeviceTime();
+    } catch (e, trace) {
+      _statusUpdates.add("Get time failed: $e");
+      if (mounted) {
+        setState(() {});
+      }
+      log('Get time failed: $e', stackTrace: trace);
+    }
+  }
+
   Future updateData() async {
     try {
-      await _bluetoothManager.init((update) {
-        _statusUpdates.add(update);
-        if (mounted) {
-          setState(() {});
-        }
-      });
+      await initBluetooth();
       final newEntries = await _bluetoothManager.getMemoryData((update) {
         _statusUpdates.add(update);
         if (mounted) {
@@ -197,6 +214,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: _buildTitle(),
+          actions: [
+            IconButton(
+              onPressed: () => getTime(),
+              icon: const Icon(Icons.lock_clock),
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: Size.zero,
             child: _isUpdatingData ? LinearProgressIndicator() : SizedBox(),

@@ -17,8 +17,8 @@ class MemoServiceProcessor {
     }
     final data = ByteData.view(Uint8List.fromList(values).buffer);
     final blkid = data.getInt8(0);
-    if (blkid != BluetoothConstants.getMemoCommandBlk) {
-      statusUpdate("data with unexpected blkid $blkid: $data");
+    if (blkid != BluetoothConstants.commandMemoBlk) {
+      statusUpdate("data with unexpected blkid $blkid: $values");
       return;
     }
     if (data.lengthInBytes >= 13) {

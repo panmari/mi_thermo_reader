@@ -11,15 +11,15 @@ class BluetoothCommands {
     final lastNumMemo = numMemos;
     final skipNumMemo = 0; // How many records to skip from the start.
     final request = Uint8List(5).buffer.asByteData();
-    request.setUint8(0, BluetoothConstants.getMemoCommandBlk);
+    request.setUint8(0, BluetoothConstants.commandMemoBlk);
     request.setUint16(1, lastNumMemo, Endian.little);
     request.setUint16(3, skipNumMemo, Endian.little);
     return request.buffer.asUint8List();
   }
 
-  static List<int> getDeviceTime(DateTime time) {
+  static List<int> getDeviceTime() {
     final request = Uint8List(1).buffer.asByteData();
-    request.setUint8(0, BluetoothConstants.setTimeBlk);
+    request.setUint8(0, BluetoothConstants.commandTimeBlk);
     return request.buffer.asUint8List();
   }
 
@@ -29,7 +29,7 @@ class BluetoothCommands {
     final secondsSinceEpoch = time.millisecondsSinceEpoch ~/ 1000;
 
     final request = Uint8List(5).buffer.asByteData();
-    request.setUint8(0, BluetoothConstants.setTimeBlk);
+    request.setUint8(0, BluetoothConstants.commandTimeBlk);
     request.setUint32(1, secondsSinceEpoch, Endian.little);
     return request.buffer.asUint8List();
   }
