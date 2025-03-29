@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
+import 'package:mi_thermo_reader/scan_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-
-import 'scan_screen.dart';
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
@@ -34,6 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mi Thermometer Reader',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.orange,

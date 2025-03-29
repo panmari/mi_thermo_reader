@@ -218,7 +218,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           actions: [
             IconButton(
               onPressed: () => getTime(),
-              icon: const Icon(Icons.lock_clock),
+              icon: const Icon(Icons.safety_check),
             ),
           ],
           bottom: PreferredSize(
