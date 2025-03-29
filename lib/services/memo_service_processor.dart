@@ -30,7 +30,7 @@ class MemoServiceProcessor {
       // They are sent in reverse chronological order, and might be received out of order.
       // Plus there might be retries. Be very defensive about keeping each value only once.
       _sensorEntries.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-      final alreadyPresent = Set<DateTime>();
+      final alreadyPresent = <DateTime>{}; // This is a set.
       _sensorEntries.retainWhere((e) => alreadyPresent.add(e.timestamp));
       statusUpdate('Done with reading. Got ${_sensorEntries.length} samples');
       if (_sensorEntries.isNotEmpty) {
