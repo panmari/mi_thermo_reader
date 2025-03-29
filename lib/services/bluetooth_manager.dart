@@ -4,12 +4,12 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_commands.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 import 'package:mi_thermo_reader/services/memo_service_processor.dart';
+import 'package:mi_thermo_reader/services/time_command_processor.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
 class BluetoothManager {
   final BluetoothDevice device;
   BluetoothCharacteristic? _characteristic;
-  StreamSubscription<List<int>>? _valueSubscription;
 
   BluetoothManager({required this.device});
 
@@ -36,22 +36,21 @@ class BluetoothManager {
       (c) => c.characteristicUuid == BluetoothConstants.memoCharacteristicGuid,
     );
     statusUpdate('Found memo characteristic.');
+
+    await _characteristic!.setNotifyValue(true);
+    statusUpdate('Subscribed to notifications');
   }
 
   Future<List<SensorEntry>> getMemoryData(Function(String) statusUpdate) async {
     if (_characteristic == null) {
-      statusUpdate('Not initialized.');
-      return [];
+      throw "Not initialized";
     }
     final processor = MemoServiceProcessor(statusUpdate: statusUpdate);
-    _valueSubscription = _characteristic!.onValueReceived.listen(
+    final valueSubscription = _characteristic!.onValueReceived.listen(
       processor.onData,
       onError: processor.onError,
     );
-    device.cancelWhenDisconnected(_valueSubscription!);
-
-    await _characteristic!.setNotifyValue(true);
-    statusUpdate('Subscribed to memo notifications');
+    device.cancelWhenDisconnected(valueSubscription);
 
     await _characteristic!.write(
       BluetoothCommands.getMemoCommand(5000),
@@ -59,7 +58,31 @@ class BluetoothManager {
     );
     statusUpdate("Start get memo: Success");
 
-    return processor.waitForResults();
+    final result = await processor.waitForResults();
+    valueSubscription.cancel();
+
+    return result;
+  }
+
+  Future<Duration> getDeviceTimeAndDrift() async {
+    if (_characteristic == null) {
+      throw "Not initialized";
+    }
+    final processor = TimeCommandProcessor();
+    final valueSubscription = _characteristic!.onValueReceived.listen(
+      processor.onData,
+      onError: processor.onError,
+    );
+
+    await _characteristic!.write(
+      BluetoothCommands.getDeviceTime(),
+      withoutResponse: true,
+    );
+
+    final drift = await processor.waitForResults();
+    valueSubscription.cancel();
+
+    return drift;
   }
 
   // Because of time drifts on the device, calling this occasionally is necessary.
@@ -77,6 +100,5 @@ class BluetoothManager {
   void dispose() {
     // TODO(panmari): Should this disconnect? Or keep the connection open if the user returns?
     device.disconnect();
-    _valueSubscription?.cancel();
   }
 }

@@ -26,8 +26,12 @@ void main() {
       final uint8List = Uint8List.fromList(values);
       final data = ByteData.view(uint8List.buffer);
       final parsed = SensorEntry.parse(data);
+
       expect(parsed.index, equals(122));
-      expect(parsed.timestamp, equals(DateTime(2025, 03, 02, 01, 09, 51)));
+      expect(
+        parsed.timestamp,
+        equals(DateTime.fromMillisecondsSinceEpoch(1740874191000)),
+      );
       expect(parsed.temperature, equals(22.23));
       expect(parsed.humidity, equals(43.58));
       expect(parsed.voltageBattery, equals(2936));
