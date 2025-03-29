@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -8,18 +10,45 @@ class SensorChart extends StatelessWidget {
 
   const SensorChart({super.key, required this.sensorEntries});
 
-  String _formatDate(double value) {
+  String _formatDate(Duration timeRange, double value) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-    return DateFormat('MMM d').format(dateTime); // Format as "Month Day"
+    if (timeRange > Duration(days: 1)) {
+      return DateFormat('MMM d').format(dateTime); // Format as "Month Day"
+    }
+    return DateFormat.Hm().format(dateTime);
   }
 
-  double get _firstTimestampAsMilliseconds =>
-      sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble();
-  double get _lastTimestampAsMilliseconds =>
-      sensorEntries.last.timestamp.millisecondsSinceEpoch.toDouble();
+  Duration _verticalInterval(Duration timeRange) {
+    if (timeRange > Duration(days: 6)) {
+      return Duration(hours: 48);
+    }
+    if (timeRange > Duration(days: 1)) {
+      return Duration(hours: 6);
+    }
+    return Duration(hours: 3);
+  }
+
+  double _temperatureInterval() {
+    final minTemp = sensorEntries
+        .map((e) => e.temperature)
+        .reduce((currentMin, e) => currentMin < e ? currentMin : e);
+    final maxTemp = sensorEntries
+        .map((e) => e.temperature)
+        .reduce((currentMax, e) => currentMax > e ? currentMax : e);
+    final tempRange = maxTemp - minTemp;
+
+    if (tempRange > 5) {
+      return 2;
+    }
+    return 1;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final timeRange = sensorEntries.last.timestamp.difference(
+      sensorEntries.first.timestamp,
+    );
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final reservedSizeHorizontalAxis = 70;
@@ -35,20 +64,21 @@ class SensorChart extends StatelessWidget {
               ),
               gridData: FlGridData(
                 show: true,
-                verticalInterval: Duration(hours: 24).inMilliseconds.toDouble(),
+                verticalInterval:
+                    _verticalInterval(timeRange).inMilliseconds.toDouble(),
+                horizontalInterval: _temperatureInterval(),
               ),
               titlesData: FlTitlesData(
                 show: true,
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
-                    getTitlesWidget: (value, meta) => Text(_formatDate(value)),
+                    getTitlesWidget:
+                        (value, meta) => Text(_formatDate(timeRange, value)),
                     reservedSize: 70,
-                    interval:
-                        (_lastTimestampAsMilliseconds -
-                            _firstTimestampAsMilliseconds) /
-                        numHorizontalLabels,
+                    interval: timeRange.inMilliseconds / numHorizontalLabels,
                     minIncluded: false,
+                    maxIncluded: false,
                   ),
                 ),
                 leftTitles: AxisTitles(
@@ -58,17 +88,15 @@ class SensorChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 28,
-                    interval: 1,
+                    interval: _temperatureInterval(),
+                    minIncluded: false,
+                    maxIncluded: false,
                   ),
                 ),
                 topTitles: AxisTitles(
                   sideTitles: SideTitles(showTitles: false),
                 ),
               ),
-              minX: _firstTimestampAsMilliseconds,
-              maxX: _lastTimestampAsMilliseconds,
-              minY: 20,
-              maxY: 25,
               lineBarsData: [
                 LineChartBarData(
                   dotData: FlDotData(show: false),
