@@ -28,8 +28,9 @@ class $SensorEntryProtoMapper
       base64Encode(utf8.encode(entity.toProto().writeToJson()));
 
   SensorEntry fromBase64Proto(String base64Proto) =>
-      GSensorEntry.fromJson(utf8.decode(base64Decode(base64Proto)))
-          .toSensorEntry();
+      GSensorEntry.fromJson(
+        utf8.decode(base64Decode(base64Proto)),
+      ).toSensorEntry();
 }
 
 GSensorEntry _$SensorEntryToProto(SensorEntry instance) {
@@ -92,23 +93,30 @@ class $SensorHistoryProtoMapper
       base64Encode(utf8.encode(entity.toProto().writeToJson()));
 
   SensorHistory fromBase64Proto(String base64Proto) =>
-      GSensorHistory.fromJson(utf8.decode(base64Decode(base64Proto)))
-          .toSensorHistory();
+      GSensorHistory.fromJson(
+        utf8.decode(base64Decode(base64Proto)),
+      ).toSensorHistory();
 }
 
 GSensorHistory _$SensorHistoryToProto(SensorHistory instance) {
   var proto = GSensorHistory();
 
-  proto.sensorEntries.addAll(instance.sensorEntries
-      .map((e) => const $SensorEntryProtoMapper().toProto(e)));
+  proto.sensorEntries.addAll(
+    instance.sensorEntries.map(
+      (e) => const $SensorEntryProtoMapper().toProto(e),
+    ),
+  );
 
   return proto;
 }
 
 SensorHistory _$SensorHistoryFromProto(GSensorHistory proto) {
   return SensorHistory(
-    sensorEntries: List<SensorEntry>.unmodifiable(proto.sensorEntries
-        .map((e) => const $SensorEntryProtoMapper().fromProto(e))),
+    sensorEntries: List<SensorEntry>.unmodifiable(
+      proto.sensorEntries.map(
+        (e) => const $SensorEntryProtoMapper().fromProto(e),
+      ),
+    ),
   );
 }
 

@@ -51,7 +51,14 @@ final $typed_data.Uint8List gSensorEntryDescriptor = $convert.base64Decode(
 const GSensorHistory$json = {
   '1': 'GSensorHistory',
   '2': [
-    {'1': 'sensor_entries', '3': 2, '4': 3, '5': 11, '6': '.GSensorEntry', '10': 'sensorEntries'},
+    {
+      '1': 'sensor_entries',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.GSensorEntry',
+      '10': 'sensorEntries'
+    },
   ],
 };
 
@@ -59,4 +66,3 @@ const GSensorHistory$json = {
 final $typed_data.Uint8List gSensorHistoryDescriptor = $convert.base64Decode(
     'Cg5HU2Vuc29ySGlzdG9yeRI0Cg5zZW5zb3JfZW50cmllcxgCIAMoCzINLkdTZW5zb3JFbnRyeV'
     'INc2Vuc29yRW50cmllcw==');
-

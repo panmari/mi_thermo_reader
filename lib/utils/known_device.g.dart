@@ -28,8 +28,9 @@ class $KnownDeviceProtoMapper
       base64Encode(utf8.encode(entity.toProto().writeToJson()));
 
   KnownDevice fromBase64Proto(String base64Proto) =>
-      GKnownDevice.fromJson(utf8.decode(base64Decode(base64Proto)))
-          .toKnownDevice();
+      GKnownDevice.fromJson(
+        utf8.decode(base64Decode(base64Proto)),
+      ).toKnownDevice();
 }
 
 GKnownDevice _$KnownDeviceToProto(KnownDevice instance) {

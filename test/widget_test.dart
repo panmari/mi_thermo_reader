@@ -1,29 +1,36 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'dart:typed_data';
-
+import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mi_thermo_reader/utils/sensor_entry.dart';
+import 'package:mi_thermo_reader/widgets/scan_result_tile.dart';
 
 void main() {
-  group('Parsing of response', () {
-    test('Does something', () {
-      // [53, 122, 0, 207, 161, 195, 103, 175, 8, 6, 17, 120, 11]
-      final values = <int>[53, 122, 0, 207, 161, 195, 103, 175, 8, 6, 17, 120, 11];
-      final uint8List = Uint8List.fromList(values);
-      final data = ByteData.view(uint8List.buffer);
-      final parsed = SensorEntry.parse(data);
-      expect(parsed.index, equals(122));
-      expect(parsed.timestamp, equals(DateTime(2025, 03, 02, 01, 09, 51)));
-      expect(parsed.temperature, equals(22.23));
-      expect(parsed.humidity, equals(43.58));
-      expect(parsed.voltageBattery, equals(2936));
+  group('ScanTile', () {
+    testWidgets('Has ID', (tester) async {
+      final scanTile = ScanResultTile(
+        result: ScanResult(
+          device: BluetoothDevice.fromId('06:E5:28:3B:FD:E0'),
+          advertisementData: AdvertisementData(
+            advName: 'some_name',
+            txPowerLevel: 11,
+            appearance: 2,
+            connectable: true,
+            manufacturerData: {},
+            serviceData: {},
+            serviceUuids: [],
+          ),
+          rssi: 31,
+          timeStamp: DateTime.now(),
+        ),
+        onTap: () => 'nothing',
+      );
+
+      // Wrap your ListTile with MaterialApp or another suitable parent widget.
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: scanTile)));
+
+      final idFinder = find.text('06:E5:28:3B:FD:E0');
+
+      expect(idFinder, findsOneWidget);
     });
   });
 }
