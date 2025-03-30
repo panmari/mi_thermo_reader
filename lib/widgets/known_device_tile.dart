@@ -31,22 +31,41 @@ class _KnownDeviceTileState extends State<KnownDeviceTile> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          children: <Widget>[
-            Icon(Icons.telegram, size: 50.0),
-            Text(_bestName()),
-            ElevatedButton(
-              onPressed:
-                  () => Navigator.of(context).pushNamed(
-                    DeviceScreen.routeName,
-                    arguments: BluetoothDevice.fromId(widget.device.remoteId),
+      margin: EdgeInsets.all(16.0),
+      child: Stack(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(Icons.telegram, size: 50.0),
+                  SizedBox(height: 8.0),
+                  Text(_bestName()),
+                  SizedBox(height: 8.0),
+                  OutlinedButton(
+                    onPressed:
+                        () => Navigator.of(context).pushNamed(
+                          DeviceScreen.routeName,
+                          arguments: BluetoothDevice.fromId(
+                            widget.device.remoteId,
+                          ),
+                        ),
+                    child: const Text('Open'),
                   ),
-              child: const Text('Open'),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 0.0,
+            right: 0.0,
+            child: IconButton(
+              onPressed: () => 'nothing',
+              icon: Icon(Icons.close, size: 20.0),
+            ),
+          ),
+        ],
       ),
     );
   }
