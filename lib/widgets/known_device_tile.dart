@@ -3,29 +3,54 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 
-class KnownDeviceTile extends StatefulWidget {
+class KnownDeviceTile extends StatelessWidget {
   final KnownDevice device;
 
   const KnownDeviceTile({required this.device, super.key});
 
-  @override
-  State<KnownDeviceTile> createState() => _KnownDeviceTileState();
-}
-
-class _KnownDeviceTileState extends State<KnownDeviceTile> {
-  @override
-  void initState() {
-    super.initState();
+  String _bestName() {
+    if (device.advName.isNotEmpty) {
+      return device.advName;
+    }
+    if (device.platformName.isNotEmpty) {
+      return device.platformName;
+    }
+    return device.remoteId;
   }
 
-  String _bestName() {
-    if (widget.device.advName.isNotEmpty) {
-      return widget.device.advName;
+  Future<bool?> showDeleteConfirmationDialog(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete "${_bestName()}"?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            ElevatedButton(
+              child: Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future _maybeRemoveKnownDevice(BuildContext context) async {
+    final shouldDelete = await showDeleteConfirmationDialog(context);
+    if (shouldDelete == null || !shouldDelete) {
+      return;
     }
-    if (widget.device.platformName.isNotEmpty) {
-      return widget.device.platformName;
-    }
-    return widget.device.remoteId;
+
+    return KnownDevice.remove(context, device);
   }
 
   @override
@@ -47,9 +72,7 @@ class _KnownDeviceTileState extends State<KnownDeviceTile> {
                     onPressed:
                         () => Navigator.of(context).pushNamed(
                           DeviceScreen.routeName,
-                          arguments: BluetoothDevice.fromId(
-                            widget.device.remoteId,
-                          ),
+                          arguments: BluetoothDevice.fromId(device.remoteId),
                         ),
                     child: const Text('Open'),
                   ),
@@ -61,7 +84,9 @@ class _KnownDeviceTileState extends State<KnownDeviceTile> {
             top: 0.0,
             right: 0.0,
             child: IconButton(
-              onPressed: () => 'nothing',
+              onPressed: () async {
+                await _maybeRemoveKnownDevice(context);
+              },
               icon: Icon(Icons.close, size: 20.0),
             ),
           ),

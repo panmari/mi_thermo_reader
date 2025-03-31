@@ -65,7 +65,11 @@ class KnownDevice {
     return [];
   }
 
-  static Future<void> add(BuildContext context, BluetoothDevice device) async {
+  static String _encode(KnownDevice device) {
+    return base64Encode(device.toProto().writeToBuffer());
+  }
+
+  static Future add(BuildContext context, BluetoothDevice device) async {
     final preferences = await _getSharedPreferences(context);
 
     List<String> previousKnown = [];
@@ -74,16 +78,30 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = base64Encode(
+    final encodedDevice = _encode(
       KnownDevice(
         advName: device.advName,
         platformName: device.platformName,
         remoteId: device.remoteId.str,
-      ).toProto().writeToBuffer(),
+      ),
     );
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
       return preferences.setStringList(cacheKey, previousKnown);
     }
+  }
+
+  static Future remove(BuildContext context, KnownDevice device) async {
+    final preferences = await _getSharedPreferences(context);
+
+    List<String> previousKnown = [];
+    try {
+      previousKnown = preferences.getStringList(cacheKey) ?? [];
+    } on ArgumentError {
+      log('No known devices in shared preferences.');
+    }
+    final encodedDevice = _encode(device);
+    previousKnown.remove(encodedDevice);
+    return preferences.setStringList(cacheKey, previousKnown);
   }
 }
