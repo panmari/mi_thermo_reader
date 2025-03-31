@@ -1,4 +1,4 @@
-package com.example.mi_thermo_reader
+package ch.panmari.mi_thermo_reader
 
 import io.flutter.embedding.android.FlutterActivity
 
