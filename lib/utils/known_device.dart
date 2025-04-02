@@ -28,27 +28,32 @@ class KnownDevice {
     required this.remoteId,
   });
 
-  static Future<Iterable<KnownDevice>> getAll(WidgetRef ref) async {
-    final preferences = await ref.read(fetchSharedPreferencesProvider.future);
+  static Iterable<KnownDevice> getAll(WidgetRef ref) {
+    final preferencesAsync = ref.watch(fetchSharedPreferencesProvider);
 
-    try {
-      final withNulls = preferences.getStringList(cacheKey)?.map((encodedDevice) {
-            try {
-              final deviceProto = GKnownDevice.fromBuffer(
-                base64Decode(encodedDevice),
-              );
-              return deviceProto.toKnownDevice();
-            } on InvalidProtocolBufferException catch (e) {
-              log("Could not decode known device.", error: e);
-              return null;
-            }
-          }) ??
-          [];
+    return preferencesAsync.when(
+      data: (prefs) {
+        final withNulls =
+            prefs.getStringList(cacheKey)?.map((encodedDevice) {
+              try {
+                final deviceProto = GKnownDevice.fromBuffer(
+                  base64Decode(encodedDevice),
+                );
+                return deviceProto.toKnownDevice();
+              } on InvalidProtocolBufferException catch (e) {
+                log("Could not decode known device.", error: e);
+                return null;
+              }
+            }) ??
+            [];
         return withNulls.where((d) => d != null).cast<KnownDevice>();
-    } on ArgumentError {
-      log('Key "$cacheKey" is not in shared preferences.');
-    }
-    return [];
+      },
+      error: (error, trace) {
+        log('Key "$cacheKey" is not in shared preferences.');
+        return [];
+      },
+      loading: () => [],
+    );
   }
 
   static String _encode(KnownDevice device) {
@@ -73,7 +78,8 @@ class KnownDevice {
     );
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
-      return preferences.setStringList(cacheKey, previousKnown);
+      await preferences.setStringList(cacheKey, previousKnown);
+      ref.invalidate(fetchSharedPreferencesProvider);
     }
   }
 
@@ -88,6 +94,7 @@ class KnownDevice {
     }
     final encodedDevice = _encode(device);
     previousKnown.remove(encodedDevice);
-    return preferences.setStringList(cacheKey, previousKnown);
+    await preferences.setStringList(cacheKey, previousKnown);
+    ref.invalidate(fetchSharedPreferencesProvider);
   }
 }

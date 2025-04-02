@@ -68,13 +68,13 @@ class MiThermoReaderHomePage extends ConsumerStatefulWidget {
   const MiThermoReaderHomePage({super.key});
 
   @override
-  ConsumerState<MiThermoReaderHomePage> createState() => _MiThermoReaderHomePageState();
+  ConsumerState<MiThermoReaderHomePage> createState() =>
+      _MiThermoReaderHomePageState();
 }
 
-class _MiThermoReaderHomePageState extends ConsumerState<MiThermoReaderHomePage> {
+class _MiThermoReaderHomePageState
+    extends ConsumerState<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
-
-  final List<KnownDevice> _knownDevices = [];
 
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
@@ -90,12 +90,6 @@ class _MiThermoReaderHomePageState extends ConsumerState<MiThermoReaderHomePage>
         });
       }
     });
-
-    KnownDevice.getAll(ref).then((loadedDevices) {
-      setState(() {
-        _knownDevices.addAll(loadedDevices);
-      });
-    });
   }
 
   @override
@@ -105,12 +99,14 @@ class _MiThermoReaderHomePageState extends ConsumerState<MiThermoReaderHomePage>
   }
 
   Widget _centerContent() {
+    final knownDevices = KnownDevice.getAll(ref);
+
     if (_adapterState == BluetoothAdapterState.on) {
-      if (_knownDevices.isEmpty) {
+      if (knownDevices.isEmpty) {
         return const Text('Start by adding devices by clicking on +');
       }
       return ListView(
-        children: _knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
+        children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
       );
     }
     return Text(
