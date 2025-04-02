@@ -1,5 +1,10 @@
+import 'dart:developer';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
+import 'package:mi_thermo_reader/services/bt_home_v2_parser.dart';
 
 class ScanResultTile extends StatelessWidget {
   final ScanResult result;
@@ -32,10 +37,33 @@ class ScanResultTile extends StatelessWidget {
     );
   }
 
+  Widget _buildSubtitle() {
+    final btHomeValues =
+        result.advertisementData.serviceData[BluetoothConstants
+            .btHomeReversedGuid];
+    log('adv data: ${result.advertisementData}');
+    if (btHomeValues == null) {
+      return Text("No BTHome data");
+    }
+    try {
+      final parsed = BTHomeV2Parser.parse(btHomeValues);
+      // TODO(panmari): Make this prettier.
+      // TODO(panmari): Occasionally, this returns a garbled response.
+      return Text(
+        parsed.entries
+            .map((entry) => '${entry.key}: ${entry.value}')
+            .join(', '),
+      );
+    } catch (e) {
+      return Text('Failed parsing: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: _buildTitle(context),
+      subtitle: _buildSubtitle(),
       leading: Text(result.rssi.toString()),
       trailing: _buildConnectButton(context),
     );
