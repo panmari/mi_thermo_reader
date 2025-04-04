@@ -41,19 +41,26 @@ class ScanResultTile extends StatelessWidget {
     final btHomeValues =
         result.advertisementData.serviceData[BluetoothConstants
             .btHomeReversedGuid];
-    log('adv data: ${result.advertisementData}');
     if (btHomeValues == null) {
       return Text("No BTHome data");
     }
     try {
       final parsed = BTHomeV2Parser.parse(btHomeValues);
-      // TODO(panmari): Make this prettier.
-      // TODO(panmari): Occasionally, this returns a garbled response.
-      return Text(
-        parsed.entries
-            .map((entry) => '${entry.key}: ${entry.value}')
-            .join(', '),
-      );
+
+      const sensorsWithLabels = {
+        ObjectId.temperature: 'Temperature',
+        ObjectId.humidity: 'Humidity',
+        ObjectId.battery: 'Battery',
+      };
+
+      String result = sensorsWithLabels.entries
+          .where(
+            (entry) =>
+                parsed.containsKey(entry.key) && parsed[entry.key] != null,
+          )
+          .map((entry) => '${entry.value}: ${parsed[entry.key]}')
+          .join(', ');
+      return Text(result);
     } catch (e) {
       return Text('Failed parsing: $e');
     }
