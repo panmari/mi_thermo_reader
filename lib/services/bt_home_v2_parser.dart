@@ -14,7 +14,11 @@ enum ObjectId {
   static ObjectId fromValue(int value) {
     return ObjectId.values.firstWhere(
       (element) => element.value == value,
-      orElse: () => throw 'Unknown ObjectId: 0x${value.toRadixString(16)}',
+      orElse:
+          () =>
+              throw UnimplementedError(
+                'Unknown ObjectId: 0x${value.toRadixString(16)}',
+              ),
     );
   }
 
@@ -42,11 +46,11 @@ class BTHomeV2Parser {
     final isSleepyDevice = (btDeviceInformation & (1 << 2)) != 0;
     final version = (btDeviceInformation >> 5 & 7);
 
-    if (isEncrypted) {
-      throw 'Only unencrypted BTHome data is supported.';
-    }
     if (version != 2) {
-      throw 'Only BTHome V2 is supported. Got V$version';
+      throw ArgumentError('Only BTHome V2 is supported. Got V$version');
+    }
+    if (isEncrypted) {
+      throw UnimplementedError('Encrypted BTHome data is not supported.');
     }
     final result = <ObjectId, dynamic>{};
     while (offset < byteData.lengthInBytes) {
@@ -74,7 +78,7 @@ class BTHomeV2Parser {
           result[id] = byteData.getUint8(offset++) == 1;
           break;
         default:
-          throw 'ObjectId not handled: $id';
+          throw UnimplementedError('ObjectId not handled: $id');
       }
     }
     return result;

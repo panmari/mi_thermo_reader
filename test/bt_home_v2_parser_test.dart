@@ -18,5 +18,37 @@ void main() {
         }),
       );
     });
+
+    test('All zeros', () {
+      final values = [0x00, 0x00, 0x00, 0x00];
+
+      expect(() => BTHomeV2Parser.parse(values), throwsA(isA<ArgumentError>()));
+    });
+
+    test('Encrypted payload', () {
+      final values = [0x41];
+
+      expect(
+        () => BTHomeV2Parser.parse(values),
+        throwsA(isA<UnimplementedError>()),
+      );
+    });
+
+    test('No payload', () {
+      final values = [0x40];
+
+      final parsed = BTHomeV2Parser.parse(values);
+
+      expect(parsed, equals({}));
+    });
+
+    test('Unknown ObjectId', () {
+      final values = [0x40, 0x88];
+
+      expect(
+        () => BTHomeV2Parser.parse(values),
+        throwsA(isA<UnimplementedError>()),
+      );
+    });
   });
 }
