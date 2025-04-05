@@ -15,9 +15,9 @@ part 'main.g.dart';
 @riverpod
 Future<SharedPreferencesWithCache> fetchSharedPreferences(Ref ref) {
   return SharedPreferencesWithCache.create(
-    cacheOptions: SharedPreferencesWithCacheOptions(
-      allowList: <String>{KnownDevice.cacheKey},
-    ),
+    // Allowlist needs to be null because device IDs are used as cache keys.
+    // Device IDs are not available when the cache is constructed here.
+    cacheOptions: SharedPreferencesWithCacheOptions(allowList: null),
   );
 }
 

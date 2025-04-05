@@ -13,7 +13,7 @@ part 'known_device.g.dart';
 // https://pub.dev/packages/proto_generator#getting-started.
 @proto
 class KnownDevice {
-  static const cacheKey = 'known_devices';
+  static const _cacheKeyAllKnownDevices = 'known_devices';
 
   @ProtoField(2)
   final String advName;
@@ -28,13 +28,17 @@ class KnownDevice {
     required this.remoteId,
   });
 
+  String cacheKey() {
+    return remoteId;
+  }
+
   static Iterable<KnownDevice> getAll(WidgetRef ref) {
     final preferencesAsync = ref.watch(fetchSharedPreferencesProvider);
 
     return preferencesAsync.when(
       data: (prefs) {
         final withNulls =
-            prefs.getStringList(cacheKey)?.map((encodedDevice) {
+            prefs.getStringList(_cacheKeyAllKnownDevices)?.map((encodedDevice) {
               try {
                 final deviceProto = GKnownDevice.fromBuffer(
                   base64Decode(encodedDevice),
@@ -49,7 +53,7 @@ class KnownDevice {
         return withNulls.where((d) => d != null).cast<KnownDevice>();
       },
       error: (error, trace) {
-        log('Key "$cacheKey" is not in shared preferences.');
+        log('Key "$_cacheKeyAllKnownDevices" is not in shared preferences.');
         return [];
       },
       loading: () => [],
@@ -65,7 +69,7 @@ class KnownDevice {
 
     List<String> previousKnown = [];
     try {
-      previousKnown = preferences.getStringList(cacheKey) ?? [];
+      previousKnown = preferences.getStringList(_cacheKeyAllKnownDevices) ?? [];
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
@@ -78,7 +82,7 @@ class KnownDevice {
     );
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
-      await preferences.setStringList(cacheKey, previousKnown);
+      await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);
       ref.invalidate(fetchSharedPreferencesProvider);
     }
   }
@@ -88,13 +92,14 @@ class KnownDevice {
 
     List<String> previousKnown = [];
     try {
-      previousKnown = preferences.getStringList(cacheKey) ?? [];
+      previousKnown = preferences.getStringList(_cacheKeyAllKnownDevices) ?? [];
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
     final encodedDevice = _encode(device);
     previousKnown.remove(encodedDevice);
-    await preferences.setStringList(cacheKey, previousKnown);
+    await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);
+    await preferences.remove(device.cacheKey()); // Removes cached sensor data.
     ref.invalidate(fetchSharedPreferencesProvider);
   }
 }
