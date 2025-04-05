@@ -42,8 +42,8 @@ class BTHomeV2Parser {
 
     final btDeviceInformation = byteData.getUint8(offset++);
     final isEncrypted = (btDeviceInformation & (1 << 0)) != 0;
-    final isMacIncluded = (btDeviceInformation & (1 << 1)) != 0;
-    final isSleepyDevice = (btDeviceInformation & (1 << 2)) != 0;
+    // final isMacIncluded = (btDeviceInformation & (1 << 1)) != 0;
+    // final isSleepyDevice = (btDeviceInformation & (1 << 2)) != 0;
     final version = (btDeviceInformation >> 5 & 7);
 
     if (version != 2) {
@@ -77,8 +77,6 @@ class BTHomeV2Parser {
         case ObjectId.power:
           result[id] = byteData.getUint8(offset++) == 1;
           break;
-        default:
-          throw UnimplementedError('ObjectId not handled: $id');
       }
     }
     return result;
