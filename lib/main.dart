@@ -2,26 +2,28 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:mi_thermo_reader/scan_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
-import 'package:mi_thermo_reader/scan_screen.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
+
+part 'main.g.dart';
+
+@riverpod
+Future<SharedPreferencesWithCache> fetchSharedPreferences(Ref ref) {
+  return SharedPreferencesWithCache.create(
+    // Allowlist needs to be null because device IDs are used as cache keys.
+    // Device IDs are not available when the cache is constructed here.
+    cacheOptions: SharedPreferencesWithCacheOptions(allowList: null),
+  );
+}
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
-  runApp(
-    Provider<Future<SharedPreferencesWithCache>>(
-      create:
-          (_) => SharedPreferencesWithCache.create(
-            cacheOptions: SharedPreferencesWithCacheOptions(
-              allowList: <String>{KnownDevice.cacheKey},
-            ),
-          ),
-      child: const MyApp(),
-    ),
-  );
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -62,17 +64,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MiThermoReaderHomePage extends StatefulWidget {
+class MiThermoReaderHomePage extends ConsumerStatefulWidget {
   const MiThermoReaderHomePage({super.key});
 
   @override
-  State<MiThermoReaderHomePage> createState() => _MiThermoReaderHomePageState();
+  ConsumerState<MiThermoReaderHomePage> createState() =>
+      _MiThermoReaderHomePageState();
 }
 
-class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
+class _MiThermoReaderHomePageState
+    extends ConsumerState<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
-
-  final List<KnownDevice> _knownDevices = [];
 
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
@@ -88,12 +90,6 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
         });
       }
     });
-
-    KnownDevice.getAll(context).then((loadedDevices) {
-      setState(() {
-        _knownDevices.addAll(loadedDevices);
-      });
-    });
   }
 
   @override
@@ -103,12 +99,17 @@ class _MiThermoReaderHomePageState extends State<MiThermoReaderHomePage> {
   }
 
   Widget _centerContent() {
+    final knownDevices = KnownDevice.getAll(ref);
+
     if (_adapterState == BluetoothAdapterState.on) {
-      if (_knownDevices.isEmpty) {
-        return const Text('Start by adding devices by clicking on +');
+      if (knownDevices.isEmpty) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: const Text('Start by adding devices by clicking on +'),
+        );
       }
       return ListView(
-        children: _knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
+        children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
       );
     }
     return Text(
