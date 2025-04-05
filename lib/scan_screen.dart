@@ -63,7 +63,10 @@ class _ScanScreenState extends State<ScanScreen> {
       // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#control-function-id-when-connected;
       // Note that using those as service list does not work.
       // If this is specified on Android, the plugin throws an exception.
-      return [Guid("181a"), BluetoothConstants.memoServiceGuid];
+      return [
+        BluetoothConstants.sensorAdvertisementServiceGuid,
+        BluetoothConstants.memoServiceGuid,
+      ];
     }
     return [];
   }
@@ -73,7 +76,7 @@ class _ScanScreenState extends State<ScanScreen> {
       // Causes 'Failed to execute 'requestDevice' on 'Bluetooth'' on web.
       return [];
     }
-    return [ServiceDataFilter(Guid("fcd2"))];
+    return [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)];
   }
 
   Future onScanPressed() async {
