@@ -103,7 +103,10 @@ class _MiThermoReaderHomePageState
 
     if (_adapterState == BluetoothAdapterState.on) {
       if (knownDevices.isEmpty) {
-        return const Text('Start by adding devices by clicking on +');
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: const Text('Start by adding devices by clicking on +'),
+        );
       }
       return ListView(
         children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
