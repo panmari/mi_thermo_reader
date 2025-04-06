@@ -33,9 +33,6 @@ class MemoServiceProcessor {
       final alreadyPresent = <DateTime>{}; // This is a set.
       _sensorEntries.retainWhere((e) => alreadyPresent.add(e.timestamp));
       statusUpdate('Done with reading. Got ${_sensorEntries.length} samples');
-      if (_sensorEntries.isNotEmpty) {
-        statusUpdate('Last timestamp read: ${_sensorEntries.last.timestamp}');
-      }
       done.complete(_sensorEntries);
       return;
     }

@@ -32,7 +32,7 @@ class SensorHistory {
     return sensorEntries.sublist(firstIndex);
   }
 
-  Duration averageDuration() {
+  Duration averageInterval() {
     if (sensorEntries.length < 2) {
       return Duration.zero;
     }
@@ -50,5 +50,10 @@ class SensorHistory {
     final stats = Stats.fromData(diffsInSeconds);
     // TODO(panmari): Also expose other statistics.
     return Duration(seconds: stats.average.toInt());
+  }
+
+  @override
+  String toString() {
+    return "#Entries: ${sensorEntries.length},  avg interval: ${averageInterval()}";
   }
 }

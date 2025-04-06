@@ -140,6 +140,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         }
       });
       _sensorHistory = SensorHistory(sensorEntries: newEntries);
+      _statusUpdates.add('Got sensor history: $_sensorHistory');
       _preferences.then((p) {
         final encodedEntries = _sensorHistory!.toBase64ProtoString();
         p.setString(widget.cacheKeyName, encodedEntries);
