@@ -9,8 +9,21 @@ part 'sensor_history.g.dart';
 class SensorHistory {
   @ProtoField(2)
   final List<SensorEntry> sensorEntries;
+  late final Stats<int> _intervalStats;
 
-  SensorHistory({required this.sensorEntries});
+  SensorHistory({required this.sensorEntries}) {
+    List<int> intervalInSeconds = [];
+    for (int i = 0; i < sensorEntries.length - 1; i++) {
+      DateTime current = sensorEntries[i].timestamp;
+      DateTime next = sensorEntries[i + 1].timestamp;
+
+      Duration intervalDuration = next.difference(current);
+
+      intervalInSeconds.add(intervalDuration.inSeconds);
+    }
+
+    _intervalStats = Stats.fromData(intervalInSeconds);
+  }
 
   static SensorHistory from(String base64ProtoString) {
     final buffer = base64Decode(base64ProtoString);
@@ -33,27 +46,15 @@ class SensorHistory {
   }
 
   Duration averageInterval() {
-    if (sensorEntries.length < 2) {
-      return Duration.zero;
-    }
+    return Duration(seconds: _intervalStats.average.toInt());
+  }
 
-    List<int> diffsInSeconds = [];
-    for (int i = 0; i < sensorEntries.length - 1; i++) {
-      DateTime current = sensorEntries[i].timestamp;
-      DateTime next = sensorEntries[i + 1].timestamp;
-
-      Duration intervalDuration = next.difference(current);
-
-      diffsInSeconds.add(intervalDuration.inSeconds);
-    }
-
-    final stats = Stats.fromData(diffsInSeconds);
-    // TODO(panmari): Also expose other statistics.
-    return Duration(seconds: stats.average.toInt());
+  Duration stdInterval() {
+    return Duration(seconds: _intervalStats.standardDeviation.toInt());
   }
 
   @override
   String toString() {
-    return "#Entries: ${sensorEntries.length},  avg interval: ${averageInterval()}";
+    return "#Entries: ${sensorEntries.length}, avg interval: ${averageInterval()}, std interval: ${stdInterval()}";
   }
 }
