@@ -21,6 +21,17 @@ class SensorHistory {
     return base64Encode(toProto().writeToBuffer());
   }
 
+  // Returns entries in the time range [last.timestamp - duration, last.timestamp].
+  List<SensorEntry> lastEntriesFrom(Duration duration) {
+    final firstIncludedTimestamp = sensorEntries.last.timestamp.subtract(
+      duration,
+    );
+    final firstIndex = sensorEntries.indexWhere(
+      (e) => e.timestamp.isAfter(firstIncludedTimestamp),
+    );
+    return sensorEntries.sublist(firstIndex);
+  }
+
   Duration averageDuration() {
     if (sensorEntries.length < 2) {
       return Duration.zero;
