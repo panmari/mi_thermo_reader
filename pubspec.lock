@@ -930,6 +930,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  stats:
+    dependency: "direct main"
+    description:
+      name: stats
+      sha256: a64d41328dc1332a02ce4acc8830e240e10ac14b19c9bb256466737b792f22aa
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   stream_channel:
     dependency: transitive
     description:

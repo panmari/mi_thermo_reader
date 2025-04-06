@@ -1,6 +1,7 @@
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 import 'package:proto_annotations/proto_annotations.dart';
+import 'package:stats/stats.dart'; // Import the package
 
 part 'sensor_history.g.dart';
 
@@ -18,5 +19,25 @@ class SensorHistory {
 
   String toBase64ProtoString() {
     return base64Encode(toProto().writeToBuffer());
+  }
+
+  Duration averageDuration() {
+    if (sensorEntries.length < 2) {
+      return Duration.zero;
+    }
+
+    List<int> diffsInSeconds = [];
+    for (int i = 0; i < sensorEntries.length - 1; i++) {
+      DateTime current = sensorEntries[i].timestamp;
+      DateTime next = sensorEntries[i + 1].timestamp;
+
+      Duration intervalDuration = next.difference(current);
+
+      diffsInSeconds.add(intervalDuration.inSeconds);
+    }
+
+    final stats = Stats.fromData(diffsInSeconds);
+    // TODO(panmari): Also expose other statistics.
+    return Duration(seconds: stats.average.toInt());
   }
 }
