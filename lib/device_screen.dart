@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
+import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/sensor_entry.dart';
