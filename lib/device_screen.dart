@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
+import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/sensor_entry.dart';
@@ -29,6 +30,7 @@ class DeviceScreen extends StatefulWidget {
 class _DeviceScreenState extends State<DeviceScreen> {
   bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
+  String? _error;
   SensorHistory? _sensorHistory;
   int lastNdaysFilter = -1;
   late final Future<SharedPreferencesWithCache> _preferences;
@@ -94,7 +96,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   void onUpdateDataPressed() {
-    _statusUpdates.clear();
+    _error = null;
     _isUpdatingData = true;
     if (mounted) {
       setState(() {});
@@ -117,12 +119,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   void getTime() async {
+    _error = null;
     try {
       await initBluetooth();
       final drift = await _bluetoothManager.getDeviceTimeAndDrift();
       _statusUpdates.add("Device time drift: $drift");
     } catch (e, trace) {
-      _statusUpdates.add("Get time failed: $e");
+      _error = "Get time failed: $e";
       log('Get time failed: $e', stackTrace: trace);
     }
     if (mounted) {
@@ -146,7 +149,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         p.setString(widget.cacheKeyName, encodedEntries);
       });
     } catch (e, trace) {
-      _statusUpdates.add("Updating data failed: $e");
+      _error = "Updating data failed: $e";
       log('Updating data failed: $e', stackTrace: trace);
     }
   }
@@ -200,6 +203,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
     return Text(res.toString());
   }
 
+  Widget _buildErrorMessage() {
+    if (_error == null) {
+      return SizedBox();
+    }
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ErrorMessage(message: _error!),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -226,6 +239,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           child: Column(
             children:
                 <Widget>[
+                  _buildErrorMessage(),
                   _makeDayFilterBar(),
                   Padding(
                     padding: const EdgeInsets.all(16.0),

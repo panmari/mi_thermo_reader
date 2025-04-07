@@ -57,7 +57,7 @@ class KnownDeviceTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
-      margin: EdgeInsets.all(16.0),
+      margin: EdgeInsets.all(8.0),
       child: Stack(
         children: <Widget>[
           Padding(

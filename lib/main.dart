@@ -102,24 +102,26 @@ class _MiThermoReaderHomePageState
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
 
-    if (_adapterState == BluetoothAdapterState.on) {
-      if (knownDevices.isEmpty) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: const Text('Start by adding devices by clicking on +'),
+    switch (_adapterState) {
+      case BluetoothAdapterState.on:
+        if (knownDevices.isEmpty) {
+          const Text('Start by adding devices by clicking on +');
+        }
+        return ListView(
+          children:
+              knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
         );
-      }
-      return ListView(
-        children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
-      );
+      case BluetoothAdapterState.off:
+        return ErrorMessage(
+          message:
+              'Bluetooth adapter state is ${_adapterState.name}, please enable.',
+        );
+      default:
+        return Text(
+          'Bluetooth adapter state is ${_adapterState.name}',
+          textAlign: TextAlign.center,
+        );
     }
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ErrorMessage(
-        message:
-            'Bluetooth adapter state is ${_adapterState.name}, please enable.',
-      ),
-    );
   }
 
   @override
@@ -129,14 +131,17 @@ class _MiThermoReaderHomePageState
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Mi Thermometer Reader"),
       ),
-      body: _centerContent(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _centerContent(),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed:
-            _adapterState == BluetoothAdapterState.on
-                ? () {
+            _adapterState == BluetoothAdapterState.off
+                ? null
+                : () {
                   Navigator.pushNamed(context, ScanScreen.routeName);
-                }
-                : null,
+                },
         tooltip: 'Scan for devices',
         child: const Icon(Icons.add),
       ),
