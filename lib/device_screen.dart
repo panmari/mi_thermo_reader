@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
+import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/sensor_entry.dart';
@@ -28,7 +29,7 @@ class DeviceScreen extends StatefulWidget {
 class _DeviceScreenState extends State<DeviceScreen> {
   bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
-  final List<SensorEntry> _sensorEntries = [];
+  SensorHistory? _sensorHistory;
   int lastNdaysFilter = -1;
   late final Future<SharedPreferencesWithCache> _preferences;
   late final BluetoothManager _bluetoothManager;
@@ -65,19 +66,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
           log("No entries for device");
           return;
         }
-        _sensorEntries.addAll(SensorHistory.from(encodedEntries).sensorEntries);
+        _sensorHistory = SensorHistory.from(encodedEntries);
         setState(() {
-          _statusUpdates.add(
-            'Read ${_sensorEntries.length} entries from preferences.',
-          );
+          _statusUpdates.add('Read $_sensorHistory from preferences.');
         });
       });
     } on ArgumentError {
       setState(() {
         _statusUpdates.add('No entries in preferences.');
       });
-      if (_sensorEntries.isEmpty && kDebugMode) {
-        _sensorEntries.addAll(_createFakeSensorData(2000));
+      if (_sensorHistory == null && kDebugMode) {
+        _sensorHistory = SensorHistory(
+          sensorEntries: _createFakeSensorData(2000),
+        );
       }
     } catch (e) {
       setState(() {
@@ -93,7 +94,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   void onUpdateDataPressed() {
-    _sensorEntries.clear();
     _statusUpdates.clear();
     _isUpdatingData = true;
     if (mounted) {
@@ -139,35 +139,26 @@ class _DeviceScreenState extends State<DeviceScreen> {
           setState(() {});
         }
       });
-      _sensorEntries.addAll(newEntries);
+      _sensorHistory = SensorHistory(sensorEntries: newEntries);
+      _statusUpdates.add('Got sensor history: $_sensorHistory');
       _preferences.then((p) {
-        final encodedEntries =
-            SensorHistory(sensorEntries: _sensorEntries).toBase64ProtoString();
+        final encodedEntries = _sensorHistory!.toBase64ProtoString();
         p.setString(widget.cacheKeyName, encodedEntries);
       });
     } catch (e, trace) {
       _statusUpdates.add("Updating data failed: $e");
-      if (mounted) {
-        setState(() {});
-      }
       log('Updating data failed: $e', stackTrace: trace);
     }
   }
 
   List<SensorEntry> _filteredSensorEntries() {
-    if (_sensorEntries.isEmpty) {
+    if (_sensorHistory == null) {
       return [];
     }
     if (lastNdaysFilter == -1) {
-      return _sensorEntries;
+      return _sensorHistory!.sensorEntries;
     }
-    final firstIncludedTimestamp = _sensorEntries.last.timestamp.subtract(
-      Duration(days: lastNdaysFilter),
-    );
-    final firstIndex = _sensorEntries.indexWhere(
-      (e) => e.timestamp.isAfter(firstIncludedTimestamp),
-    );
-    return _sensorEntries.sublist(firstIndex);
+    return _sensorHistory!.lastEntriesFrom(Duration(days: lastNdaysFilter));
   }
 
   Widget _makeDayFilterBar() {
