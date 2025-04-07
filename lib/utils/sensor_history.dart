@@ -1,7 +1,7 @@
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 import 'package:proto_annotations/proto_annotations.dart';
-import 'package:stats/stats.dart'; // Import the package
+import 'package:stats/stats.dart';
 
 part 'sensor_history.g.dart';
 
@@ -12,6 +12,11 @@ class SensorHistory {
   late final Stats<int> _intervalStats;
 
   SensorHistory({required this.sensorEntries}) {
+    if (sensorEntries.length < 2) {
+      // Initialize with a reasonable default to avoid null handling.
+      _intervalStats = Stats(0, 0, 0, 0, 0, 0);
+      return;
+    }
     List<int> intervalInSeconds = [];
     for (int i = 0; i < sensorEntries.length - 1; i++) {
       DateTime current = sensorEntries[i].timestamp;
