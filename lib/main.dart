@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/scan_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -112,8 +113,12 @@ class _MiThermoReaderHomePageState
         children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
       );
     }
-    return Text(
-      'Bluetooth adapter state is ${_adapterState.name}, please enable.',
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ErrorMessage(
+        message:
+            'Bluetooth adapter state is ${_adapterState.name}, please enable.',
+      ),
     );
   }
 
@@ -126,9 +131,12 @@ class _MiThermoReaderHomePageState
       ),
       body: _centerContent(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, ScanScreen.routeName);
-        },
+        onPressed:
+            _adapterState == BluetoothAdapterState.on
+                ? () {
+                  Navigator.pushNamed(context, ScanScreen.routeName);
+                }
+                : null,
         tooltip: 'Scan for devices',
         child: const Icon(Icons.add),
       ),
