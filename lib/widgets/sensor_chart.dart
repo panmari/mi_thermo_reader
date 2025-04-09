@@ -85,6 +85,9 @@ class SensorChart extends StatelessWidget {
                 rightTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
+                    // Axis label is always an integer, format it as such.
+                    getTitlesWidget:
+                        (value, meta) => Text(value.toStringAsFixed(0)),
                     reservedSize: 28,
                     interval: _temperatureInterval(),
                     minIncluded: false,
