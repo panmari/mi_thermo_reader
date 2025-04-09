@@ -101,16 +101,14 @@ class _MiThermoReaderHomePageState
 
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
-
+    if (knownDevices.isNotEmpty) {
+      return ListView(
+        children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
+      );
+    }
     switch (_adapterState) {
       case BluetoothAdapterState.on:
-        if (knownDevices.isEmpty) {
-          const Text('Start by adding devices by clicking on +');
-        }
-        return ListView(
-          children:
-              knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
-        );
+        return const Text('Start by adding devices by clicking on +');
       case BluetoothAdapterState.off:
         return ErrorMessage(
           message:
