@@ -133,314 +133,270 @@ class SensorChart extends StatelessWidget {
 
         return AspectRatio(
           aspectRatio: 2, // Maintain aspect ratio
-          child: Padding(
-            // Add padding to prevent labels clipping
-            padding: const EdgeInsets.only(
-              right: 10,
-              left: 5,
-              top: 20,
-              bottom: 5,
-            ),
-            child: LineChart(
-              LineChartData(
-                // --- General Appearance ---
-                backgroundColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceVariant.withOpacity(0.2),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                      width: 1.5,
-                    ),
-                    left: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                      width: 1.5,
-                    ),
-                    right: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                      width: 1.5,
-                    ), // Show right border too
-                    top: BorderSide.none,
+          child: LineChart(
+            LineChartData(
+              // --- General Appearance ---
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+              borderData: FlBorderData(
+                show: true,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 1.5,
                   ),
+                  left: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 1.5,
+                  ),
+                  right: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 1.5,
+                  ), // Show right border too
+                  top: BorderSide.none,
                 ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true, // Show vertical time grid lines
-                  verticalInterval:
-                      _calculateTimeGridIntervalDuration(timeRange)
-                          .inMilliseconds
-                          .toDouble(), // Use calculated time interval
-                  drawHorizontalLine: true, // Show horizontal value grid lines
-                  horizontalInterval: _calculateTempGridInterval(
-                    maxTemp - minTemp,
-                  ), // Base grid on temperature scale
-                  getDrawingHorizontalLine:
-                      (value) => FlLine(
-                        color: Theme.of(context).dividerColor.withOpacity(0.3),
-                        strokeWidth: 1,
-                      ),
-                  getDrawingVerticalLine:
-                      (value) => FlLine(
-                        color: Theme.of(context).dividerColor.withOpacity(0.3),
-                        strokeWidth: 1,
-                      ),
+              ),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: true, // Show vertical time grid lines
+                verticalInterval:
+                    _calculateTimeGridIntervalDuration(timeRange)
+                        .inMilliseconds
+                        .toDouble(), // Use calculated time interval
+                drawHorizontalLine: true, // Show horizontal value grid lines
+                horizontalInterval: _calculateTempGridInterval(
+                  maxTemp - minTemp,
+                ), // Base grid on temperature scale
+                getDrawingHorizontalLine:
+                    (value) => FlLine(
+                      color: Theme.of(context).dividerColor.withOpacity(0.3),
+                      strokeWidth: 1,
+                    ),
+                getDrawingVerticalLine:
+                    (value) => FlLine(
+                      color: Theme.of(context).dividerColor.withOpacity(0.3),
+                      strokeWidth: 1,
+                    ),
+              ),
+          
+              // --- Axis Range Definitions ---
+              minX: minTimestamp,
+              maxX: maxTimestamp,
+              minY: finalMinY, // Based on temperature range
+              maxY: finalMaxY, // Based on temperature range
+              // --- Line Data ---
+              lineBarsData: [
+                // Temperature Line (Left Axis)
+                LineChartBarData(
+                  spots: temperatureSpots,
+                  color: tempColor,
+                  barWidth: 2,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(show: false), // Hide dots on line
                 ),
-
-                // --- Axis Range Definitions ---
-                minX: minTimestamp,
-                maxX: maxTimestamp,
-                minY: finalMinY, // Based on temperature range
-                maxY: finalMaxY, // Based on temperature range
-                // --- Line Data ---
-                lineBarsData: [
-                  // Temperature Line (Left Axis)
-                  LineChartBarData(
-                    spots: temperatureSpots,
-                    isCurved: true,
-                    color: tempColor,
-                    barWidth: 2.5,
-                    isStrokeCapRound: true,
-                    dotData: const FlDotData(show: false), // Hide dots on line
-                    belowBarData: BarAreaData(
-                      // Optional gradient below line
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          tempColor.withOpacity(0.3),
-                          tempColor.withOpacity(0.0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                  // Humidity Line (Right Axis - uses normalized data)
-                  LineChartBarData(
-                    spots: normalizedHumiditySpots,
-                    isCurved: true,
-                    color: humidityColor,
-                    barWidth: 2.5,
-                    isStrokeCapRound: true,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          humidityColor.withOpacity(0.3),
-                          humidityColor.withOpacity(0.0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-
-                // --- Axis Titles (Labels) ---
-                titlesData: FlTitlesData(
-                  show: true,
-
-                  // Bottom (X - Time Axis)
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 35, // Space for labels below chart
-                      interval: bottomTitleInterval, // Dynamic interval
-                      getTitlesWidget: (value, meta) {
-                        // Avoid drawing labels outside the data range
-                        if (value <= minTimestamp || value >= maxTimestamp)
-                          return Container();
-                        return SideTitleWidget(
-                          meta: meta,
-                          space: 6.0, // Padding above label
-                          child: Text(
-                            _formatDate(timeRange, value),
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Left (Y - Temperature Axis)
-                  leftTitles: AxisTitles(
-                    axisNameWidget: Text(
-                      'Temp (°C)',
-                      style: TextStyle(color: tempColor, fontSize: 12),
-                    ),
-                    axisNameSize: 24, // Space for axis title
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 45, // Space for labels + padding
-                      // Use the same interval as the horizontal grid for consistency
-                      interval: _calculateTempGridInterval(maxTemp - minTemp),
-                      getTitlesWidget: (value, meta) {
-                        // Only show labels within the calculated Y range
-                        if (value < finalMinY || value > finalMaxY)
-                          return Container();
-                        return SideTitleWidget(
-                          meta: meta,
-                          space: 8.0,
-                          child: Text(
-                            meta.formattedValue, // Or value.toStringAsFixed(1) for decimals
-                            style: TextStyle(color: tempColor, fontSize: 10),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Right (Y - Humidity Axis)
-                  rightTitles: AxisTitles(
-                    axisNameWidget: Text(
-                      'Humidity (%)',
-                      style: TextStyle(color: humidityColor, fontSize: 12),
-                    ),
-                    axisNameSize: 24,
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 45, // Match left side
-                      // Use an interval based on humidity range, aiming for ~5 labels
-                      interval: max(1, (secondaryYRange / 5).roundToDouble()),
-                      getTitlesWidget: (value, meta) {
-                        // 'value' here is on the TEMPERATURE scale (finalMinY to finalMaxY)
-                        // We need to reverse-normalize it to get the humidity value
-
-                        // Only calculate for values within the displayed range
-                        if (value < finalMinY || value > finalMaxY)
-                          return Container();
-
-                        // Reverse normalization:
-                        final double originalHumidity =
-                            finalMinHumidity +
-                            ((value - finalMinY) / primaryYRange) *
-                                secondaryYRange;
-
-                        // Don't show labels outside the actual humidity range
-                        if (originalHumidity < finalMinHumidity ||
-                            originalHumidity > finalMaxHumidity) {
-                          // This can happen due to range padding or interval alignment
-                          // return Container(); // Option 1: Hide them
-                          // Option 2: Clamp them (might look slightly off if intervals are large)
-                          if (originalHumidity < finalMinHumidity)
-                            return Container(); // Hide below min
-                          if (originalHumidity > finalMaxHumidity)
-                            return Container(); // Hide above max
-                        }
-
-                        return SideTitleWidget(
-                          meta: meta,
-                          space: 8.0,
-                          child: Text(
-                            originalHumidity.toStringAsFixed(
-                              0,
-                            ), // Format as integer percentage
-                            style: TextStyle(
-                              color: humidityColor,
-                              fontSize: 10,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Hide Top Titles
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                // Humidity Line (Right Axis - uses normalized data)
+                LineChartBarData(
+                  spots: normalizedHumiditySpots,
+                  color: humidityColor,
+                  barWidth: 2,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(show: false), // Hide dots on line
                 ),
-
-                // --- Tooltips ---
-                lineTouchData: LineTouchData(
-                  enabled: true,
-                  getTouchedSpotIndicator: (barData, spotIndexes) {
-                    // Customize touch indicator appearance
-                    return spotIndexes.map((index) {
-                      return TouchedSpotIndicatorData(
-                        FlLine(
-                          color: Theme.of(context).colorScheme.inverseSurface,
-                          strokeWidth: 2,
-                        ),
-                        FlDotData(
-                          getDotPainter:
-                              (spot, percent, barData, index) =>
-                                  FlDotCirclePainter(
-                                    radius: 6,
-                                    color: barData.color ?? Colors.black,
-                                    strokeWidth: 2,
-                                    strokeColor:
-                                        Theme.of(context).colorScheme.surface,
-                                  ),
-                        ),
-                      );
-                    }).toList();
-                  },
-                  touchTooltipData: LineTouchTooltipData(
-                    tooltipRoundedRadius: 8,
-                    tooltipPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    tooltipBorder: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                    ),
-                    getTooltipItems: (touchedSpots) {
-                      final textStyle = TextStyle(
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      );
-                      final DateTime dateTime =
-                          DateTime.fromMillisecondsSinceEpoch(
-                            touchedSpots.first.x.toInt(),
-                          );
-                      final String formattedDate = DateFormat(
-                        'yyyy-MM-dd HH:mm:ss',
-                      ).format(dateTime);
-                      // Make sure temperature always appears first.
-                      touchedSpots.sort(
-                        (a, b) => a.barIndex.compareTo(b.barIndex),
-                      );
-                      final items = touchedSpots.map((LineBarSpot touchedSpot) {
-                        if (touchedSpot.barIndex == 0) {
-                          return 'Temperature: ${touchedSpot.y.toStringAsFixed(1)}°C\n';
-                        } else {
-                          // The touchedSpot.y is NORMALIZED humidity. Reverse-normalize it.
-                          final double originalHumidity =
-                              finalMinHumidity +
-                              ((touchedSpot.y - finalMinY) / primaryYRange) *
-                                  secondaryYRange;
-                          // Another approach that doesn't rely on on reverse-normalizing
-                          // would be to look up the original entry using dateTime.
-                          return 'Humidity: ${originalHumidity.toStringAsFixed(1)}%';
-                        }
-                      });
-                      return [
-                        LineTooltipItem(
-                          '$formattedDate\n',
-                          textStyle.copyWith(
-                            fontWeight: FontWeight.normal,
+              ],
+          
+              // --- Axis Titles (Labels) ---
+              titlesData: FlTitlesData(
+                show: true,
+          
+                // Bottom (X - Time Axis)
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 35, // Space for labels below chart
+                    interval: bottomTitleInterval, // Dynamic interval
+                    getTitlesWidget: (value, meta) {
+                      // Avoid drawing labels outside the data range
+                      if (value <= minTimestamp || value >= maxTimestamp)
+                        return Container();
+                      return SideTitleWidget(
+                        meta: meta,
+                        child: Text(
+                          _formatDate(timeRange, value),
+                          style: TextStyle(
                             fontSize: 10,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          children:
-                              items
-                                  .map(
-                                    (t) => TextSpan(text: t, style: textStyle),
-                                  )
-                                  .toList(),
-                          textAlign: TextAlign.left,
                         ),
-                        null, // getTooltipItems expects output to be same length as input.
-                      ];
+                      );
                     },
                   ),
+                ),
+          
+                // Left (Y - Temperature Axis)
+                leftTitles: AxisTitles(
+                  axisNameWidget: Text(
+                    'Temp (°C)',
+                    style: TextStyle(color: tempColor),
+                  ),
+                  axisNameSize: 24, // Space for axis title
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28, // Space for labels + padding
+                    // Use the same interval as the horizontal grid for consistency
+                    interval: max(3, (primaryYRange / 5).roundToDouble()),
+                    getTitlesWidget: (value, meta) {
+                      // Only show labels within the calculated Y range
+                      if (value < finalMinY || value > finalMaxY)
+                        return Container();
+                      return SideTitleWidget(
+                        meta: meta,
+                        child: Text(
+                          meta.formattedValue,
+                          style: TextStyle(color: tempColor, fontSize: 12),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+          
+                // Right (Y - Humidity Axis)
+                rightTitles: AxisTitles(
+                  axisNameWidget: Text(
+                    'Humidity (%)',
+                    style: TextStyle(color: humidityColor, fontSize: 14),
+                  ),
+                  axisNameSize: 18,
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28, // Match left side
+                    // Use an interval based on humidity range, aiming for ~5 labels
+                    interval: max(1, (secondaryYRange / 5).roundToDouble()),
+                    getTitlesWidget: (value, meta) {
+                      // 'value' here is on the TEMPERATURE scale (finalMinY to finalMaxY)
+                      // We need to reverse-normalize it to get the humidity value
+          
+                      // Only calculate for values within the displayed range
+                      if (value < finalMinY || value > finalMaxY)
+                        return Container();
+          
+                      // Reverse normalization:
+                      final double originalHumidity =
+                          finalMinHumidity +
+                          ((value - finalMinY) / primaryYRange) *
+                              secondaryYRange;
+          
+                      // Don't show labels outside the actual humidity range
+                      if (originalHumidity < finalMinHumidity ||
+                          originalHumidity > finalMaxHumidity) {
+                        // This can happen due to range padding or interval alignment
+                        // return Container(); // Option 1: Hide them
+                        // Option 2: Clamp them (might look slightly off if intervals are large)
+                        if (originalHumidity < finalMinHumidity)
+                          return Container(); // Hide below min
+                        if (originalHumidity > finalMaxHumidity)
+                          return Container(); // Hide above max
+                      }
+          
+                      return SideTitleWidget(
+                        meta: meta,
+                        child: Text(
+                          originalHumidity.toStringAsFixed(0),
+                          style: TextStyle(color: humidityColor),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+          
+                // Hide Top Titles
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+              ),
+          
+              // --- Tooltips ---
+              lineTouchData: LineTouchData(
+                enabled: true,
+                getTouchedSpotIndicator: (barData, spotIndexes) {
+                  // Customize touch indicator appearance
+                  return spotIndexes.map((index) {
+                    return TouchedSpotIndicatorData(
+                      FlLine(
+                        color: Theme.of(context).colorScheme.inverseSurface,
+                        strokeWidth: 2,
+                      ),
+                      FlDotData(
+                        getDotPainter:
+                            (spot, percent, barData, index) =>
+                                FlDotCirclePainter(
+                                  radius: 6,
+                                  color: barData.color ?? Colors.black,
+                                  strokeWidth: 2,
+                                  strokeColor:
+                                      Theme.of(context).colorScheme.surface,
+                                ),
+                      ),
+                    );
+                  }).toList();
+                },
+                touchTooltipData: LineTouchTooltipData(
+                  tooltipRoundedRadius: 8,
+                  tooltipPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  tooltipBorder: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                  ),
+                  getTooltipItems: (touchedSpots) {
+                    final textStyle = TextStyle(
+                      color:
+                          Theme.of(context).colorScheme.onSecondaryContainer,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    );
+                    final DateTime dateTime =
+                        DateTime.fromMillisecondsSinceEpoch(
+                          touchedSpots.first.x.toInt(),
+                        );
+                    final String formattedDate = DateFormat(
+                      'yyyy-MM-dd HH:mm:ss',
+                    ).format(dateTime);
+                    // Make sure temperature always appears first.
+                    touchedSpots.sort(
+                      (a, b) => a.barIndex.compareTo(b.barIndex),
+                    );
+                    final items = touchedSpots.map((LineBarSpot touchedSpot) {
+                      if (touchedSpot.barIndex == 0) {
+                        return 'Temperature: ${touchedSpot.y.toStringAsFixed(1)}°C\n';
+                      } else {
+                        // The touchedSpot.y is NORMALIZED humidity. Reverse-normalize it.
+                        final double originalHumidity =
+                            finalMinHumidity +
+                            ((touchedSpot.y - finalMinY) / primaryYRange) *
+                                secondaryYRange;
+                        // Another approach that doesn't rely on on reverse-normalizing
+                        // would be to look up the original entry using dateTime.
+                        return 'Humidity: ${originalHumidity.toStringAsFixed(1)}%';
+                      }
+                    });
+                    return [
+                      LineTooltipItem(
+                        '$formattedDate\n',
+                        textStyle.copyWith(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 10,
+                        ),
+                        children:
+                            items
+                                .map(
+                                  (t) => TextSpan(text: t, style: textStyle),
+                                )
+                                .toList(),
+                        textAlign: TextAlign.left,
+                      ),
+                      null, // getTooltipItems expects output to be same length as input.
+                    ];
+                  },
                 ),
               ),
             ),

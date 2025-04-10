@@ -245,7 +245,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                   _buildErrorMessage(),
                   _makeDayFilterBar(),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                     child:
                         _filteredSensorEntries().isEmpty
                             ? Text(
