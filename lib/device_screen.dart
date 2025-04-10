@@ -37,18 +37,21 @@ class _DeviceScreenState extends State<DeviceScreen> {
   late final BluetoothManager _bluetoothManager;
 
   List<SensorEntry> _createFakeSensorData(int nElements) {
-    return List.generate(
-      nElements,
-      (i) => SensorEntry(
+    double lastTemp = 21.0;
+    double lastHum = 51.0;
+    return List.generate(nElements, (i) {
+      lastTemp += math.Random().nextDouble() * 0.1 - 0.05;
+      lastHum += math.Random().nextDouble() - 0.5;
+      return SensorEntry(
         index: i,
         timestamp: DateTime.now().subtract(
           Duration(minutes: (nElements - i) * 10),
         ),
-        temperature: math.Random().nextDouble() * 2 + 21,
-        humidity: 0,
+        temperature: lastTemp,
+        humidity: lastHum,
         voltageBattery: 0,
-      ),
-    );
+      );
+    });
   }
 
   @override
@@ -77,11 +80,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
       setState(() {
         _statusUpdates.add('No entries in preferences.');
       });
-      if (_sensorHistory == null && kDebugMode) {
-        _sensorHistory = SensorHistory(
-          sensorEntries: _createFakeSensorData(2000),
-        );
-      }
+    if (_sensorHistory == null && kDebugMode) {
+      _sensorHistory = SensorHistory(
+        sensorEntries: _createFakeSensorData(2000),
+      );
+    }
     } catch (e) {
       setState(() {
         _statusUpdates.add('Failed loading entries from preferences: $e');
