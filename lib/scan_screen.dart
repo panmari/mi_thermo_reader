@@ -7,6 +7,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:mi_thermo_reader/widgets/error_message.dart';
 
 import 'device_screen.dart';
 import 'widgets/scan_result_tile.dart';
@@ -25,6 +26,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   List<BluetoothDevice> _systemDevices = [];
   List<ScanResult> _scanResults = [];
   bool _isScanning = false;
+  String? _error;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
   late StreamSubscription<bool> _isScanningSubscription;
 
@@ -81,12 +83,14 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   }
 
   Future onScanPressed() async {
+    _error = null;
     try {
       // `withServices` is required on iOS for privacy purposes, ignored on android.
       var withServices = [BluetoothConstants.memoServiceGuid];
       _systemDevices = await FlutterBluePlus.systemDevices(withServices);
-    } catch (e) {
-      log("Retrieving system devices failed: $e");
+    } catch (e, trace) {
+      _error = 'Retrieving system devices failed: $e';
+      log("Retrieving system devices failed: $e", stackTrace: trace);
     }
     try {
       await FlutterBluePlus.startScan(
@@ -94,8 +98,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         webOptionalServices: optionalServices(),
         timeout: const Duration(seconds: 15),
       );
-    } catch (e) {
-      log("Start scan failed: $e");
+    } catch (e, trace) {
+      _error = 'Start scan failed: $e';
+      log("Start scan failed: $e", stackTrace: trace);
     }
     if (mounted) {
       setState(() {});
@@ -170,6 +175,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         onRefresh: onRefresh,
         child: ListView(
           children: <Widget>[
+            _error != null ? ErrorMessage(message: _error!) : SizedBox(),
             ..._buildSystemDeviceTiles(context),
             ..._buildScanResultTiles(context),
           ],

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_commands.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
@@ -27,14 +28,20 @@ class BluetoothManager {
     statusUpdate("Discover Services: Success");
 
     // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#bluetooth-connection-mode
-    final memoService = services.firstWhere(
+    final memoService = services.firstWhereOrNull(
       (service) =>
           service.isPrimary &&
           service.serviceUuid == BluetoothConstants.memoServiceGuid,
     );
-    _characteristic = memoService.characteristics.firstWhere(
+    if (memoService == null) {
+      throw 'Failed to find service ${BluetoothConstants.memoServiceGuid}';
+    }
+    _characteristic = memoService.characteristics.firstWhereOrNull(
       (c) => c.characteristicUuid == BluetoothConstants.memoCharacteristicGuid,
     );
+    if (_characteristic == null) {
+      throw 'Failed to find characteristic ${BluetoothConstants.memoCharacteristicGuid}.';
+    }
     statusUpdate('Found memo characteristic.');
 
     await _characteristic!.setNotifyValue(true);
