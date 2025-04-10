@@ -382,7 +382,6 @@ class SensorChart extends StatelessWidget {
                     }).toList();
                   },
                   touchTooltipData: LineTouchTooltipData(
-                    // tooltipBgColor: Theme.of(context).colorScheme.secondaryContainer,
                     tooltipRoundedRadius: 8,
                     tooltipPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -392,71 +391,54 @@ class SensorChart extends StatelessWidget {
                       color: Theme.of(context).dividerColor,
                     ),
                     getTooltipItems: (touchedSpots) {
-                      return touchedSpots.map((LineBarSpot touchedSpot) {
-                        final textStyle = TextStyle(
-                          color:
-                              Theme.of(
-                                context,
-                              ).colorScheme.onSecondaryContainer,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        );
-
-                        // Find the original SensorEntry index
-                        // This assumes spots are in the same order as sensorEntries
-                        final DateTime dateTime =
-                            DateTime.fromMillisecondsSinceEpoch(
-                              touchedSpot.x.toInt(),
-                            );
-                        final int entryIndex = sensorEntries.indexWhere(
-                          (entry) => entry.timestamp == dateTime,
-                        );
-                        final SensorEntry? originalEntry =
-                            entryIndex != -1 ? sensorEntries[entryIndex] : null;
-
-                        final String formattedDate = DateFormat(
-                          'yyyy-MM-dd HH:mm:ss',
-                        ).format(dateTime);
-                        String tooltipText;
-
-                        // Check which line was touched (barIndex 0 = Temp, 1 = Humidity)
+                      final textStyle = TextStyle(
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      );
+                      final DateTime dateTime =
+                          DateTime.fromMillisecondsSinceEpoch(
+                            touchedSpots.first.x.toInt(),
+                          );
+                      final String formattedDate = DateFormat(
+                        'yyyy-MM-dd HH:mm:ss',
+                      ).format(dateTime);
+                      // Make sure temperature always appears first.
+                      touchedSpots.sort(
+                        (a, b) => a.barIndex.compareTo(b.barIndex),
+                      );
+                      final items = touchedSpots.map((LineBarSpot touchedSpot) {
                         if (touchedSpot.barIndex == 0) {
-                          // Temperature Line
-                          tooltipText =
-                              'Temp: ${touchedSpot.y.toStringAsFixed(1)}°C';
-                          // If original entry found, use its temp value for perfect accuracy
-                          if (originalEntry != null) {
-                            tooltipText =
-                                'Temp: ${originalEntry.temperature.toStringAsFixed(1)}°C';
-                          }
+                          return 'Temperature: ${touchedSpot.y.toStringAsFixed(1)}°C\n';
                         } else {
-                          // Humidity Line
                           // The touchedSpot.y is NORMALIZED humidity. Reverse-normalize it.
                           final double originalHumidity =
                               finalMinHumidity +
                               ((touchedSpot.y - finalMinY) / primaryYRange) *
                                   secondaryYRange;
-                          tooltipText =
-                              'Humidity: ${originalHumidity.toStringAsFixed(1)}%';
-                          // If original entry found, use its humidity value
-                          if (originalEntry != null) {
-                            tooltipText =
-                                'Humidity: ${originalEntry.humidity.toStringAsFixed(1)}%';
-                          }
+                          // Another approach that doesn't rely on on reverse-normalizing
+                          // would be to look up the original entry using dateTime.
+                          return 'Humidity: ${originalHumidity.toStringAsFixed(1)}%';
                         }
-
-                        return LineTooltipItem(
+                      });
+                      return [
+                        LineTooltipItem(
                           '$formattedDate\n',
                           textStyle.copyWith(
                             fontWeight: FontWeight.normal,
                             fontSize: 10,
                           ),
-                          children: [
-                            TextSpan(text: tooltipText, style: textStyle),
-                          ],
+                          children:
+                              items
+                                  .map(
+                                    (t) => TextSpan(text: t, style: textStyle),
+                                  )
+                                  .toList(),
                           textAlign: TextAlign.left,
-                        );
-                      }).toList();
+                        ),
+                        null, // getTooltipItems expects output to be same length as input.
+                      ];
                     },
                   ),
                 ),
