@@ -80,11 +80,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
       setState(() {
         _statusUpdates.add('No entries in preferences.');
       });
-    if (_sensorHistory == null && kDebugMode) {
-      _sensorHistory = SensorHistory(
-        sensorEntries: _createFakeSensorData(2000),
-      );
-    }
+      if (_sensorHistory == null && kDebugMode) {
+        _sensorHistory = SensorHistory(
+          sensorEntries: _createFakeSensorData(2000),
+        );
+      }
     } catch (e) {
       setState(() {
         _statusUpdates.add('Failed loading entries from preferences: $e');
@@ -245,7 +245,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                   _buildErrorMessage(),
                   _makeDayFilterBar(),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                     child:
                         _filteredSensorEntries().isEmpty
                             ? Text(
