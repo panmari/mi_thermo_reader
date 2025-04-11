@@ -123,7 +123,7 @@ class SensorChart extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Dynamic interval for bottom titles based on available width
-        final double reservedSizeHorizontalAxis = 70; // Approx width per label
+        final double reservedSizeHorizontalAxis = 80; // Approx width per label
         final int numHorizontalLabels = max(
           1,
           (constraints.maxWidth / reservedSizeHorizontalAxis).floor(),
@@ -159,25 +159,25 @@ class SensorChart extends StatelessWidget {
                 show: true,
                 drawVerticalLine: true, // Show vertical time grid lines
                 verticalInterval:
-                    _calculateTimeGridIntervalDuration(timeRange)
-                        .inMilliseconds
-                        .toDouble(), // Use calculated time interval
+                    _calculateTimeGridIntervalDuration(
+                      timeRange,
+                    ).inMilliseconds.toDouble(), // Use calculated time interval
                 drawHorizontalLine: true, // Show horizontal value grid lines
                 horizontalInterval: _calculateTempGridInterval(
                   maxTemp - minTemp,
                 ), // Base grid on temperature scale
                 getDrawingHorizontalLine:
                     (value) => FlLine(
-                      color: Theme.of(context).dividerColor.withOpacity(0.3),
+                      color: Theme.of(context).dividerColor.withAlpha(50),
                       strokeWidth: 1,
                     ),
                 getDrawingVerticalLine:
                     (value) => FlLine(
-                      color: Theme.of(context).dividerColor.withOpacity(0.3),
+                      color: Theme.of(context).dividerColor.withAlpha(50),
                       strokeWidth: 1,
                     ),
               ),
-          
+
               // --- Axis Range Definitions ---
               minX: minTimestamp,
               maxX: maxTimestamp,
@@ -202,11 +202,11 @@ class SensorChart extends StatelessWidget {
                   dotData: const FlDotData(show: false), // Hide dots on line
                 ),
               ],
-          
+
               // --- Axis Titles (Labels) ---
               titlesData: FlTitlesData(
                 show: true,
-          
+
                 // Bottom (X - Time Axis)
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
@@ -215,14 +215,15 @@ class SensorChart extends StatelessWidget {
                     interval: bottomTitleInterval, // Dynamic interval
                     getTitlesWidget: (value, meta) {
                       // Avoid drawing labels outside the data range
-                      if (value <= minTimestamp || value >= maxTimestamp)
+                      if (value <= minTimestamp || value >= maxTimestamp) {
                         return Container();
+                      }
                       return SideTitleWidget(
                         meta: meta,
                         child: Text(
                           _formatDate(timeRange, value),
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 14,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
@@ -230,7 +231,7 @@ class SensorChart extends StatelessWidget {
                     },
                   ),
                 ),
-          
+
                 // Left (Y - Temperature Axis)
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(
@@ -242,60 +243,64 @@ class SensorChart extends StatelessWidget {
                     showTitles: true,
                     reservedSize: 28, // Space for labels + padding
                     // Use the same interval as the horizontal grid for consistency
-                    interval: max(3, (primaryYRange / 5).roundToDouble()),
+                    interval: max(1, (primaryYRange / 5).roundToDouble()),
                     getTitlesWidget: (value, meta) {
                       // Only show labels within the calculated Y range
-                      if (value < finalMinY || value > finalMaxY)
+                      if (value < finalMinY || value > finalMaxY) {
                         return Container();
+                      }
                       return SideTitleWidget(
                         meta: meta,
                         child: Text(
                           meta.formattedValue,
-                          style: TextStyle(color: tempColor, fontSize: 12),
+                          style: TextStyle(color: tempColor),
                         ),
                       );
                     },
                   ),
                 ),
-          
+
                 // Right (Y - Humidity Axis)
                 rightTitles: AxisTitles(
                   axisNameWidget: Text(
                     'Humidity (%)',
-                    style: TextStyle(color: humidityColor, fontSize: 14),
+                    style: TextStyle(color: humidityColor),
                   ),
-                  axisNameSize: 18,
+                  axisNameSize: 24,
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 28, // Match left side
-                    // Use an interval based on humidity range, aiming for ~5 labels
-                    interval: max(1, (secondaryYRange / 5).roundToDouble()),
+                    // Use an interval based on primaryY, aiming for ~5 labels
+                    interval: max(1, (primaryYRange / 5).roundToDouble()),
                     getTitlesWidget: (value, meta) {
                       // 'value' here is on the TEMPERATURE scale (finalMinY to finalMaxY)
                       // We need to reverse-normalize it to get the humidity value
-          
+
                       // Only calculate for values within the displayed range
-                      if (value < finalMinY || value > finalMaxY)
+                      if (value < finalMinY || value > finalMaxY) {
                         return Container();
-          
+                      }
+
                       // Reverse normalization:
                       final double originalHumidity =
                           finalMinHumidity +
                           ((value - finalMinY) / primaryYRange) *
                               secondaryYRange;
-          
+
                       // Don't show labels outside the actual humidity range
                       if (originalHumidity < finalMinHumidity ||
                           originalHumidity > finalMaxHumidity) {
                         // This can happen due to range padding or interval alignment
                         // return Container(); // Option 1: Hide them
                         // Option 2: Clamp them (might look slightly off if intervals are large)
-                        if (originalHumidity < finalMinHumidity)
+                        if (originalHumidity < finalMinHumidity) {
                           return Container(); // Hide below min
-                        if (originalHumidity > finalMaxHumidity)
+                        }
+                        if (originalHumidity > finalMaxHumidity) {
                           return Container(); // Hide above max
+                        }
                       }
-          
+
                       return SideTitleWidget(
                         meta: meta,
                         child: Text(
@@ -306,13 +311,13 @@ class SensorChart extends StatelessWidget {
                     },
                   ),
                 ),
-          
+
                 // Hide Top Titles
                 topTitles: const AxisTitles(
                   sideTitles: SideTitles(showTitles: false),
                 ),
               ),
-          
+
               // --- Tooltips ---
               lineTouchData: LineTouchData(
                 enabled: true,
@@ -349,8 +354,7 @@ class SensorChart extends StatelessWidget {
                   ),
                   getTooltipItems: (touchedSpots) {
                     final textStyle = TextStyle(
-                      color:
-                          Theme.of(context).colorScheme.onSecondaryContainer,
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     );
@@ -388,9 +392,7 @@ class SensorChart extends StatelessWidget {
                         ),
                         children:
                             items
-                                .map(
-                                  (t) => TextSpan(text: t, style: textStyle),
-                                )
+                                .map((t) => TextSpan(text: t, style: textStyle))
                                 .toList(),
                         textAlign: TextAlign.left,
                       ),
