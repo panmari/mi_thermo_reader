@@ -141,14 +141,18 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Future updateData() async {
     try {
+      final int numEntries =
+          _sensorHistory?.missingEntriesSince(DateTime.now()) ?? 5000;
       await initBluetooth();
-      final newEntries = await _bluetoothManager.getMemoryData((update) {
+      final newEntries = await _bluetoothManager.getMemoryData(numEntries, (
+        update,
+      ) {
         _statusUpdates.add(update);
         if (mounted) {
           setState(() {});
         }
       });
-      _sensorHistory = SensorHistory(sensorEntries: newEntries);
+      _sensorHistory = SensorHistory.createUpdated(_sensorHistory, newEntries);
       _statusUpdates.add('Got sensor history: $_sensorHistory');
       _preferences.then((p) {
         final encodedEntries = _sensorHistory!.toBase64ProtoString();
