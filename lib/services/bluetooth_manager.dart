@@ -48,7 +48,7 @@ class BluetoothManager {
     statusUpdate('Subscribed to notifications');
   }
 
-  Future<List<SensorEntry>> getMemoryData(Function(String) statusUpdate) async {
+  Future<List<SensorEntry>> getMemoryData(int numEntries, Function(String) statusUpdate) async {
     if (_characteristic == null) {
       throw "Not initialized";
     }
@@ -60,10 +60,10 @@ class BluetoothManager {
     device.cancelWhenDisconnected(valueSubscription);
 
     await _characteristic!.write(
-      BluetoothCommands.getMemoCommand(5000),
+      BluetoothCommands.getMemoCommand(numEntries),
       withoutResponse: true,
     );
-    statusUpdate("Start get memo: Success");
+    statusUpdate("Start get memo($numEntries): Success");
 
     final result = await processor.waitForResults();
     valueSubscription.cancel();

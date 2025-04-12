@@ -30,6 +30,20 @@ class SensorHistory {
     _intervalStats = Stats.fromData(intervalInSeconds);
   }
 
+  static SensorHistory createUpdated(
+    SensorHistory? old,
+    List<SensorEntry> newEntries,
+  ) {
+    final updated = old?.sensorEntries ?? [];
+    updated.addAll(newEntries);
+    // They are sent in reverse chronological order, and might be received out of order.
+    // Plus there might be retries. Be very defensive about keeping each value only once.
+    updated.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final alreadyPresent = <DateTime>{}; // This is a set.
+    updated.retainWhere((e) => alreadyPresent.add(e.timestamp));
+    return SensorHistory(sensorEntries: updated);
+  }
+
   static SensorHistory from(String base64ProtoString) {
     final buffer = base64Decode(base64ProtoString);
     return GSensorHistory.fromBuffer(buffer).toSensorHistory();
@@ -61,5 +75,17 @@ class SensorHistory {
   @override
   String toString() {
     return "#Entries: ${sensorEntries.length}, avg interval: ${averageInterval()}, std interval: ${stdInterval()}";
+  }
+
+  int missingEntriesSince(DateTime dateTime) {
+    if (sensorEntries.length < 2) {
+      // Can't compute interval, return early with a large value
+      return 5000;
+    }
+    final Duration diff = dateTime.difference(sensorEntries.last.timestamp);
+    if (diff < Duration.zero) {
+      return 0;
+    }
+    return diff.inSeconds.toInt() ~/ _intervalStats.average.toInt();
   }
 }
