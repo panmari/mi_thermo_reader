@@ -1,16 +1,15 @@
-import 'dart:async';
 import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
+import 'package:mi_thermo_reader/services/command_processor.dart';
 
-class TimeCommandProcessor {
-  final done = Completer<Duration>();
-
+class TimeCommandProcessor extends CommandProcessor<Duration> {
   DateTime _toDateTime(int timestampSeconds) {
     return DateTime.fromMillisecondsSinceEpoch(timestampSeconds * 1000);
   }
 
+  @override
   void onData(List<int> values) {
     if (values.isEmpty) {
       return;
@@ -40,13 +39,5 @@ class TimeCommandProcessor {
       );
       done.complete(deviceTimeDrift);
     }
-  }
-
-  void onError(Object error, StackTrace trace) {
-    done.completeError(error, trace);
-  }
-
-  Future<Duration> waitForResults() {
-    return done.future;
   }
 }
