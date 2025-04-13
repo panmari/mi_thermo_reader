@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_commands.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
-import 'package:mi_thermo_reader/services/memo_service_processor.dart';
+import 'package:mi_thermo_reader/services/memo_command_processor.dart';
 import 'package:mi_thermo_reader/services/time_command_processor.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
@@ -52,7 +52,7 @@ class BluetoothManager {
     if (_characteristic == null) {
       throw "Not initialized";
     }
-    final processor = MemoServiceProcessor(statusUpdate: statusUpdate);
+    final processor = MemoCommandProcessor(statusUpdate: statusUpdate);
     final valueSubscription = _characteristic!.onValueReceived.listen(
       processor.onData,
       onError: processor.onError,

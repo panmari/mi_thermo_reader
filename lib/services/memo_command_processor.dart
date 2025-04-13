@@ -1,16 +1,16 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
+import 'package:mi_thermo_reader/services/command_processor.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
-class MemoServiceProcessor {
+class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
   final Function(String) statusUpdate;
   final _sensorEntries = <SensorEntry>[];
-  final done = Completer<List<SensorEntry>>();
 
-  MemoServiceProcessor({required this.statusUpdate});
+  MemoCommandProcessor({required this.statusUpdate});
 
+  @override
   void onData(List<int> values) {
     if (values.isEmpty) {
       return;
@@ -43,13 +43,5 @@ class MemoServiceProcessor {
       return;
     }
     statusUpdate("data with unexpected size data.lengthInBytes: $data");
-  }
-
-  void onError(Object error, StackTrace trace) {
-    done.completeError(error, trace);
-  }
-
-  Future<List<SensorEntry>> waitForResults() {
-    return done.future;
   }
 }
