@@ -141,8 +141,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Future updateData() async {
     try {
-      final int numEntries =
-          _sensorHistory?.missingEntriesSince(DateTime.now()) ?? 5000;
+      // TODO(smoser): Are fetches below 50 not allowed?
+      final int numEntries = math.max(
+        50,
+        _sensorHistory?.missingEntriesSince(DateTime.now()) ?? 5000,
+      );
       await initBluetooth();
       final newEntries = await _bluetoothManager.getMemoryData(numEntries, (
         update,
