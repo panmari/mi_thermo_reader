@@ -7,6 +7,7 @@ class BluetoothConstants {
 
   static const commandTimeBlk = 0x23;
   static const commandMemoBlk = 0x35;
+  static const commandConfigBlk = 0x55;
 
   // See https://bthome.io/format/
   static final btHomeReversedGuid = Guid("fcd2");
