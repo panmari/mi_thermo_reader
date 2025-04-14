@@ -41,8 +41,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           setState(() {});
         }
       },
-      onError: (e) {
-        log(e);
+      onError: (e, trace) {
+        log('Subscription got an error: $e', stackTrace: trace);
+        _error = e.toString();
       },
     );
 
