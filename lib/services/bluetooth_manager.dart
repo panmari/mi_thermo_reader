@@ -69,9 +69,10 @@ class BluetoothManager {
   }
 
   Future getConfig() async {
-    return _execute([
-      BluetoothConstants.commandConfigBlk,
-    ], ConfigCommandProcessor());
+    return _execute(
+      BluetoothCommands.getConfigCommand(),
+      ConfigCommandProcessor(),
+    );
   }
 
   Future<List<SensorEntry>> getMemoryData(
