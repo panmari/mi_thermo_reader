@@ -3,6 +3,12 @@ import 'dart:typed_data';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 
 class BluetoothCommands {
+  static List<int> getConfigCommand() {
+    final request = Uint8List(1).buffer.asByteData();
+    request.setUint8(0, BluetoothConstants.commandConfigBlk);
+    return request.buffer.asUint8List();
+  }
+
   /// numMemos is the number of entries to retrieve from memory, starting with the most recent entry.
   static List<int> getMemoCommand(int numMemos) {
     // Send command to read memory measures.
