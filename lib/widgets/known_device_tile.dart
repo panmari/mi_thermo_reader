@@ -70,10 +70,9 @@ class KnownDeviceTile extends ConsumerWidget {
                   SizedBox(height: 8.0),
                   OutlinedButton(
                     onPressed:
-                        () => Navigator.of(context).pushNamed(
-                          DeviceScreen.routeName,
-                          arguments: device,
-                        ),
+                        () => Navigator.of(
+                          context,
+                        ).pushNamed(DeviceScreen.routeName, arguments: device),
                     child: const Text('Open'),
                   ),
                 ],
