@@ -154,7 +154,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
       // Get config first to wake up device. If this is not done, getMemoryData
       // occasionally only returns partial data.
       try {
-        await _bluetoothManager.getConfig();
+        final deviceConfig = await _bluetoothManager.getConfig();
+        _statusUpdates.add('Got config $deviceConfig');
       } on TimeoutException {
         _statusUpdates.add('Get config timed out, ignoring...');
       }

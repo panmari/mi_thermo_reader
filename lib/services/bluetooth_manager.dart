@@ -8,6 +8,7 @@ import 'package:mi_thermo_reader/services/command_processor.dart';
 import 'package:mi_thermo_reader/services/config_command_processor.dart';
 import 'package:mi_thermo_reader/services/memo_command_processor.dart';
 import 'package:mi_thermo_reader/services/time_command_processor.dart';
+import 'package:mi_thermo_reader/utils/device_config.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
 class BluetoothManager {
@@ -70,7 +71,7 @@ class BluetoothManager {
     }
   }
 
-  Future getConfig() async {
+  Future<DeviceConfig> getConfig() async {
     return _execute(
       BluetoothCommands.getConfigCommand(),
       ConfigCommandProcessor(),
