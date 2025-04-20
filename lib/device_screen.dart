@@ -4,8 +4,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
+import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,13 +14,13 @@ import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
 
 class DeviceScreen extends StatefulWidget {
-  final BluetoothDevice device;
+  final KnownDevice device;
   late final String cacheKeyName;
 
   static const routeName = '/DeviceScreen';
 
   DeviceScreen({super.key, required this.device}) {
-    cacheKeyName = device.remoteId.str;
+    cacheKeyName = device.bluetoothDevice.remoteId.str;
   }
 
   @override
@@ -57,7 +57,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   @override
   void initState() {
     super.initState();
-    _bluetoothManager = BluetoothManager(device: widget.device);
+    _bluetoothManager = BluetoothManager(device: widget.device.bluetoothDevice);
     _preferences = SharedPreferencesWithCache.create(
       cacheOptions: SharedPreferencesWithCacheOptions(
         allowList: <String>{widget.cacheKeyName},
