@@ -50,7 +50,7 @@ class BluetoothManager {
 
   Future<List<SensorEntry>> getMemoryData(Function(String) statusUpdate) async {
     if (_characteristic == null) {
-      throw "Not initialized";
+      throw "Not initialized, characteristic is missing.";
     }
     final processor = MemoCommandProcessor(statusUpdate: statusUpdate);
     final valueSubscription = _characteristic!.onValueReceived.listen(
