@@ -68,19 +68,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       // Note that using those as service list does not work.
       // If this is specified on Android, the plugin throws an exception.
       return [
-        BluetoothConstants.sensorAdvertisementServiceGuid,
         BluetoothConstants.memoServiceGuid,
       ];
     }
     return [];
-  }
-
-  List<ServiceDataFilter> withServiceData() {
-    if (kIsWeb) {
-      // Causes 'Failed to execute 'requestDevice' on 'Bluetooth'' on web.
-      return [];
-    }
-    return [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)];
   }
 
   Future onScanPressed() async {
@@ -95,7 +86,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     }
     try {
       await FlutterBluePlus.startScan(
-        withServiceData: withServiceData(),
+        // withServices does not work on Android, the service is not advertised.
+        // withServices: [BluetoothConstants.memoServiceGuid],
+        // withServiceData works, but there's multiple formats for advertising.
+        // withServiceData [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)]
         webOptionalServices: optionalServices(),
         timeout: const Duration(seconds: 15),
       );
