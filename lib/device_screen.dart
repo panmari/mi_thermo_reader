@@ -9,7 +9,7 @@ import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:icon_craft/icon_craft.dart';
 import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
 
@@ -121,12 +121,15 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
   }
 
-  void getTime() async {
+  void getAndFixTime() async {
     _error = null;
     try {
       await initBluetooth();
       final drift = await _bluetoothManager.getDeviceTimeAndDrift();
       _statusUpdates.add("Device time drift: $drift");
+
+      await _bluetoothManager.setDeviceTimeToNow();
+      _statusUpdates.add("Successfully updated time.");
     } catch (e, trace) {
       _error = "Get time failed: $e";
       log('Get time failed: $e', stackTrace: trace);
@@ -224,8 +227,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
           title: _buildTitle(),
           actions: [
             IconButton(
-              onPressed: () => getTime(),
-              icon: const Icon(Icons.safety_check),
+              onPressed: () => getAndFixTime(),
+              icon: IconCraft(
+                Icon(Icons.schedule),
+                Icon(Icons.healing),
+                secondaryIconSizeFactor: 0.5,
+                alignment: Alignment.bottomLeft,
+                decoration: IconDecoration(
+                  border: IconBorder(color: Theme.of(context).canvasColor),
+                ),
+              ),
             ),
           ],
           bottom: PreferredSize(

@@ -335,10 +335,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_blue_plus_android
-      sha256: cc579dfa1a6d77257fec917bd08dcff9b35acc4e7f5df5ccc1f25e97df2ef153
+      sha256: "31e61095adbbbf0a12189945c8d77118deaca1d39d3dc2eb22170d89fc63c0e2"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.2"
   flutter_blue_plus_darwin:
     dependency: transitive
     description:
@@ -501,6 +501,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  icon_craft:
+    dependency: "direct main"
+    description:
+      name: icon_craft
+      sha256: "9b3484dc86871014d87be20f2d763b67034fd45deca2d8aa9e79d405cb7eee30"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   image:
     dependency: transitive
     description:
