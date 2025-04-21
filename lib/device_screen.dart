@@ -143,6 +143,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
     try {
       final int numEntries =
           _sensorHistory?.missingEntriesSince(DateTime.now()) ?? 5000;
+      if (numEntries == 0) {
+        _statusUpdates.add('No missing entries.');
+        if (mounted) {
+          setState(() {});
+        }
+        return;
+      }
       await initBluetooth();
       // Get config first to wake up device. If this is not done, getMemoryData
       // occasionally only returns partial data.

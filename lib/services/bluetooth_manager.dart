@@ -82,6 +82,7 @@ class BluetoothManager {
     Function(String) statusUpdate,
   ) async {
     final processor = MemoCommandProcessor(statusUpdate: statusUpdate);
+    statusUpdate('Requesting $numEntries from memory');
     return _execute(BluetoothCommands.getMemoCommand(numEntries), processor);
   }
 
