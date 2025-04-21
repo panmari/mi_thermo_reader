@@ -21,12 +21,33 @@ class KnownDevice {
   final String platformName;
   @ProtoField(4)
   final String remoteId;
+  // Intentionally not part of the proto, can not be encoded.
+  BluetoothDevice? _bluetoothDevice;
 
   KnownDevice({
     required this.advName,
     required this.platformName,
     required this.remoteId,
-  });
+    BluetoothDevice? bluetoothDevice,
+  }) {
+    _bluetoothDevice = bluetoothDevice;
+  }
+
+  static KnownDevice from(BluetoothDevice btDevice) {
+    return KnownDevice(
+      advName: btDevice.advName,
+      platformName: btDevice.platformName,
+      remoteId: btDevice.remoteId.str,
+      bluetoothDevice: btDevice,
+    );
+  }
+
+  BluetoothDevice get bluetoothDevice {
+    if (_bluetoothDevice != null) {
+      return _bluetoothDevice!;
+    }
+    return BluetoothDevice.fromId(remoteId);
+  }
 
   String cacheKey() {
     return remoteId;
@@ -64,7 +85,7 @@ class KnownDevice {
     return base64Encode(device.toProto().writeToBuffer());
   }
 
-  static Future add(WidgetRef ref, BluetoothDevice device) async {
+  static Future add(WidgetRef ref, BluetoothDevice btDevice) async {
     final preferences = await ref.read(fetchSharedPreferencesProvider.future);
 
     List<String> previousKnown = [];
@@ -73,13 +94,7 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = _encode(
-      KnownDevice(
-        advName: device.advName,
-        platformName: device.platformName,
-        remoteId: device.remoteId.str,
-      ),
-    );
+    final encodedDevice = _encode(KnownDevice.from(btDevice));
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
       await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);

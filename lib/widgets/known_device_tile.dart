@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
@@ -71,10 +70,9 @@ class KnownDeviceTile extends ConsumerWidget {
                   SizedBox(height: 8.0),
                   OutlinedButton(
                     onPressed:
-                        () => Navigator.of(context).pushNamed(
-                          DeviceScreen.routeName,
-                          arguments: BluetoothDevice.fromId(device.remoteId),
-                        ),
+                        () => Navigator.of(
+                          context,
+                        ).pushNamed(DeviceScreen.routeName, arguments: device),
                     child: const Text('Open'),
                   ),
                 ],

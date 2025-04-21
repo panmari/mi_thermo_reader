@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
 
       onGenerateRoute: (settings) {
         if (settings.name == DeviceScreen.routeName) {
-          final device = settings.arguments as BluetoothDevice;
+          final device = settings.arguments as KnownDevice;
           return MaterialPageRoute(
             builder: (context) {
               return DeviceScreen(device: device);

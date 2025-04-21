@@ -116,11 +116,13 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     }
   }
 
-  void onOpenPressed(BluetoothDevice device) {
-    KnownDevice.add(ref, device).then((_) {
-      log('Added to $device known devices');
+  void onOpenPressed(BluetoothDevice btDevice) {
+    KnownDevice.add(ref, btDevice).then((_) {
+      log('Added to $btDevice known devices');
     });
-    Navigator.of(context).pushNamed(DeviceScreen.routeName, arguments: device);
+    Navigator.of(
+      context,
+    ).pushNamed(DeviceScreen.routeName, arguments: KnownDevice.from(btDevice));
   }
 
   Future onRefresh() {

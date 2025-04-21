@@ -327,42 +327,42 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_blue_plus
-      sha256: "2d926dbef0fd6c58d4be8fca9eaaf1ba747c0ccb8373ddd5386665317e26eb61"
+      sha256: "49f474cf38d669de8ce1e9dd83fe597a7f022a406241efcde4989294a1e2c89d"
       url: "https://pub.dev"
     source: hosted
-    version: "1.35.3"
+    version: "1.35.4"
   flutter_blue_plus_android:
     dependency: transitive
     description:
       name: flutter_blue_plus_android
-      sha256: c1d83f84b514e46345a8a58599c428f20b11e78379521e0d3b0611c7b7cbf2c1
+      sha256: cc579dfa1a6d77257fec917bd08dcff9b35acc4e7f5df5ccc1f25e97df2ef153
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "4.0.0"
   flutter_blue_plus_darwin:
     dependency: transitive
     description:
       name: flutter_blue_plus_darwin
-      sha256: "8d0a0f11f83b13dda173396b7e4028b4e8656bc8dbbc82c26a7e49aafc62644b"
+      sha256: "93893a6aa8197d57daeb9532bbe74a7073ed21b4085161ca6b81b48518c50a8d"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "4.0.0"
   flutter_blue_plus_linux:
     dependency: transitive
     description:
       name: flutter_blue_plus_linux
-      sha256: "1d367ed378b2bd6c3b9685fda7044e1d2f169884802b7dec7badb31a99a72660"
+      sha256: "297b31fa7e3c7ce938ff01f2854dc2767abcb6c5d463aa4fb27af4900163c946"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   flutter_blue_plus_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: flutter_blue_plus_platform_interface
-      sha256: "114f8e85a03a28a48d707a4df6cc9218e1f2005cf260c5e815e5585a00da5778"
+      sha256: "09e94c8b75de055ca02016cfc113400060a8d04a398774f6622e6e5525281b74"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "4.0.1"
   flutter_blue_plus_web:
     dependency: transitive
     description:
@@ -621,6 +621,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  mockito:
+    dependency: "direct dev"
+    description:
+      name: mockito
+      sha256: f99d8d072e249f719a5531735d146d8cf04c580d93920b04de75bef6dfb2daf6
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.4.5"
   nested:
     dependency: transitive
     description:
@@ -825,10 +833,10 @@ packages:
     dependency: transitive
     description:
       name: shared_preferences_android
-      sha256: c2c8c46297b5d6a80bed7741ec1f2759742c77d272f1a1698176ae828f8e1a18
+      sha256: "20cbd561f743a342c76c151d6ddb93a9ce6005751e7aa458baad3858bfbfb6ac"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.9"
+    version: "2.4.10"
   shared_preferences_foundation:
     dependency: transitive
     description:
@@ -846,7 +854,7 @@ packages:
     source: hosted
     version: "2.4.1"
   shared_preferences_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: shared_preferences_platform_interface
       sha256: "57cbf196c486bc2cf1f02b85784932c6094376284b3ad5779d1b1c6c6a816b80"
@@ -1038,18 +1046,18 @@ packages:
     dependency: transitive
     description:
       name: web_socket
-      sha256: "3c12d96c0c9a4eec095246debcea7b86c0324f22df69893d538fcc6f1b8cce83"
+      sha256: bfe6f435f6ec49cb6c01da1e275ae4228719e59a6b067048c51e72d9d63bcc4b
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.6"
+    version: "1.0.0"
   web_socket_channel:
     dependency: transitive
     description:
       name: web_socket_channel
-      sha256: "0b8e2457400d8a859b7b2030786835a28a8e80836ef64402abef392ff4f1d0e5"
+      sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.2"
+    version: "3.0.3"
   xdg_directories:
     dependency: transitive
     description:
