@@ -65,10 +65,12 @@ class BluetoothManager {
     );
     statusUpdate("Start get memo: Success");
 
-    final result = await processor.waitForResults();
-    valueSubscription.cancel();
-
-    return result;
+    try {
+      final result = await processor.waitForResults();
+      return result;
+    } finally {
+      valueSubscription.cancel();
+    }
   }
 
   Future<Duration> getDeviceTimeAndDrift() async {

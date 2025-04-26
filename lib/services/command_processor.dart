@@ -10,7 +10,9 @@ abstract class CommandProcessor<T> {
     done.completeError(error, trace);
   }
 
+  // Callees should wait for results while data arrives. Note that this might
+  // give a TimeoutException.
   Future<T> waitForResults() {
-    return done.future;
+    return done.future.timeout(Duration(seconds: 30));
   }
 }
