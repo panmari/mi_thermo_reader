@@ -2,6 +2,9 @@ import 'dart:async';
 
 abstract class CommandProcessor<T> {
   final done = Completer<T>();
+  final Duration timeout;
+
+  CommandProcessor({this.timeout = const Duration(seconds: 30)});
 
   // Executed when new data from the command is received.
   void onData(List<int> values);
@@ -13,6 +16,6 @@ abstract class CommandProcessor<T> {
   // Callees should wait for results while data arrives. Note that this might
   // give a TimeoutException.
   Future<T> waitForResults() {
-    return done.future.timeout(Duration(seconds: 30));
+    return done.future.timeout(timeout);
   }
 }

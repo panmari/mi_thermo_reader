@@ -153,7 +153,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
       await initBluetooth();
       // Get config first to wake up device. If this is not done, getMemoryData
       // occasionally only returns partial data.
-      await _bluetoothManager.getConfig();
+      try {
+        await _bluetoothManager.getConfig();
+      } on TimeoutException {
+        _statusUpdates.add('Get config timed out, ignoring...');
+      }
       final newEntries = await _bluetoothManager.getMemoryData(numEntries, (
         update,
       ) {
