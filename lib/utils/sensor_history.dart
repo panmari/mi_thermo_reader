@@ -34,7 +34,7 @@ class SensorHistory {
     SensorHistory? old,
     List<SensorEntry> newEntries,
   ) {
-    final List<SensorEntry> updated = List.from(old?.sensorEntries ?? []) ;
+    final List<SensorEntry> updated = List.from(old?.sensorEntries ?? []);
     updated.addAll(newEntries);
     // They are sent in reverse chronological order, and might be received out of order.
     // Plus there might be retries. Be very defensive about keeping each value only once.
