@@ -57,6 +57,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 
   @override
   void dispose() {
+    FlutterBluePlus.stopScan();
     _scanResultsSubscription.cancel();
     _isScanningSubscription.cancel();
     super.dispose();
@@ -102,14 +103,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     }
   }
 
-  Future onStopPressed() async {
-    try {
-      FlutterBluePlus.stopScan();
-    } catch (e) {
-      log('Stop scan failed: $e');
-    }
-  }
-
   void onOpenPressed(BluetoothDevice btDevice) {
     KnownDevice.add(ref, btDevice).then((_) {
       log('Added to $btDevice known devices');
@@ -131,10 +124,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 
   Widget _buildScanButton(BuildContext context) {
     if (FlutterBluePlus.isScanningNow) {
-      return FloatingActionButton(
-        onPressed: onStopPressed,
-        child: const Icon(Icons.stop),
-      );
+      return SizedBox();
     } else {
       return FloatingActionButton(
         onPressed: onScanPressed,
