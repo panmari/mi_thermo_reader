@@ -245,6 +245,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           title: _buildTitle(),
           actions: [
             IconButton(
+              tooltip: "Fix Time on device",
               onPressed: () => getAndFixTime(),
               icon: IconCraft(
                 Icon(Icons.schedule),

@@ -57,7 +57,7 @@ void main() {
             .onPressed,
         isNotNull,
       );
-      expect(find.byIcon(Icons.safety_check), findsOneWidget);
+      expect(find.byTooltip(RegExp("Fix Time")), findsOneWidget);
       expect(
         find.text("No entries available, click [Update] to fetch data"),
         findsOneWidget,
