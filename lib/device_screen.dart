@@ -141,14 +141,32 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Future updateData() async {
     try {
+      final int numEntries =
+          _sensorHistory?.missingEntriesSince(DateTime.now()) ?? 5000;
+      if (numEntries == 0) {
+        _statusUpdates.add('No missing entries.');
+        if (mounted) {
+          setState(() {});
+        }
+        return;
+      }
       await initBluetooth();
-      final newEntries = await _bluetoothManager.getMemoryData((update) {
+      // Get config first to wake up device. If this is not done, getMemoryData
+      // occasionally only returns partial data.
+      try {
+        await _bluetoothManager.getConfig();
+      } on TimeoutException {
+        _statusUpdates.add('Get config timed out, ignoring...');
+      }
+      final newEntries = await _bluetoothManager.getMemoryData(numEntries, (
+        update,
+      ) {
         _statusUpdates.add(update);
         if (mounted) {
           setState(() {});
         }
       });
-      _sensorHistory = SensorHistory(sensorEntries: newEntries);
+      _sensorHistory = SensorHistory.createUpdated(_sensorHistory, newEntries);
       _statusUpdates.add('Got sensor history: $_sensorHistory');
       _preferences.then((p) {
         final encodedEntries = _sensorHistory!.toBase64ProtoString();
@@ -227,6 +245,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           title: _buildTitle(),
           actions: [
             IconButton(
+              tooltip: "Fix Time on device",
               onPressed: () => getAndFixTime(),
               icon: IconCraft(
                 Icon(Icons.schedule),
