@@ -41,6 +41,8 @@ dev_dependencies:
   mockito: ^5.4.5
   shared_preferences_platform_interface:
   flutter_blue_plus_platform_interface: 
+  integration_test:
+    sdk: flutter
 
 flutter:
   uses-material-design: true
