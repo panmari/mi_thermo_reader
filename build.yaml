@@ -1,0 +1,13 @@
+targets:
+  $default:
+    sources:
+      - $package$
+      - lib/$lib$
+      - lib/**
+      - test/**
+      - integration_test/**
+    builders:
+      mockito|mockBuilder:
+        generate_for:
+          - test/**
+          - integration_test/**
