@@ -81,8 +81,8 @@ class KnownDevice {
     );
   }
 
-  static String _encode(KnownDevice device) {
-    return base64Encode(device.toProto().writeToBuffer());
+  String encode() {
+    return base64Encode(toProto().writeToBuffer());
   }
 
   static Future add(WidgetRef ref, BluetoothDevice btDevice) async {
@@ -94,7 +94,7 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = _encode(KnownDevice.from(btDevice));
+    final encodedDevice = KnownDevice.from(btDevice).encode();
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
       await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);
@@ -111,7 +111,7 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = _encode(device);
+    final encodedDevice = device.encode();
     previousKnown.remove(encodedDevice);
     await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);
     await preferences.remove(device.cacheKey()); // Removes cached sensor data.

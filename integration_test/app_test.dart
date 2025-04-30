@@ -2,27 +2,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mi_thermo_reader/main.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:mockito/annotations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mockito/mockito.dart';
 
-import '../test/fake_shared_preferences_async.dart';
+import 'app_test.mocks.dart';
 
+@GenerateNiceMocks([MockSpec<SharedPreferencesWithCache>()])
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final mockPreferences = MockSharedPreferencesWithCache();
 
   group('end-to-end test', () {
-    setUp(() {
-      SharedPreferencesAsyncPlatform.instance = FakeSharedPreferencesAsync();
-    });
-
     testWidgets('tap on the floating action button, verify counter', (
       tester,
     ) async {
-      await tester.pumpWidget(ProviderScope(child: const MyApp()));
+      when(mockPreferences.getStringList('known_devices')).thenReturn([
+        KnownDevice(
+          advName: 'Living room thermometer',
+          platformName: 'Some platform name',
+          remoteId: '00:00:01:44',
+        ).encode(),
+        KnownDevice(
+          advName: 'Bed room thermometer',
+          platformName: 'Some other platform name',
+          remoteId: '00:00:01:33',
+        ).encode(),
+      ]);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fetchSharedPreferencesProvider.overrideWith((_) => mockPreferences),
+          ],
+          child: const MyApp(),
+        ),
+      );
       // This is required prior to taking the screenshot (Android only).
       await binding.convertFlutterSurfaceToImage();
       await tester.pumpAndSettle();
 
-      await binding.takeScreenshot("screnshot");
+      await binding.takeScreenshot("screenshot");
     });
   });
 }
