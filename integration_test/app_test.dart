@@ -15,9 +15,7 @@ void main() {
   final mockPreferences = MockSharedPreferencesWithCache();
 
   group('end-to-end test', () {
-    testWidgets('tap on the floating action button, verify counter', (
-      tester,
-    ) async {
+    testWidgets('Show known devices on home', (tester) async {
       when(mockPreferences.getStringList('known_devices')).thenReturn([
         KnownDevice(
           advName: 'Living room thermometer',
@@ -42,7 +40,10 @@ void main() {
       await binding.convertFlutterSurfaceToImage();
       await tester.pumpAndSettle();
 
-      await binding.takeScreenshot("screenshot");
+      await binding.takeScreenshot("home_screen_with_known_devices");
+
+      expect(find.text('Living room thermometer'), findsOneWidget);
+      expect(find.text('Bed room thermometer'), findsOneWidget);
     });
   });
 }
