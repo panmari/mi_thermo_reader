@@ -14,20 +14,22 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   final mockPreferences = MockSharedPreferencesWithCache();
 
+  setUp(() {
+    when(mockPreferences.getStringList('known_devices')).thenReturn([
+      KnownDevice(
+        advName: 'Living room thermometer',
+        platformName: 'Some platform name',
+        remoteId: '00:00:01:44',
+      ).encode(),
+      KnownDevice(
+        advName: 'Bed room thermometer',
+        platformName: 'Some other platform name',
+        remoteId: '00:00:01:33',
+      ).encode(),
+    ]);
+  });
   group('end-to-end test', () {
-    testWidgets('Show known devices on home', (tester) async {
-      when(mockPreferences.getStringList('known_devices')).thenReturn([
-        KnownDevice(
-          advName: 'Living room thermometer',
-          platformName: 'Some platform name',
-          remoteId: '00:00:01:44',
-        ).encode(),
-        KnownDevice(
-          advName: 'Bed room thermometer',
-          platformName: 'Some other platform name',
-          remoteId: '00:00:01:33',
-        ).encode(),
-      ]);
+    testWidgets('Show known devices on home and clickable', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -44,6 +46,16 @@ void main() {
 
       expect(find.text('Living room thermometer'), findsOneWidget);
       expect(find.text('Bed room thermometer'), findsOneWidget);
+
+      await tester.tap(find.text('Living room thermometer'));
+      await tester.pumpAndSettle();
+
+      // Device space should show detailed name.
+      expect(find.text('00:00:01:44'), findsOneWidget);
+    });
+
+    testWidgets('Device page shows stuff', (tester) async {
+      // TODO
     });
   });
 }
