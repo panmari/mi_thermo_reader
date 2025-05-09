@@ -104,6 +104,8 @@ class BluetoothManager {
   }
 
   void dispose() {
-    device.disconnect();
+    if (device.isConnected) {
+      device.disconnect();
+    }
   }
 }
