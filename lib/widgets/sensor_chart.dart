@@ -344,7 +344,7 @@ class SensorChart extends StatelessWidget {
                   }).toList();
                 },
                 touchTooltipData: LineTouchTooltipData(
-                  tooltipRoundedRadius: 8,
+                  tooltipBorderRadius: BorderRadius.circular(8),
                   tooltipPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,

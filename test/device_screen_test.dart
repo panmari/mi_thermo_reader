@@ -27,6 +27,7 @@ void main() {
   );
 
   when(mockBtDevice.remoteId).thenReturn(DeviceIdentifier("00:11:22"));
+  when(mockBtDevice.isConnected).thenReturn(true);
   when(mockBtDevice.disconnect());
 
   group('DeviceScreen Tests', () {
