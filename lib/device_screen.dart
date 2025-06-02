@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
@@ -206,7 +207,14 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cachedSensorHistory = widget.device.getCachedSensorHistory(ref);
+    SensorHistory? cachedSensorHistory = widget.device.getCachedSensorHistory(
+      ref,
+    );
+    if (cachedSensorHistory == null && kDebugMode) {
+      cachedSensorHistory = SensorHistory(
+        sensorEntries: _createFakeSensorData(2000),
+      );
+    }
     final filteredSensorEntries = _filter(cachedSensorHistory);
     return ScaffoldMessenger(
       child: Scaffold(
