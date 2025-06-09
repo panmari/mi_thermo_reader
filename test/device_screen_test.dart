@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:flutter_blue_plus_platform_interface/flutter_blue_plus_platform_interface.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart' as fbp;
 
 import 'device_screen_test.mocks.dart';
-import 'fake_shared_preferences_async.dart';
 
-@GenerateMocks([fbp.BluetoothDevice])
+@GenerateNiceMocks([
+  MockSpec<fbp.BluetoothDevice>(),
+  MockSpec<SharedPreferencesWithCache>(),
+])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  final mockPreferences = MockSharedPreferencesWithCache();
   final mockBtDevice = MockBluetoothDevice();
   final testKnownDevice = KnownDevice(
     advName: "test adv name",
@@ -24,14 +30,13 @@ void main() {
     bluetoothDevice: mockBtDevice,
   );
 
-  when(mockBtDevice.remoteId).thenReturn(DeviceIdentifier("00:11:22"));
-  when(mockBtDevice.isConnected).thenReturn(true);
-  when(mockBtDevice.disconnect());
-
   group('DeviceScreen Tests', () {
     setUp(() {
-      SharedPreferencesAsyncPlatform.instance = FakeSharedPreferencesAsync();
       FlutterBluePlusPlatform.instance = FakeFlutterBluePlus();
+      when(mockBtDevice.remoteId).thenReturn(DeviceIdentifier("00:11:22"));
+      when(mockBtDevice.isConnected).thenReturn(true);
+      when(mockBtDevice.disconnect()).thenAnswer((_) async {});
+      when(mockPreferences.getString('00:11:22')).thenReturn("");
     });
 
     tearDown(() {
@@ -42,7 +47,12 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
-        MaterialApp(home: DeviceScreen(device: testKnownDevice)),
+        ProviderScope(
+          overrides: [
+            fetchSharedPreferencesProvider.overrideWith((_) => mockPreferences),
+          ],
+          child: MaterialApp(home: DeviceScreen(device: testKnownDevice)),
+        ),
       );
 
       expect(find.text('test platform name, (00:11:22)'), findsOneWidget);
