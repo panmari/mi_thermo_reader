@@ -973,10 +973,10 @@ packages:
     dependency: "direct main"
     description:
       name: stats
-      sha256: "35dba13a465ac4f788d2f21211bb4736902f49ef02471ba39337d56c4644290c"
+      sha256: f08a0b8dcf95cc68960e85eaa21c80e8837fb816c719a99a0edd36c44831d403
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.0"
+    version: "3.0.0"
   stream_channel:
     dependency: transitive
     description:

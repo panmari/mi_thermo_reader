@@ -9,7 +9,7 @@ part 'sensor_history.g.dart';
 class SensorHistory {
   @ProtoField(2)
   final List<SensorEntry> sensorEntries;
-  Stats<int>? _intervalStats;
+  Stats? _intervalStats;
 
   SensorHistory({required this.sensorEntries}) {
     if (sensorEntries.length < 2) {
@@ -74,7 +74,10 @@ class SensorHistory {
     if (_intervalStats == null) {
       return Duration.zero;
     }
-    return Duration(seconds: _intervalStats!.standardDeviation.toInt());
+
+    return Duration(
+      seconds: _intervalStats!.populationValues.standardDeviation.toInt(),
+    );
   }
 
   @override

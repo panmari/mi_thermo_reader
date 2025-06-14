@@ -24,7 +24,7 @@ dependencies:
   fixnum: ^1.1.1 # For generated proto code.
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
-  stats: ^2.1.0
+  stats: ^3.0.0
   collection: ^1.19.1
   icon_craft: ^0.1.1
 
