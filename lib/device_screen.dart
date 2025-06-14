@@ -4,36 +4,31 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:icon_craft/icon_craft.dart';
 import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
 
-class DeviceScreen extends StatefulWidget {
+class DeviceScreen extends ConsumerStatefulWidget {
   final KnownDevice device;
-  late final String cacheKeyName;
 
   static const routeName = '/DeviceScreen';
 
-  DeviceScreen({super.key, required this.device}) {
-    cacheKeyName = device.bluetoothDevice.remoteId.str;
-  }
+  const DeviceScreen({super.key, required this.device});
 
   @override
-  State<DeviceScreen> createState() => _DeviceScreenState();
+  ConsumerState<DeviceScreen> createState() => _DeviceScreenState();
 }
 
-class _DeviceScreenState extends State<DeviceScreen> {
+class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   bool _isUpdatingData = false;
   final List<String> _statusUpdates = [];
   String? _error;
-  SensorHistory? _sensorHistory;
   int lastNdaysFilter = -1;
-  late final Future<SharedPreferencesWithCache> _preferences;
   late final BluetoothManager _bluetoothManager;
 
   List<SensorEntry> _createFakeSensorData(int nElements) {
@@ -58,38 +53,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
   void initState() {
     super.initState();
     _bluetoothManager = BluetoothManager(device: widget.device.bluetoothDevice);
-    _preferences = SharedPreferencesWithCache.create(
-      cacheOptions: SharedPreferencesWithCacheOptions(
-        allowList: <String>{widget.cacheKeyName},
-      ),
-    );
-
-    try {
-      _preferences.then((p) {
-        final encodedEntries = p.getString(widget.cacheKeyName);
-        if (encodedEntries == null) {
-          log("No entries for device");
-          return;
-        }
-        _sensorHistory = SensorHistory.from(encodedEntries);
-        setState(() {
-          _statusUpdates.add('Read $_sensorHistory from preferences.');
-        });
-      });
-    } on ArgumentError {
-      setState(() {
-        _statusUpdates.add('No entries in preferences.');
-      });
-      if (_sensorHistory == null && kDebugMode) {
-        _sensorHistory = SensorHistory(
-          sensorEntries: _createFakeSensorData(2000),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _statusUpdates.add('Failed loading entries from preferences: $e');
-      });
-    }
   }
 
   @override
@@ -140,9 +103,14 @@ class _DeviceScreenState extends State<DeviceScreen> {
   }
 
   Future updateData() async {
+    final cachedSensorHistory =
+        widget.device.getCachedSensorHistory(ref) ??
+        SensorHistory(sensorEntries: []);
+
     try {
-      final int numEntries =
-          _sensorHistory?.missingEntriesSince(DateTime.now()) ?? 5000;
+      final int numEntries = cachedSensorHistory.missingEntriesSince(
+        DateTime.now(),
+      );
       if (numEntries == 0) {
         _statusUpdates.add('No missing entries.');
         if (mounted) {
@@ -166,26 +134,26 @@ class _DeviceScreenState extends State<DeviceScreen> {
           setState(() {});
         }
       });
-      _sensorHistory = SensorHistory.createUpdated(_sensorHistory, newEntries);
-      _statusUpdates.add('Got sensor history: $_sensorHistory');
-      _preferences.then((p) {
-        final encodedEntries = _sensorHistory!.toBase64ProtoString();
-        p.setString(widget.cacheKeyName, encodedEntries);
-      });
+      final updatedSensorHistory = SensorHistory.createUpdated(
+        cachedSensorHistory,
+        newEntries,
+      );
+      _statusUpdates.add('Updated sensor history: $updatedSensorHistory');
+      widget.device.setCachedSensorHistory(ref, updatedSensorHistory);
     } catch (e, trace) {
       _error = "Updating data failed: $e";
       log('Updating data failed: $e', stackTrace: trace);
     }
   }
 
-  List<SensorEntry> _filteredSensorEntries() {
-    if (_sensorHistory == null) {
+  List<SensorEntry> _filter(SensorHistory? history) {
+    if (history == null) {
       return [];
     }
     if (lastNdaysFilter == -1) {
-      return _sensorHistory!.sensorEntries;
+      return history.sensorEntries;
     }
-    return _sensorHistory!.lastEntriesFrom(Duration(days: lastNdaysFilter));
+    return history.lastEntriesFrom(Duration(days: lastNdaysFilter));
   }
 
   Widget _makeDayFilterBar() {
@@ -239,6 +207,15 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SensorHistory? cachedSensorHistory = widget.device.getCachedSensorHistory(
+      ref,
+    );
+    if (cachedSensorHistory == null && kDebugMode) {
+      cachedSensorHistory = SensorHistory(
+        sensorEntries: _createFakeSensorData(2000),
+      );
+    }
+    final filteredSensorEntries = _filter(cachedSensorHistory);
     return ScaffoldMessenger(
       child: Scaffold(
         appBar: AppBar(
@@ -277,13 +254,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                     child:
-                        _filteredSensorEntries().isEmpty
+                        filteredSensorEntries.isEmpty
                             ? Text(
                               "No entries available, click [Update] to fetch data",
                             )
-                            : SensorChart(
-                              sensorEntries: _filteredSensorEntries(),
-                            ),
+                            : SensorChart(sensorEntries: filteredSensorEntries),
                   ),
                 ] +
                 _statusUpdates.map((e) => Text(e)).toList(),

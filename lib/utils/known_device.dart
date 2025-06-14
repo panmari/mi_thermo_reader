@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/main.dart';
+import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:proto_annotations/proto_annotations.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
@@ -53,6 +54,36 @@ class KnownDevice {
     return remoteId;
   }
 
+  SensorHistory? getCachedSensorHistory(WidgetRef ref) {
+    final preferencesAsync = ref.watch(fetchSharedPreferencesProvider);
+    final key = cacheKey();
+    return preferencesAsync.when(
+      data: (prefs) {
+        final encodedEntries = prefs.getString(key);
+        if (encodedEntries == null) {
+          log("No entries for device");
+          return null;
+        }
+        return SensorHistory.from(encodedEntries);
+      },
+      error: (error, trace) {
+        log('Key "$key" is not in shared preferences.');
+        return null;
+      },
+      loading: () => null,
+    );
+  }
+
+  Future<void> setCachedSensorHistory(
+    WidgetRef ref,
+    SensorHistory sensorHistory,
+  ) async {
+    final preferences = await ref.read(fetchSharedPreferencesProvider.future);
+
+    final encodedEntries = sensorHistory.toBase64ProtoString();
+    return preferences.setString(cacheKey(), encodedEntries);
+  }
+
   static Iterable<KnownDevice> getAll(WidgetRef ref) {
     final preferencesAsync = ref.watch(fetchSharedPreferencesProvider);
 
@@ -81,8 +112,8 @@ class KnownDevice {
     );
   }
 
-  static String _encode(KnownDevice device) {
-    return base64Encode(device.toProto().writeToBuffer());
+  String encode() {
+    return base64Encode(toProto().writeToBuffer());
   }
 
   static Future add(WidgetRef ref, BluetoothDevice btDevice) async {
@@ -94,7 +125,7 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = _encode(KnownDevice.from(btDevice));
+    final encodedDevice = KnownDevice.from(btDevice).encode();
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
       await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);
@@ -111,7 +142,7 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = _encode(device);
+    final encodedDevice = device.encode();
     previousKnown.remove(encodedDevice);
     await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);
     await preferences.remove(device.cacheKey()); // Removes cached sensor data.

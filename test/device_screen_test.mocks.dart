@@ -11,6 +11,7 @@ import 'package:flutter_blue_plus_platform_interface/flutter_blue_plus_platform_
     as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
+import 'package:shared_preferences/src/shared_preferences_async.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -36,15 +37,15 @@ class _FakeDeviceIdentifier_0 extends _i1.SmartFake
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
-  MockBluetoothDevice() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i2.DeviceIdentifier get remoteId =>
       (super.noSuchMethod(
             Invocation.getter(#remoteId),
             returnValue: _FakeDeviceIdentifier_0(
+              this,
+              Invocation.getter(#remoteId),
+            ),
+            returnValueForMissingStub: _FakeDeviceIdentifier_0(
               this,
               Invocation.getter(#remoteId),
             ),
@@ -59,6 +60,10 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
               this,
               Invocation.getter(#platformName),
             ),
+            returnValueForMissingStub: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#platformName),
+            ),
           )
           as String);
 
@@ -70,6 +75,10 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
               this,
               Invocation.getter(#advName),
             ),
+            returnValueForMissingStub: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#advName),
+            ),
           )
           as String);
 
@@ -78,6 +87,7 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#servicesList),
             returnValue: <_i3.BluetoothService>[],
+            returnValueForMissingStub: <_i3.BluetoothService>[],
           )
           as List<_i3.BluetoothService>);
 
@@ -86,12 +96,17 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#isAutoConnectEnabled),
             returnValue: false,
+            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get isConnected =>
-      (super.noSuchMethod(Invocation.getter(#isConnected), returnValue: false)
+      (super.noSuchMethod(
+            Invocation.getter(#isConnected),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
           as bool);
 
   @override
@@ -99,6 +114,7 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#isDisconnected),
             returnValue: false,
+            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -107,18 +123,26 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#connectionState),
             returnValue: _i5.Stream<_i3.BluetoothConnectionState>.empty(),
+            returnValueForMissingStub:
+                _i5.Stream<_i3.BluetoothConnectionState>.empty(),
           )
           as _i5.Stream<_i3.BluetoothConnectionState>);
 
   @override
   int get mtuNow =>
-      (super.noSuchMethod(Invocation.getter(#mtuNow), returnValue: 0) as int);
+      (super.noSuchMethod(
+            Invocation.getter(#mtuNow),
+            returnValue: 0,
+            returnValueForMissingStub: 0,
+          )
+          as int);
 
   @override
   _i5.Stream<int> get mtu =>
       (super.noSuchMethod(
             Invocation.getter(#mtu),
             returnValue: _i5.Stream<int>.empty(),
+            returnValueForMissingStub: _i5.Stream<int>.empty(),
           )
           as _i5.Stream<int>);
 
@@ -127,6 +151,7 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#onServicesReset),
             returnValue: _i5.Stream<void>.empty(),
+            returnValueForMissingStub: _i5.Stream<void>.empty(),
           )
           as _i5.Stream<void>);
 
@@ -135,6 +160,8 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#bondState),
             returnValue: _i5.Stream<_i3.BluetoothBondState>.empty(),
+            returnValueForMissingStub:
+                _i5.Stream<_i3.BluetoothBondState>.empty(),
           )
           as _i5.Stream<_i3.BluetoothBondState>);
 
@@ -143,6 +170,7 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#isDiscoveringServices),
             returnValue: _i5.Stream<bool>.empty(),
+            returnValueForMissingStub: _i5.Stream<bool>.empty(),
           )
           as _i5.Stream<bool>);
 
@@ -151,6 +179,10 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#id),
             returnValue: _FakeDeviceIdentifier_0(this, Invocation.getter(#id)),
+            returnValueForMissingStub: _FakeDeviceIdentifier_0(
+              this,
+              Invocation.getter(#id),
+            ),
           )
           as _i2.DeviceIdentifier);
 
@@ -162,6 +194,10 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
               this,
               Invocation.getter(#localName),
             ),
+            returnValueForMissingStub: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#localName),
+            ),
           )
           as String);
 
@@ -170,6 +206,10 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#name),
             returnValue: _i4.dummyValue<String>(this, Invocation.getter(#name)),
+            returnValueForMissingStub: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#name),
+            ),
           )
           as String);
 
@@ -178,6 +218,8 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#state),
             returnValue: _i5.Stream<_i3.BluetoothConnectionState>.empty(),
+            returnValueForMissingStub:
+                _i5.Stream<_i3.BluetoothConnectionState>.empty(),
           )
           as _i5.Stream<_i3.BluetoothConnectionState>);
 
@@ -186,6 +228,8 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#servicesStream),
             returnValue: _i5.Stream<List<_i3.BluetoothService>>.empty(),
+            returnValueForMissingStub:
+                _i5.Stream<List<_i3.BluetoothService>>.empty(),
           )
           as _i5.Stream<List<_i3.BluetoothService>>);
 
@@ -194,6 +238,8 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.getter(#services),
             returnValue: _i5.Stream<List<_i3.BluetoothService>>.empty(),
+            returnValueForMissingStub:
+                _i5.Stream<List<_i3.BluetoothService>>.empty(),
           )
           as _i5.Stream<List<_i3.BluetoothService>>);
 
@@ -258,6 +304,10 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
             returnValue: _i5.Future<List<_i3.BluetoothService>>.value(
               <_i3.BluetoothService>[],
             ),
+            returnValueForMissingStub:
+                _i5.Future<List<_i3.BluetoothService>>.value(
+                  <_i3.BluetoothService>[],
+                ),
           )
           as _i5.Future<List<_i3.BluetoothService>>);
 
@@ -266,6 +316,7 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
       (super.noSuchMethod(
             Invocation.method(#readRssi, [], {#timeout: timeout}),
             returnValue: _i5.Future<int>.value(0),
+            returnValueForMissingStub: _i5.Future<int>.value(0),
           )
           as _i5.Future<int>);
 
@@ -282,6 +333,7 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
               {#predelay: predelay, #timeout: timeout},
             ),
             returnValue: _i5.Future<int>.value(0),
+            returnValueForMissingStub: _i5.Future<int>.value(0),
           )
           as _i5.Future<int>);
 
@@ -346,6 +398,150 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
   _i5.Future<void> pair() =>
       (super.noSuchMethod(
             Invocation.method(#pair, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+}
+
+/// A class which mocks [SharedPreferencesWithCache].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSharedPreferencesWithCache extends _i1.Mock
+    implements _i7.SharedPreferencesWithCache {
+  @override
+  Set<String> get keys =>
+      (super.noSuchMethod(
+            Invocation.getter(#keys),
+            returnValue: <String>{},
+            returnValueForMissingStub: <String>{},
+          )
+          as Set<String>);
+
+  @override
+  _i5.Future<void> reloadCache() =>
+      (super.noSuchMethod(
+            Invocation.method(#reloadCache, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  bool containsKey(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#containsKey, [key]),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  Object? get(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#get, [key]),
+            returnValueForMissingStub: null,
+          )
+          as Object?);
+
+  @override
+  bool? getBool(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#getBool, [key]),
+            returnValueForMissingStub: null,
+          )
+          as bool?);
+
+  @override
+  int? getInt(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#getInt, [key]),
+            returnValueForMissingStub: null,
+          )
+          as int?);
+
+  @override
+  double? getDouble(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#getDouble, [key]),
+            returnValueForMissingStub: null,
+          )
+          as double?);
+
+  @override
+  String? getString(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#getString, [key]),
+            returnValueForMissingStub: null,
+          )
+          as String?);
+
+  @override
+  List<String>? getStringList(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#getStringList, [key]),
+            returnValueForMissingStub: null,
+          )
+          as List<String>?);
+
+  @override
+  _i5.Future<void> setBool(String? key, bool? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setBool, [key, value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setInt(String? key, int? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setInt, [key, value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setDouble(String? key, double? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setDouble, [key, value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setString(String? key, String? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setString, [key, value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setStringList(String? key, List<String>? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setStringList, [key, value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> remove(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#remove, [key]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> clear() =>
+      (super.noSuchMethod(
+            Invocation.method(#clear, []),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
