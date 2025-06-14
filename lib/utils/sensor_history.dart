@@ -65,7 +65,7 @@ class SensorHistory {
   }
 
   Duration averageInterval() {
-    return Duration(seconds: _intervalStats.average.toInt());
+    return Duration(seconds: _intervalStats.mean.toInt());
   }
 
   Duration stdInterval() {
@@ -86,6 +86,6 @@ class SensorHistory {
     if (diff < Duration.zero) {
       return 0;
     }
-    return diff.inSeconds.toInt() ~/ _intervalStats.average.toInt();
+    return diff.inSeconds.toInt() ~/ _intervalStats.mean.toInt();
   }
 }

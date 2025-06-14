@@ -407,7 +407,6 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
 /// A class which mocks [SharedPreferencesWithCache].
 ///
 /// See the documentation for Mockito's code generation for more information.
-// ignore: must_be_immutable
 class MockSharedPreferencesWithCache extends _i1.Mock
     implements _i7.SharedPreferencesWithCache {
   @override
