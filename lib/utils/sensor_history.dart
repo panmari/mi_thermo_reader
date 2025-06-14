@@ -9,12 +9,11 @@ part 'sensor_history.g.dart';
 class SensorHistory {
   @ProtoField(2)
   final List<SensorEntry> sensorEntries;
-  late final Stats<int> _intervalStats;
+  Stats<int>? _intervalStats;
 
   SensorHistory({required this.sensorEntries}) {
     if (sensorEntries.length < 2) {
-      // Initialize with a reasonable default to avoid null handling.
-      _intervalStats = Stats(0, 0, 0, 0, 0, 0);
+      // Can't define stats, return early.
       return;
     }
     List<int> intervalInSeconds = [];
@@ -65,11 +64,17 @@ class SensorHistory {
   }
 
   Duration averageInterval() {
-    return Duration(seconds: _intervalStats.mean.toInt());
+    if (_intervalStats == null) {
+      return Duration.zero;
+    }
+    return Duration(seconds: _intervalStats!.mean.toInt());
   }
 
   Duration stdInterval() {
-    return Duration(seconds: _intervalStats.standardDeviation.toInt());
+    if (_intervalStats == null) {
+      return Duration.zero;
+    }
+    return Duration(seconds: _intervalStats!.standardDeviation.toInt());
   }
 
   @override
@@ -78,7 +83,7 @@ class SensorHistory {
   }
 
   int missingEntriesSince(DateTime dateTime) {
-    if (sensorEntries.length < 2) {
+    if (sensorEntries.length < 2 || _intervalStats == null) {
       // Can't compute interval, return early with a large value
       return 5000;
     }
@@ -86,6 +91,6 @@ class SensorHistory {
     if (diff < Duration.zero) {
       return 0;
     }
-    return diff.inSeconds.toInt() ~/ _intervalStats.mean.toInt();
+    return diff.inSeconds.toInt() ~/ _intervalStats!.mean.toInt();
   }
 }
