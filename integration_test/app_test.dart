@@ -49,11 +49,6 @@ void main() {
         remoteId: '00:00:01:33',
       ).encode(),
     ]);
-    when(mockPreferences.getString('00:00:01:44')).thenReturn(
-      SensorHistory(
-        sensorEntries: _createFakeSensorData(200),
-      ).toBase64ProtoString(),
-    );
   });
 
   tearDown(() {
@@ -80,7 +75,43 @@ void main() {
       expect(find.text('Bed room thermometer'), findsOneWidget);
     });
 
-    testWidgets('Device page shows stuff', (tester) async {
+    testWidgets('Device page shows cached data', (tester) async {
+      when(mockPreferences.getString('00:00:01:44')).thenReturn(
+        SensorHistory(
+          sensorEntries: _createFakeSensorData(200),
+        ).toBase64ProtoString(),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fetchSharedPreferencesProvider.overrideWith((_) => mockPreferences),
+          ],
+          child: const MyApp(),
+        ),
+      );
+      // This is required prior to taking the screenshot (Android only).
+      await binding.convertFlutterSurfaceToImage();
+      await tester.pumpAndSettle();
+
+      // Does not correctly open device screen.
+      await tester.tap(find.text('Open').first);
+      await tester.pumpAndSettle();
+
+      await binding.takeScreenshot("device_screen_with_cached_data");
+
+      // Device space should show detailed name.
+      expect(find.text('Living room, (00:00:01:44)'), findsOneWidget);
+      expect(find.text('Temp (°C)'), findsOneWidget);
+
+      // TODO(panmari): Mock the bluetooth manager to make this call testable.
+      // await tester.tap(
+      //   find.byTooltip("Updates data by connecting to the device.").first,
+      // );
+      // await tester.pumpAndSettle();
+    });
+
+    testWidgets('Device page shows nothing', (tester) async {
+      when(mockPreferences.getString('00:00:01:44')).thenReturn('');
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -99,18 +130,10 @@ void main() {
 
       await binding.takeScreenshot("device_screen_no_data");
 
-      // Device space should show detailed name.
-      expect(find.text('Living room, (00:00:01:44)'), findsOneWidget);
       expect(
-        find.text('No entries available, click [Update] to fetch data'),
+        find.text("No entries available, click [Update] to fetch data"),
         findsOneWidget,
       );
-
-      await tester.tap(
-        find.byTooltip("Updates data by connecting to the device.").first,
-      );
-      await tester.pumpAndSettle();
-      await binding.takeScreenshot("device_screen_no_data");
     });
   });
 }
