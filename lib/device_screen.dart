@@ -9,7 +9,7 @@ import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
-import 'package:icon_craft/icon_craft.dart';
+import 'package:mi_thermo_reader/widgets/popup_menu.dart';
 import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
 
@@ -220,21 +220,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: _buildTitle(),
-          actions: [
-            IconButton(
-              tooltip: "Fix Time on device",
-              onPressed: () => getAndFixTime(),
-              icon: IconCraft(
-                Icon(Icons.schedule),
-                Icon(Icons.healing),
-                secondaryIconSizeFactor: 0.5,
-                alignment: Alignment.bottomLeft,
-                decoration: IconDecoration(
-                  border: IconBorder(color: Theme.of(context).canvasColor),
-                ),
-              ),
-            ),
-          ],
+          actions: [PopupMenu(getAndFixTime: getAndFixTime)],
           bottom: PreferredSize(
             preferredSize: Size.zero,
             child: _isUpdatingData ? LinearProgressIndicator() : SizedBox(),
