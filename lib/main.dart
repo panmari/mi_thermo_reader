@@ -9,6 +9,7 @@ import 'package:mi_thermo_reader/scan_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
+import 'package:mi_thermo_reader/widgets/popup_menu.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -131,6 +132,7 @@ class _MiThermoReaderHomePageState
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Mi Thermometer Reader"),
+        actions: [PopupMenu()],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

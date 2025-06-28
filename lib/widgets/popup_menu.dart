@@ -6,14 +6,14 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_review_plus/app_review_plus.dart';
 
-enum Selection { about, share, rate, fixTime }
+enum Selection { about, rate, fixTime }
 
 /// For retrieving PackageInfo async, the actual PopupMenu is wrapped
 /// in this stateful widget.
 class PopupMenu extends StatefulWidget {
-  final Function getAndFixTime;
+  final Function? getAndFixTime;
 
-  const PopupMenu({super.key, required this.getAndFixTime});
+  const PopupMenu({super.key, this.getAndFixTime});
 
   @override
   State<PopupMenu> createState() => _PopupMenuState();
@@ -70,11 +70,8 @@ class _PopupMenuState extends State<PopupMenu> {
                   developer.log('Value from rating app: $onValue');
                 });
                 break;
-              case Selection.share:
-                // TODO
-                break;
               case Selection.fixTime:
-                widget.getAndFixTime();
+                widget.getAndFixTime!();
                 break;
             }
           },
@@ -86,11 +83,11 @@ class _PopupMenuState extends State<PopupMenu> {
 
   List<PopupMenuEntry<Selection>> _menuItemBuilder(BuildContext context) {
     return [
-      PopupMenuItem<Selection>(
-        value: Selection.fixTime,
-        child: Text('Adjust time'),
-      ),
-      PopupMenuItem<Selection>(value: Selection.share, child: Text('Share')),
+      if (widget.getAndFixTime != null)
+        PopupMenuItem<Selection>(
+          value: Selection.fixTime,
+          child: Text('Adjust time'),
+        ),
       PopupMenuItem<Selection>(
         value: Selection.rate,
         child: Text('Rate this app'),

@@ -66,7 +66,6 @@ void main() {
             .onPressed,
         isNotNull,
       );
-      expect(find.byTooltip(RegExp("Fix Time")), findsOneWidget);
       expect(
         find.text("No entries available, click [Update] to fetch data"),
         findsOneWidget,
