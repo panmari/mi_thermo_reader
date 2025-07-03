@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 import 'package:mi_thermo_reader/services/command_processor.dart';
@@ -10,6 +11,11 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
 
   MemoCommandProcessor({required this.statusUpdate})
     : super(timeout: const Duration(seconds: 60));
+
+  @override
+  final _sensorEntryController = StreamController<SensorEntry>.broadcast();
+
+  Stream<SensorEntry> get sensorEntriesStream => _sensorEntryController.stream;
 
   @override
   void onData(List<int> values) {
@@ -24,12 +30,13 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
     }
     if (data.lengthInBytes >= 13) {
       // Got an entry from memory. Convert it to a SensorEntry.
-      _sensorEntries.add(SensorEntry.parse(data));
+      final entry = SensorEntry.parse(data);
+      _sensorEntryController.add(entry);
       return;
     }
     if (data.lengthInBytes >= 3) {
-      statusUpdate('Done with reading. Got ${_sensorEntries.length} samples');
-      done.complete(_sensorEntries);
+      statusUpdate('Done with reading.');
+      awaitClose();
       return;
     }
     if (data.lengthInBytes == 2) {
@@ -39,5 +46,12 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
       return;
     }
     statusUpdate("data with unexpected size data.lengthInBytes: $data");
+  }
+
+  void awaitClose() {
+    if (!_sensorEntryController.isClosed) {
+      _sensorEntryController.close();
+    }
+    done.complete(); // If you want to signal completion, adjust as needed.
   }
 }
