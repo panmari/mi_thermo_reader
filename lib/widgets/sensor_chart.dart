@@ -29,9 +29,10 @@ class SensorChart extends StatelessWidget {
       return Duration(days: 2);
     }
     if (timeRange.inDays > 1) {
-      return Duration(hours: 6);
+      return Duration(days: 1);
     }
-    return Duration(hours: 3);
+    // Works best for aligning with labels.
+    return Duration(hours: 5);
   }
 
   // Calculate a reasonable interval for horizontal grid lines (based on primary axis - Temperature)
@@ -75,6 +76,7 @@ class SensorChart extends StatelessWidget {
     // Time range (X-axis)
     final minTimestamp =
         sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble();
+    // TODO(panmari): Align minX and maxX to full days if the time range is appropriate.
     // Ensure minX is rounded to the previous full hour
     final minX =
         sensorEntries.first.timestamp
@@ -228,14 +230,11 @@ class SensorChart extends StatelessWidget {
           // Bottom (X - Time Axis)
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
+              minIncluded: false,
               showTitles: true,
               reservedSize: 35, // Space for labels below chart
               interval: bottomTitleInterval,
               getTitlesWidget: (value, TitleMeta meta) {
-                // Avoid drawing labels outside the data range
-                if (value <= minTimestamp || value >= maxTimestamp) {
-                  return Container();
-                }
                 return SideTitleWidget(
                   meta: meta,
                   child: Text(
