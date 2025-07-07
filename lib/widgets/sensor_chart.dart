@@ -231,6 +231,7 @@ class SensorChart extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               minIncluded: false,
+              maxIncluded: false,
               showTitles: true,
               reservedSize: 35, // Space for labels below chart
               interval: bottomTitleInterval,
