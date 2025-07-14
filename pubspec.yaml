@@ -26,7 +26,7 @@ dependencies:
   riverpod_annotation: ^2.6.1
   stats: ^3.0.0
   collection: ^1.19.1
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.2
   package_info_plus: ^8.3.0
   app_review_plus: ^2.3.5
 
