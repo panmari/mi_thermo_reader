@@ -126,14 +126,20 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       } on TimeoutException {
         _statusUpdates.add('Get config timed out, ignoring...');
       }
-      final newEntries = await _bluetoothManager.getMemoryData(numEntries, (
-        update,
-      ) {
-        _statusUpdates.add(update);
-        if (mounted) {
-          setState(() {});
-        }
-      });
+      List<SensorEntry> newEntries = [];
+      try {
+        newEntries = await _bluetoothManager.getMemoryData(numEntries, (
+          update,
+        ) {
+          _statusUpdates.add(update);
+          if (mounted) {
+            setState(() {});
+          }
+        });
+      } on TimeoutException {
+        _error = "Timeout while getting data. Move closer to the device.";
+        return;
+      }
       final updatedSensorHistory = SensorHistory.createUpdated(
         cachedSensorHistory,
         newEntries,
