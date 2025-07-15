@@ -72,12 +72,13 @@ class _MiThermoReaderHomePageState
     final knownDevices = KnownDevice.getAll(ref);
     if (knownDevices.isNotEmpty) {
       return ListView(
-        children:
-            knownDevices
-                .map((d) => KnownDeviceTile(device: d))
-                .toList()
-                .cast<Widget>() +
-            [_addDeviceCard()],
+        children: [
+          ...knownDevices
+              .map((d) => KnownDeviceTile(device: d))
+              .toList()
+              .cast<Widget>(),
+          _addDeviceCard(),
+        ],
       );
     }
     switch (_adapterState) {
