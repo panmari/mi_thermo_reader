@@ -8,7 +8,8 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
   final Function(String) statusUpdate;
   final _sensorEntries = <SensorEntry>[];
 
-  MemoCommandProcessor({required this.statusUpdate});
+  MemoCommandProcessor({required this.statusUpdate})
+    : super(timeout: const Duration(seconds: 60));
 
   @override
   void onData(List<int> values) {

@@ -64,7 +64,7 @@ class KnownDeviceTile extends ConsumerWidget {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.telegram, size: 50.0),
+                  Icon(Icons.device_thermostat, size: 50.0),
                   SizedBox(height: 8.0),
                   Text(_bestName()),
                   SizedBox(height: 8.0),
