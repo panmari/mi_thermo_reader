@@ -103,11 +103,41 @@ class _MiThermoReaderHomePageState
     super.dispose();
   }
 
+  Widget _addDeviceCard() {
+    if (_adapterState == BluetoothAdapterState.off) {
+      return Container();
+    }
+    return Card(
+      margin: EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(Icons.add, size: 50.0),
+              const SizedBox(height: 10),
+              OutlinedButton(
+                onPressed:
+                    () => Navigator.pushNamed(context, ScanScreen.routeName),
+                child: const Text('Add device'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
     if (knownDevices.isNotEmpty) {
       return ListView(
-        children: knownDevices.map((d) => KnownDeviceTile(device: d)).toList(),
+        children:
+            knownDevices
+                .map((d) => KnownDeviceTile(device: d))
+                .toList()
+                .cast<Widget>() +
+            [_addDeviceCard()],
       );
     }
     switch (_adapterState) {
@@ -137,16 +167,6 @@ class _MiThermoReaderHomePageState
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _centerContent(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed:
-            _adapterState == BluetoothAdapterState.off
-                ? null
-                : () {
-                  Navigator.pushNamed(context, ScanScreen.routeName);
-                },
-        tooltip: 'Scan for devices',
-        child: const Icon(Icons.add),
       ),
     );
   }
