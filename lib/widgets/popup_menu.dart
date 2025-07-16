@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -51,8 +52,45 @@ class _PopupMenuState extends State<PopupMenu> {
                   applicationVersion: snapshot.data?.version ?? 'Unknown',
                   children: [
                     Container(padding: const EdgeInsets.fromLTRB(0, 10, 0, 10)),
-                    const Text(
-                      'After patching your the firmware from https://github.com/pvvx/ATC_MiThermometer, it becomes supercharged with a bunch of great capabilites. Most importantly, it saves sensor values to device in a fixed interval.\n\nMi Thermometer Reader helps with reading and visualizing all data stored on device.\n',
+                    RichText(
+                      text: TextSpan(
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        children: [
+                          const TextSpan(
+                            text:
+                                'After patching your device with the firmware from ',
+                          ),
+                          TextSpan(
+                            text: 'https://github.com/pvvx/ATC_MiThermometer',
+                            style: const TextStyle(color: Colors.lightBlue),
+                            recognizer:
+                                TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launchUrl(
+                                      Uri.parse(
+                                        'https://github.com/pvvx/ATC_MiThermometer',
+                                      ),
+                                    );
+                                  },
+                          ),
+                          const TextSpan(text: ' or '),
+                          TextSpan(
+                            text: 'https://github.com/pvvx/THB2',
+                            style: const TextStyle(color: Colors.lightBlue),
+                            recognizer:
+                                TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launchUrl(
+                                      Uri.parse('https://github.com/pvvx/THB2'),
+                                    );
+                                  },
+                          ),
+                          const TextSpan(
+                            text:
+                                ', it becomes supercharged with a bunch of great capabilites. Most importantly, it saves sensor values to device at fixed intervals.\n\nMi Thermometer Reader helps with reading and visualizing all data stored on the device.\n',
+                          ),
+                        ],
+                      ),
                     ),
                     ElevatedButton(
                       onPressed:
