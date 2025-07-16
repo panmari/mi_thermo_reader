@@ -5,6 +5,9 @@ class BluetoothConstants {
   static final memoServiceGuid = Guid("1f10");
   static final memoCharacteristicGuid = Guid("1f1f");
 
+  static final memoServiceTHB2Guid = Guid("fcd2");
+  static final memoCharacteristicTHB2Guid = Guid("fff4");
+
   static const commandTimeBlk = 0x23;
   static const commandMemoBlk = 0x35;
   static const commandConfigBlk = 0x55;

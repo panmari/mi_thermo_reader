@@ -16,6 +16,36 @@ class BluetoothManager {
 
   BluetoothManager({required this.device});
 
+  // Two types of firmwares behave identically, but use different service and characteristic UUIDs.
+  // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#bluetooth-connection-mode
+  // https://pvvx.github.io/THB2/web/GraphMemo.html
+  // This method returns whatever is available in the given services list.
+  BluetoothCharacteristic findCharacteristic(List<BluetoothService> services) {
+    final compatibleServiceUuids = [
+      BluetoothConstants.memoServiceGuid,
+      BluetoothConstants.memoServiceTHB2Guid,
+    ];
+    final memoService = services.firstWhereOrNull(
+      (service) =>
+          service.isPrimary &&
+          compatibleServiceUuids.contains(service.serviceUuid),
+    );
+    if (memoService == null) {
+      throw 'Failed to find compatible service, any of  $compatibleServiceUuids';
+    }
+    final compatibleCharacteristicUuids = [
+      BluetoothConstants.memoCharacteristicGuid,
+      BluetoothConstants.memoCharacteristicTHB2Guid,
+    ];
+    final characteristic = memoService.characteristics.firstWhereOrNull(
+      (c) => compatibleCharacteristicUuids.contains(c.characteristicUuid),
+    );
+    if (characteristic == null) {
+      throw 'Failed to find compatible characteristic, any of $compatibleCharacteristicUuids.';
+    }
+    return characteristic;
+  }
+
   Future<void> init(Function(String) statusUpdate) async {
     if (_characteristic != null) {
       statusUpdate("Already initialized.");
@@ -29,21 +59,7 @@ class BluetoothManager {
     );
     statusUpdate("Discover Services: Success");
 
-    // https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#bluetooth-connection-mode
-    final memoService = services.firstWhereOrNull(
-      (service) =>
-          service.isPrimary &&
-          service.serviceUuid == BluetoothConstants.memoServiceGuid,
-    );
-    if (memoService == null) {
-      throw 'Failed to find service ${BluetoothConstants.memoServiceGuid}';
-    }
-    _characteristic = memoService.characteristics.firstWhereOrNull(
-      (c) => c.characteristicUuid == BluetoothConstants.memoCharacteristicGuid,
-    );
-    if (_characteristic == null) {
-      throw 'Failed to find characteristic ${BluetoothConstants.memoCharacteristicGuid}.';
-    }
+    _characteristic = findCharacteristic(services);
     statusUpdate('Found memo characteristic.');
 
     await _characteristic!.setNotifyValue(true);
