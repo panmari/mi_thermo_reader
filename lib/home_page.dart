@@ -83,7 +83,7 @@ class _MiThermoReaderHomePageState
     }
     switch (_adapterState) {
       case BluetoothAdapterState.on:
-        return const Text('Start by adding devices by clicking on +');
+        return ListView(children: [_addDeviceCard()]);
       case BluetoothAdapterState.off:
         return ErrorMessage(
           message:
