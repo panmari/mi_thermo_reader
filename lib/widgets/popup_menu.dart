@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -88,10 +89,11 @@ class _PopupMenuState extends State<PopupMenu> {
           value: Selection.fixTime,
           child: Text('Adjust time'),
         ),
-      PopupMenuItem<Selection>(
-        value: Selection.rate,
-        child: Text('Rate this app'),
-      ),
+      if (!kIsWeb)
+        PopupMenuItem<Selection>(
+          value: Selection.rate,
+          child: Text('Rate this app'),
+        ),
       PopupMenuItem<Selection>(value: Selection.about, child: Text('About')),
     ];
   }
