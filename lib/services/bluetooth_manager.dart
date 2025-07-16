@@ -31,7 +31,9 @@ class BluetoothManager {
           compatibleServiceUuids.contains(service.serviceUuid),
     );
     if (memoService == null) {
-      throw 'Failed to find compatible service, any of  $compatibleServiceUuids';
+      throw Exception(
+        'Failed to find compatible service, any of  $compatibleServiceUuids',
+      );
     }
     final compatibleCharacteristicUuids = [
       BluetoothConstants.memoCharacteristicGuid,
@@ -41,7 +43,9 @@ class BluetoothManager {
       (c) => compatibleCharacteristicUuids.contains(c.characteristicUuid),
     );
     if (characteristic == null) {
-      throw 'Failed to find compatible characteristic, any of $compatibleCharacteristicUuids.';
+      throw Exception(
+        'Failed to find compatible characteristic, any of $compatibleCharacteristicUuids.',
+      );
     }
     return characteristic;
   }

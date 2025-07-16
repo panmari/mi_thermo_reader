@@ -87,7 +87,7 @@ class _PopupMenuState extends State<PopupMenu> {
                           ),
                           const TextSpan(
                             text:
-                                ', it becomes supercharged with a bunch of great capabilites. Most importantly, it saves sensor values to device at fixed intervals.\n\nMi Thermometer Reader helps with reading and visualizing all data stored on the device.\n',
+                                ', it becomes supercharged with a bunch of great capabilities. Most importantly, it saves sensor values to device at fixed intervals.\n\nMi Thermometer Reader helps with reading and visualizing all data stored on the device.\n',
                           ),
                         ],
                       ),
