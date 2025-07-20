@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mi_thermo_reader/home_page.dart';
 import 'package:mi_thermo_reader/main.dart';
-import 'package:mockito/annotations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'device_screen_test.mocks.dart';
 
