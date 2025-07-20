@@ -14,6 +14,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart' as fbp;
 
 import 'device_screen_test.mocks.dart';
 
+base class FakeFlutterBluePlus extends FlutterBluePlusPlatform {}
+
 @GenerateNiceMocks([
   MockSpec<fbp.BluetoothDevice>(),
   MockSpec<SharedPreferencesWithCache>(),
@@ -83,5 +85,3 @@ void main() {
     });
   });
 }
-
-base class FakeFlutterBluePlus extends FlutterBluePlusPlatform {}
