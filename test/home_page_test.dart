@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'device_screen_test.mocks.dart';
 
-base class FakeFlutterBluePlus extends FlutterBluePlusPlatform {
+base class _FakeFlutterBluePlus extends FlutterBluePlusPlatform {
   @override
   Stream<BmBluetoothAdapterState> get onAdapterStateChanged {
     return Stream.value(
@@ -18,15 +18,14 @@ base class FakeFlutterBluePlus extends FlutterBluePlusPlatform {
   }
 }
 
-@GenerateNiceMocks([MockSpec<SharedPreferencesWithCache>()])
 void main() {
   final mockPreferences = MockSharedPreferencesWithCache();
 
   setUp(() {
-    FlutterBluePlusPlatform.instance = FakeFlutterBluePlus();
+    FlutterBluePlusPlatform.instance = _FakeFlutterBluePlus();
   });
 
-  testWidgets('HomePage displays title and a button', (
+  testWidgets('HomePage if bluetooth is on has "Add device" button', (
     WidgetTester tester,
   ) async {
     // Build our app and trigger a frame.
@@ -38,12 +37,14 @@ void main() {
         child: const MaterialApp(home: MiThermoReaderHomePage()),
       ),
     );
+    // Verify that the initial state is displayed.
+    expect(find.text('Bluetooth adapter state is unknown'), findsOneWidget);
 
     // The adapter state is delivered via a stream. We need to pump the
     // widget again to process the state update.
     await tester.pump();
 
     // Verify that a "add" card is displayed.
-    expect(find.text('Add device'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Add device'), findsOneWidget);
   });
 }
