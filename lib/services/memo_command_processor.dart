@@ -7,15 +7,13 @@ import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
 class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
   final Function(String) statusUpdate;
-  final _sensorEntries = <SensorEntry>[];
 
   MemoCommandProcessor({required this.statusUpdate})
     : super(timeout: const Duration(seconds: 60));
 
-  @override
   final _sensorEntryController = StreamController<SensorEntry>.broadcast();
 
-  Stream<SensorEntry> get sensorEntriesStream => _sensorEntryController.stream;
+  Stream<SensorEntry> get resultStream => _sensorEntryController.stream;
 
   @override
   void onData(List<int> values) {
@@ -52,6 +50,6 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
     if (!_sensorEntryController.isClosed) {
       _sensorEntryController.close();
     }
-    done.complete(); // If you want to signal completion, adjust as needed.
+    done.complete(_sensorEntryController.stream.toList());
   }
 }
