@@ -97,13 +97,28 @@ class BluetoothManager {
     );
   }
 
-  Future<List<SensorEntry>> getMemoryData(
+  Future<Stream<SensorEntry>> getMemoryData(
     int numEntries,
     Function(String) statusUpdate,
   ) async {
     final processor = MemoCommandProcessor(statusUpdate: statusUpdate);
     statusUpdate('Requesting $numEntries from memory');
-    return _execute(BluetoothCommands.getMemoCommand(numEntries), processor);
+    if (_characteristic == null) {
+      throw "Not initialized, characteristic is missing.";
+    }
+    // TODO(panmari): value subscription should be cancelled when the stream is closed.
+    final valueSubscription = _characteristic!.onValueReceived.listen(
+      processor.onData,
+      onError: processor.onError,
+    );
+    device.cancelWhenDisconnected(valueSubscription);
+
+    await _characteristic!.write(
+      BluetoothCommands.getMemoCommand(numEntries),
+      withoutResponse: true,
+    );
+
+    return processor.resultStreamController.stream;
   }
 
   Future<Duration> getDeviceTimeAndDrift() async {

@@ -24,7 +24,7 @@ Future<SharedPreferencesWithCache> fetchSharedPreferences(Ref ref) {
 
 void main() {
   if (kDebugMode) {
-    FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
+    FlutterBluePlus.setLogLevel(LogLevel.error, color: true);
   }
   runApp(ProviderScope(child: const MyApp()));
 }

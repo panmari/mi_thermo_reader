@@ -13,7 +13,8 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
 
   final _sensorEntryController = StreamController<SensorEntry>.broadcast();
 
-  Stream<SensorEntry> get resultStream => _sensorEntryController.stream;
+  StreamController<SensorEntry> get resultStreamController =>
+      _sensorEntryController;
 
   @override
   void onData(List<int> values) {
@@ -47,9 +48,10 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
   }
 
   void awaitClose() {
+    final sensorEntries = _sensorEntryController.stream.toList();
+    done.complete(sensorEntries);
     if (!_sensorEntryController.isClosed) {
       _sensorEntryController.close();
     }
-    done.complete(_sensorEntryController.stream.toList());
   }
 }

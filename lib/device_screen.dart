@@ -146,6 +146,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
         _error = "Timeout while getting data. Move closer to the device.";
         return;
       }
+      print('Got ${newEntries} new entries.');
       final updatedSensorHistory = SensorHistory.createUpdated(
         cachedSensorHistory,
         newEntries,
