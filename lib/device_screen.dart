@@ -168,7 +168,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     return history.lastEntriesFrom(Duration(days: lastNdaysFilter));
   }
 
-  Widget _makeDayFilterBar() {
+  Widget _buildDayFilterBar() {
     return SizedBox(
       height: 60,
       child: ListView.builder(
@@ -217,6 +217,17 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     );
   }
 
+  Widget _buildBatteryBar(SensorHistory? sensorHistory) {
+    if (sensorHistory == null) {
+      return SizedBox();
+    }
+    final lastEntry = sensorHistory.sensorEntries.lastOrNull;
+    if (lastEntry == null || lastEntry.voltageBattery <= 0) {
+      return SizedBox();
+    }
+    return Text("Battery: ${lastEntry.batteryPercentage}%");
+  }
+
   @override
   Widget build(BuildContext context) {
     SensorHistory? cachedSensorHistory = widget.device.getCachedSensorHistory(
@@ -253,7 +264,8 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
             children:
                 <Widget>[
                   _buildErrorMessage(),
-                  _makeDayFilterBar(),
+                  _buildBatteryBar(cachedSensorHistory),
+                  _buildDayFilterBar(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                     child:

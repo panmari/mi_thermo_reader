@@ -18,12 +18,17 @@ class SensorEntry {
   final double temperature;
   @ProtoField(5)
   final double humidity;
+  // In millivolts. Maximum charge is usually around 3000mV.
   @ProtoField(6)
   final int voltageBattery;
 
   @override
   String toString() {
     return 'Index: $index, t: $timestamp, temp: $temperature, h: $humidity, v: $voltageBattery';
+  }
+
+  double get batteryPercentage {
+    return voltageBattery / 3000.0 * 100.0;
   }
 
   static SensorEntry parse(ByteData data) {
