@@ -39,7 +39,7 @@ jobs:
       - run: flutter pub get
       - run: flutter build web --release --base-href="/mi_thermo_reader/"
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           # Upload freshly built web artifact.
           path: './build/web'
