@@ -118,7 +118,13 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
         }
         return;
       }
-      await initBluetooth();
+      try {
+        await initBluetooth();
+      } catch (e, trace) {
+        _error = "Bluetooth initialization failed: $e";
+        log('Bluetooth initialization failed: $e', stackTrace: trace);
+        return;
+      }
       // Get config first to wake up device. If this is not done, getMemoryData
       // occasionally only returns partial data.
       try {
