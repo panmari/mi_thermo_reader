@@ -4,7 +4,7 @@ description: "An app for reading thermometer values of Mi Thermometer flashed wi
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.1.0+7
+version: 1.1.1+8
 
 environment:
   sdk: ^3.7.0
@@ -14,16 +14,16 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  flutter_blue_plus:
-  proto_annotations: 
-  protobuf:
+  flutter_blue_plus: ^1.35.5
+  proto_annotations: ^5.0.0
+  protobuf: ^4.2.0
   shared_preferences: ^2.5.2
   provider: ^6.1.2
   fl_chart: ^1.0.0
   intl: ^0.20.2
   fixnum: ^1.1.1 # For generated proto code.
-  flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
+  flutter_riverpod: ^3.0.0-dev.17
+  riverpod_annotation: ^3.0.0-dev.17
   stats: ^3.0.0
   collection: ^1.19.1
   url_launcher: ^6.3.2
@@ -34,15 +34,17 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  proto_generator: 
+  proto_generator:
+    git:
+      url: https://gitlab.com/panmari/dartaculous.git
+      path: proto_mapper/proto_generator
   build_runner: ^2.5.4
-  riverpod_generator: ^2.6.3
-  custom_lint: ^0.7.0
-  riverpod_lint: ^2.6.3
-  flutter_launcher_icons: "^0.14.3"
-  mockito: ^5.4.5
-  shared_preferences_platform_interface:
-  flutter_blue_plus_platform_interface: 
+  riverpod_generator: ^3.0.0-dev.17
+  custom_lint:
+  flutter_launcher_icons: "^0.14.4"
+  mockito: ^5.0.0
+  shared_preferences_platform_interface: ^2.4.1
+  flutter_blue_plus_platform_interface: ^4.0.2
   integration_test:
     sdk: flutter
 
