@@ -83,12 +83,14 @@ class _PopupMenuState extends State<PopupMenu> {
                   final formattedDate = formatter.format(now);
                   final filename = 'mi_thermo_reader_export_$formattedDate';
 
-                  await FileSaver.instance.saveFile(
+                  final file = await FileSaver.instance.saveFile(
                     name: filename,
                     bytes: Uint8List.fromList(utf8.encode(csvData)),
                     fileExtension: 'csv',
                     mimeType: MimeType.csv,
                   );
+                  developer.log('Exported sensor data to $file');
+                  // TODO(panmari): Implement sharing or opening the file.
                 }
                 break;
             }
