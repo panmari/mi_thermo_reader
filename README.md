@@ -18,3 +18,9 @@ Runs on all platforms available for flutter:
 There are integration tests, configured to dump screenshots with a custom driver. Run the command
 
     flutter drive --target=integration_test/app_test.dart --driver=test_driver/integration_test.dart
+
+## Generate code
+
+Riverpod and proto generators are used for generating some boilerplate code. To regenerate code, run
+
+    dart run build_runner run.

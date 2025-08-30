@@ -6,26 +6,47 @@ part of 'main.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$fetchSharedPreferencesHash() =>
-    r'44239e8818ecadfe9ce771a7f75e309284cd25f8';
-
-/// See also [fetchSharedPreferences].
 @ProviderFor(fetchSharedPreferences)
-final fetchSharedPreferencesProvider =
-    AutoDisposeFutureProvider<SharedPreferencesWithCache>.internal(
-      fetchSharedPreferences,
-      name: r'fetchSharedPreferencesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$fetchSharedPreferencesHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const fetchSharedPreferencesProvider = FetchSharedPreferencesProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef FetchSharedPreferencesRef =
-    AutoDisposeFutureProviderRef<SharedPreferencesWithCache>;
+final class FetchSharedPreferencesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<SharedPreferencesWithCache>,
+          SharedPreferencesWithCache,
+          FutureOr<SharedPreferencesWithCache>
+        >
+    with
+        $FutureModifier<SharedPreferencesWithCache>,
+        $FutureProvider<SharedPreferencesWithCache> {
+  const FetchSharedPreferencesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fetchSharedPreferencesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$fetchSharedPreferencesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<SharedPreferencesWithCache> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<SharedPreferencesWithCache> create(Ref ref) {
+    return fetchSharedPreferences(ref);
+  }
+}
+
+String _$fetchSharedPreferencesHash() =>
+    r'b7f872dbd86d487b3c62af8c3c176105a89ea6e1';
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
