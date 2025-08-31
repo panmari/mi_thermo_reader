@@ -10,10 +10,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AboutDialog(
-      applicationIcon: Image.asset(
-        'assets/icon/icon.png',
-        height: 50,
-      ),
+      applicationIcon: Image.asset('assets/icon/icon.png', height: 50),
       applicationName: "Mi Thermometer Reader",
       applicationLegalese: '© 2025 panmari',
       applicationVersion: version,
@@ -24,8 +21,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
             children: [
               const TextSpan(
-                text:
-                    'After patching your device with the firmware from ',
+                text: 'After patching your device with the firmware from ',
               ),
               TextSpan(
                 text: 'https://github.com/pvvx/ATC_MiThermometer',
@@ -47,9 +43,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
                 recognizer:
                     TapGestureRecognizer()
                       ..onTap = () {
-                        launchUrl(
-                          Uri.parse('https://github.com/pvvx/THB2'),
-                        );
+                        launchUrl(Uri.parse('https://github.com/pvvx/THB2'));
                       },
               ),
               const TextSpan(
@@ -62,9 +56,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
         ElevatedButton(
           onPressed:
               () => launchUrl(
-                Uri.parse(
-                  'https://github.com/panmari/mi_thermo_reader',
-                ),
+                Uri.parse('https://github.com/panmari/mi_thermo_reader'),
               ),
           child: Text('Source on Github'),
         ),

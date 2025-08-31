@@ -76,6 +76,7 @@ class _PopupMenuState extends State<PopupMenu> {
                 break;
               case Selection.export:
                 if (widget.sensorEntries != null) {
+                  // TODO(panmari): Add error handling.
                   final csvData = _sensorEntriesToCsv(widget.sensorEntries!);
                   final formattedDate = DateFormat(
                     'yyyy-MM-dd',

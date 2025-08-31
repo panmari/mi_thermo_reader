@@ -236,7 +236,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
             PopupMenu(
               getAndFixTime: getAndFixTime,
               sensorEntries: filteredSensorEntries,
-            )
+            ),
           ],
           bottom: PreferredSize(
             preferredSize: Size.zero,
