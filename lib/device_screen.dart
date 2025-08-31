@@ -232,7 +232,12 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: _buildTitle(),
-          actions: [PopupMenu(getAndFixTime: getAndFixTime)],
+          actions: [
+            PopupMenu(
+              getAndFixTime: getAndFixTime,
+              sensorEntries: filteredSensorEntries,
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: Size.zero,
             child: _isUpdatingData ? LinearProgressIndicator() : SizedBox(),

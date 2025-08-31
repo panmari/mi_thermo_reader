@@ -1,21 +1,27 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:mi_thermo_reader/utils/sensor_entry.dart';
+import 'package:mi_thermo_reader/widgets/about_dialog.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:app_review_plus/app_review_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
-enum Selection { about, rate, fixTime }
+enum Selection { about, rate, fixTime, export }
 
 /// For retrieving PackageInfo async, the actual PopupMenu is wrapped
 /// in this stateful widget.
 class PopupMenu extends StatefulWidget {
   final Function? getAndFixTime;
+  final List<SensorEntry>? sensorEntries;
 
-  const PopupMenu({super.key, this.getAndFixTime});
+  const PopupMenu({super.key, this.getAndFixTime, this.sensorEntries});
 
   @override
   State<PopupMenu> createState() => _PopupMenuState();
@@ -32,76 +38,32 @@ class _PopupMenuState extends State<PopupMenu> {
     });
   }
 
+  String _sensorEntriesToCsv(List<SensorEntry> entries) {
+    final buffer = StringBuffer();
+    buffer.writeln('timestamp,temperature,humidity,voltageBattery');
+    for (final entry in entries) {
+      buffer.writeln(
+        '${entry.timestamp.toIso8601String()},${entry.temperature.toStringAsFixed(2)},${entry.humidity.toStringAsFixed(2)},${entry.voltageBattery}',
+      );
+    }
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PackageInfo>(
       future: _packageInfo,
       builder: (context, snapshot) {
         return PopupMenuButton<Selection>(
-          onSelected: (Selection result) {
+          onSelected: (Selection result) async {
             switch (result) {
               case Selection.about:
-                showAboutDialog(
+                showDialog(
                   context: context,
-                  applicationIcon: Image.asset(
-                    'assets/icon/icon.png',
-                    height: 50,
-                  ),
-                  applicationName: "Mi Thermometer Reader",
-                  applicationLegalese: '© 2025 panmari',
-                  applicationVersion: snapshot.data?.version ?? 'Unknown',
-                  children: [
-                    Container(padding: const EdgeInsets.fromLTRB(0, 10, 0, 10)),
-                    RichText(
-                      text: TextSpan(
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        children: [
-                          const TextSpan(
-                            text:
-                                'After patching your device with the firmware from ',
-                          ),
-                          TextSpan(
-                            text: 'https://github.com/pvvx/ATC_MiThermometer',
-                            style: const TextStyle(color: Colors.lightBlue),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    launchUrl(
-                                      Uri.parse(
-                                        'https://github.com/pvvx/ATC_MiThermometer',
-                                      ),
-                                    );
-                                  },
-                          ),
-                          const TextSpan(text: ' or '),
-                          TextSpan(
-                            text: 'https://github.com/pvvx/THB2',
-                            style: const TextStyle(color: Colors.lightBlue),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    launchUrl(
-                                      Uri.parse('https://github.com/pvvx/THB2'),
-                                    );
-                                  },
-                          ),
-                          const TextSpan(
-                            text:
-                                ', it becomes supercharged with a bunch of great capabilities. Most importantly, it saves sensor values to device at fixed intervals.\n\nMi Thermometer Reader helps with reading and visualizing all data stored on the device.\n',
-                          ),
-                        ],
+                  builder:
+                      (context) => MiThermoReaderAboutDialog(
+                        version: snapshot.data?.version ?? 'Unknown',
                       ),
-                    ),
-                    ElevatedButton(
-                      onPressed:
-                          () => launchUrl(
-                            Uri.parse(
-                              'https://github.com/panmari/mi_thermo_reader',
-                            ),
-                          ),
-                      child: Text('Source on Github'),
-                    ),
-                  ],
                 );
                 break;
               case Selection.rate:
@@ -111,6 +73,28 @@ class _PopupMenuState extends State<PopupMenu> {
                 break;
               case Selection.fixTime:
                 widget.getAndFixTime!();
+                break;
+              case Selection.export:
+                if (widget.sensorEntries != null) {
+                  // TODO(panmari): Add error handling.
+                  final csvData = _sensorEntriesToCsv(widget.sensorEntries!);
+                  final formattedDate = DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(DateTime.now());
+                  final filename = 'mi_thermo_reader_export_$formattedDate';
+                  // Save the file first
+                  final tempDir = await getTemporaryDirectory();
+                  final file = await File(
+                    '${tempDir.path}/$filename.csv',
+                  ).writeAsBytes(utf8.encode(csvData));
+                  // Then share it
+                  await SharePlus.instance.share(
+                    ShareParams(
+                      files: [XFile(file.path, mimeType: 'text/csv')],
+                      text: 'Exported sensor data from Mi Thermo Reader',
+                    ),
+                  );
+                }
                 break;
             }
           },
@@ -126,6 +110,11 @@ class _PopupMenuState extends State<PopupMenu> {
         PopupMenuItem<Selection>(
           value: Selection.fixTime,
           child: Text('Adjust time'),
+        ),
+      if (widget.sensorEntries != null && widget.sensorEntries!.isNotEmpty)
+        const PopupMenuItem<Selection>(
+          value: Selection.export,
+          child: Text('Export to CSV'),
         ),
       if (!kIsWeb)
         PopupMenuItem<Selection>(

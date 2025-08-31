@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:mi_thermo_reader/widgets/popup_menu.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
@@ -82,6 +83,28 @@ void main() {
       expect(find.text('7 days'), findsOneWidget);
       expect(find.text('30 days'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsNothing);
+    });
+
+    testWidgets('shows correct popup menu content', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fetchSharedPreferencesProvider.overrideWith((_) => mockPreferences),
+          ],
+          child: MaterialApp(home: DeviceScreen(device: testKnownDevice)),
+        ),
+      );
+
+      await tester.tap(find.byType(PopupMenu));
+      await tester.pumpAndSettle();
+
+      expect(find.text("Adjust time"), findsOneWidget);
+      // No data to export, so this is not displayed.
+      expect(find.text("Export to CSV"), findsNothing);
+      expect(find.text("Rate this app"), findsOneWidget);
+      expect(find.text("About"), findsOneWidget);
     });
   });
 }
