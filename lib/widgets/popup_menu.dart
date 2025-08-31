@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io';
 
-import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +10,8 @@ import 'package:mi_thermo_reader/widgets/about_dialog.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:app_review_plus/app_review_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 enum Selection { about, rate, fixTime, export }
 
@@ -38,9 +40,7 @@ class _PopupMenuState extends State<PopupMenu> {
 
   String _sensorEntriesToCsv(List<SensorEntry> entries) {
     final buffer = StringBuffer();
-    // Header
     buffer.writeln('timestamp,temperature,humidity,voltageBattery');
-    // Data
     for (final entry in entries) {
       buffer.writeln(
         '${entry.timestamp.toIso8601String()},${entry.temperature.toStringAsFixed(2)},${entry.humidity.toStringAsFixed(2)},${entry.voltageBattery}',
@@ -75,22 +75,24 @@ class _PopupMenuState extends State<PopupMenu> {
                 widget.getAndFixTime!();
                 break;
               case Selection.export:
-                if (widget.sensorEntries != null &&
-                    widget.sensorEntries!.isNotEmpty) {
+                if (widget.sensorEntries != null) {
                   final csvData = _sensorEntriesToCsv(widget.sensorEntries!);
-                  final now = DateTime.now();
-                  final formatter = DateFormat('yyyy-MM-dd');
-                  final formattedDate = formatter.format(now);
+                  final formattedDate = DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(DateTime.now());
                   final filename = 'mi_thermo_reader_export_$formattedDate';
-
-                  final file = await FileSaver.instance.saveFile(
-                    name: filename,
-                    bytes: Uint8List.fromList(utf8.encode(csvData)),
-                    fileExtension: 'csv',
-                    mimeType: MimeType.csv,
+                  // Save the file first
+                  final tempDir = await getTemporaryDirectory();
+                  final file = await File(
+                    '${tempDir.path}/$filename.csv',
+                  ).writeAsBytes(utf8.encode(csvData));
+                  // Then share it
+                  await SharePlus.instance.share(
+                    ShareParams(
+                      files: [XFile(file.path, mimeType: 'text/csv')],
+                      text: 'Exported sensor data from Mi Thermo Reader',
+                    ),
                   );
-                  developer.log('Exported sensor data to $file');
-                  // TODO(panmari): Implement sharing or opening the file.
                 }
                 break;
             }
