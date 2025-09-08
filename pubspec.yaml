@@ -44,7 +44,7 @@ dev_dependencies:
   # proto_generator:
   mockito: ^5.0.0
   shared_preferences_platform_interface: ^2.4.1
-  flutter_blue_plus_platform_interface: ^4.0.2
+  flutter_blue_plus_platform_interface: ^5.0.0
   integration_test:
     sdk: flutter
 
