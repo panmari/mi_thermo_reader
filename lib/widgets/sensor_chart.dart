@@ -26,7 +26,6 @@ class SensorChart extends StatelessWidget {
   Duration _calculateTimeGridIntervalDuration(Duration timeRange) {
     // Aim for roughly 5-10 grid lines
     if (timeRange.inDays > 30) {
-      print('Using 7-day interval for time range: $timeRange');
       return Duration(days: 7);
     }
     if (timeRange.inDays > 6) {
