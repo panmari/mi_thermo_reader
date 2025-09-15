@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  flutter_blue_plus: ^1.35.5
+  flutter_blue_plus: ^1.36.3
   proto_annotations: ^5.0.0
   protobuf: ^4.2.0
   shared_preferences: ^2.5.2
