@@ -22,14 +22,14 @@ dependencies:
   fl_chart: ^1.0.0
   intl: ^0.20.2
   fixnum: ^1.1.1 # For generated proto code.
-  flutter_riverpod: ^3.0.0-dev.17
-  riverpod_annotation: ^3.0.0-dev.17
+  flutter_riverpod: ^3.0.0
+  riverpod_annotation: ^3.0.0
   stats: ^3.0.0
   collection: ^1.19.1
   url_launcher: ^6.3.2
   package_info_plus: ^8.3.0
   app_review_plus: ^2.3.5
-  share_plus: ^11.1.0
+  share_plus: ^12.0.0
   path_provider: ^2.1.5
 
 dev_dependencies:
@@ -37,14 +37,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.7.1
-  riverpod_generator: ^3.0.0-dev.17
+  riverpod_generator: ^3.0.0
   custom_lint:
   flutter_launcher_icons: "^0.14.4"
   # TODO(panmari: Reintroduce proto_generator when it works again.)
   # proto_generator:
   mockito: ^5.0.0
   shared_preferences_platform_interface: ^2.4.1
-  flutter_blue_plus_platform_interface: ^5.0.0
+  flutter_blue_plus_platform_interface: ^7.0.0
   integration_test:
     sdk: flutter
 
