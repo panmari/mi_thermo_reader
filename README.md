@@ -23,4 +23,4 @@ There are integration tests, configured to dump screenshots with a custom driver
 
 Riverpod and proto generators are used for generating some boilerplate code. To regenerate code, run
 
-    dart run build_runner run.
+    dart run build_runner watch

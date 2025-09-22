@@ -259,12 +259,14 @@ class MockBluetoothDevice extends _i1.Mock implements _i3.BluetoothDevice {
 
   @override
   _i5.Future<void> connect({
+    required _i3.License? license,
     Duration? timeout = const Duration(seconds: 35),
     int? mtu = 512,
     bool? autoConnect = false,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#connect, [], {
+              #license: license,
               #timeout: timeout,
               #mtu: mtu,
               #autoConnect: autoConnect,

@@ -2,7 +2,7 @@ name: mi_thermo_reader
 description: "An app for reading thermometer values of Mi Thermometer flashed with custom Firmware from https://github.com/pvvx/ATC_MiThermometer."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 1.1.1+8
 
@@ -14,8 +14,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  flutter_blue_plus: ^1.35.5
-  proto_annotations: ^5.0.0
+  flutter_blue_plus: ^2.0.0
+  proto_annotations: ^6.0.0
   protobuf: ^4.2.0
   shared_preferences: ^2.5.2
   provider: ^6.1.2
@@ -44,7 +44,7 @@ dev_dependencies:
   # proto_generator:
   mockito: ^5.0.0
   shared_preferences_platform_interface: ^2.4.1
-  flutter_blue_plus_platform_interface: ^7.0.0
+  flutter_blue_plus_platform_interface: ^8.0.0
   integration_test:
     sdk: flutter
 
@@ -53,4 +53,3 @@ flutter:
 
   assets:
     - assets/icon/icon.png
-    
