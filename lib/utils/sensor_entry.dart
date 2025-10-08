@@ -18,12 +18,21 @@ class SensorEntry {
   final double temperature;
   @ProtoField(5)
   final double humidity;
+  // In millivolts. Maximum charge is usually around 3000mV.
   @ProtoField(6)
   final int voltageBattery;
 
   @override
   String toString() {
     return 'Index: $index, t: $timestamp, temp: $temperature, h: $humidity, v: $voltageBattery';
+  }
+
+  double get batteryPercentage {
+    // Maximum voltage for a full battery, in millivolts.
+    const double maxVoltage = 3000.0;
+    final percentage = (voltageBattery / maxVoltage) * 100.0;
+    // Clamp the value to ensure it's always within the valid 0-100 range.
+    return percentage.clamp(0.0, 100.0);
   }
 
   static SensorEntry parse(ByteData data) {

@@ -27,10 +27,10 @@ dependencies:
   stats: ^3.0.0
   collection: ^1.19.1
   url_launcher: ^6.3.2
-  package_info_plus: ^8.3.0
-  app_review_plus: ^2.3.5
+  package_info_plus: ^9.0.0
   share_plus: ^12.0.0
   path_provider: ^2.1.5
+  in_app_review: ^2.0.11
 
 dev_dependencies:
   flutter_test:

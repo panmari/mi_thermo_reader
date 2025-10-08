@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -9,7 +8,7 @@ import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 import 'package:mi_thermo_reader/widgets/about_dialog.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:app_review_plus/app_review_plus.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -67,9 +66,13 @@ class _PopupMenuState extends State<PopupMenu> {
                 );
                 break;
               case Selection.rate:
-                AppReview.requestReview.then((onValue) {
-                  developer.log('Value from rating app: $onValue');
-                });
+                final InAppReview inAppReview = InAppReview.instance;
+
+                if (await inAppReview.isAvailable()) {
+                  inAppReview.requestReview();
+                } else {
+                  inAppReview.openStoreListing();
+                }
                 break;
               case Selection.fixTime:
                 widget.getAndFixTime!();
