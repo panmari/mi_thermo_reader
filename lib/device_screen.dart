@@ -222,7 +222,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     if (lastEntry == null || lastEntry.voltageBattery <= 0) {
       return const SizedBox();
     }
-    return Text("Battery: ${lastEntry.batteryPercentage}%");
+    return Text("Battery: ${lastEntry.batteryPercentage.toStringAsFixed(0)}%");
   }
 
   @override
