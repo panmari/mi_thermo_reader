@@ -218,12 +218,9 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   }
 
   Widget _buildBatteryBar(SensorHistory? sensorHistory) {
-    if (sensorHistory == null) {
-      return SizedBox();
-    }
-    final lastEntry = sensorHistory.sensorEntries.lastOrNull;
+    final lastEntry = sensorHistory?.sensorEntries.lastOrNull;
     if (lastEntry == null || lastEntry.voltageBattery <= 0) {
-      return SizedBox();
+      return const SizedBox();
     }
     return Text("Battery: ${lastEntry.batteryPercentage}%");
   }
