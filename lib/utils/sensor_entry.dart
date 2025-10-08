@@ -28,7 +28,11 @@ class SensorEntry {
   }
 
   double get batteryPercentage {
-    return voltageBattery / 3000.0 * 100.0;
+    // Maximum voltage for a full battery, in millivolts.
+    const double maxVoltage = 3000.0;
+    final percentage = (voltageBattery / maxVoltage) * 100.0;
+    // Clamp the value to ensure it's always within the valid 0-100 range.
+    return percentage.clamp(0.0, 100.0);
   }
 
   static SensorEntry parse(ByteData data) {
