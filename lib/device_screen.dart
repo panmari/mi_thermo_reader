@@ -264,7 +264,6 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
             children:
                 <Widget>[
                   _buildErrorMessage(),
-                  _buildBatteryBar(cachedSensorHistory),
                   _buildDayFilterBar(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
@@ -275,6 +274,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
                             )
                             : SensorChart(sensorEntries: filteredSensorEntries),
                   ),
+                  _buildBatteryBar(cachedSensorHistory),
                 ] +
                 _statusUpdates.map((e) => Text(e)).toList(),
           ),
