@@ -22,7 +22,7 @@ dependencies:
   fl_chart: ^1.0.0
   intl: ^0.20.2
   fixnum: ^1.1.1 # For generated proto code.
-  flutter_riverpod: ^3.0.0
+  flutter_riverpod: ^3.0.3
   riverpod_annotation: ^3.0.0
   stats: ^3.0.0
   collection: ^1.19.1
