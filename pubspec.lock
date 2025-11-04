@@ -486,10 +486,10 @@ packages:
     dependency: transitive
     description:
       name: grpc
-      sha256: "2dde469ddd8bbd7a33a0765da417abe1ad2142813efce3a86c512041294e2b26"
+      sha256: "807a4da90fc1ba94dccc3a44653d3ff7bcf26818f030259d6a8f9fab405cb880"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.0"
+    version: "4.3.1"
   http:
     dependency: transitive
     description:
@@ -819,10 +819,10 @@ packages:
     dependency: "direct main"
     description:
       name: protobuf
-      sha256: de9c9eb2c33f8e933a42932fe1dc504800ca45ebc3d673e6ed7f39754ee4053e
+      sha256: "826d6a306be26f29e5cd9faeb0c97aad5897270341dab6dbd7b8acd675937006"
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.0"
+    version: "5.0.0"
   provider:
     dependency: "direct main"
     description:
