@@ -1,6 +1,6 @@
 # Mi Thermo Reader
 
-[![Analyze, format and test](https://github.com/panmari/mi_thermo_reader/actions/workflows/flutter_analyze_test.yml/badge.svg)](https://github.com/panmari/mi_thermo_reader/actions/workflows/flutter_analyze_test.yml)
+[![Analyze, format and test](https://github.com/panmari/mi_thermo_reader/actions/workflows/flutter_analyze_test_build.yml/badge.svg)](https://github.com/panmari/mi_thermo_reader/actions/workflows/flutter_analyze_test.yml)
 
 A flutter app for connecting to bluetooth thermometers, then reading and visualizing the stored sensor history. Works for any thermometer using the custom firmware from https://github.com/pvvx/ATC_MiThermometer.
 
@@ -10,6 +10,7 @@ Runs on all platforms available for flutter:
 
 * [Try it on web](https://panmari.github.io/mi_thermo_reader/)
 * [On the play store](https://play.google.com/store/apps/details?id=ch.panmari.mi_thermo_reader)
+* Or manually install the APK of the [latest release](https://github.com/panmari/mi_thermo_reader/releases/latest)
 
 ![Play store QR code](screenshots/qr-code-play-store.png)
 
