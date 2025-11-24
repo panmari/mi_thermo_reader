@@ -42,7 +42,7 @@ dev_dependencies:
   flutter_launcher_icons: "^0.14.4"
   # TODO(panmari: Reintroduce proto_generator when it works again.)
   # proto_generator: ^7.0.4
-  mockito: ^5.0.0
+  mockito: ^5.6.1
   shared_preferences_platform_interface: ^2.4.1
   flutter_blue_plus_platform_interface: ^8.0.0
   integration_test:
