@@ -38,7 +38,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.7.1
   riverpod_generator: ^3.0.0
-  custom_lint:
+  custom_lint: 0.8.1
   flutter_launcher_icons: "^0.14.4"
   # TODO(panmari: Reintroduce proto_generator when it works again.)
   # proto_generator: ^7.0.4
