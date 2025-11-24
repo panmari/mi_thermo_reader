@@ -17,8 +17,8 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "ch.panmari.mi_thermo_reader"
     compileSdk = flutter.compileSdkVersion
-    // From flutter blue plus
-    ndkVersion = "27.0.12077973"
+    // From integration_test
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
