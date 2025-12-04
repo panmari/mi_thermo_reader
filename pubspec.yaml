@@ -31,6 +31,7 @@ dependencies:
   share_plus: ^12.0.1
   path_provider: ^2.1.5
   in_app_review: ^2.0.11
+  region_settings: ^1.4.1
 
 dev_dependencies:
   flutter_test:
