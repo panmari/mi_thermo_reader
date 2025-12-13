@@ -55,12 +55,15 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   void initState() {
     super.initState();
     _bluetoothManager = BluetoothManager(device: widget.device.bluetoothDevice);
-    RegionSettings.getSettings().then((settings) {
-      _temperatureUnit = settings.temperatureUnits;
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    if (!kIsWeb) {
+      // Package only supports non-web platforms.
+      RegionSettings.getSettings().then((settings) {
+        _temperatureUnit = settings.temperatureUnits;
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
   }
 
   @override
