@@ -161,7 +161,7 @@ class SensorChart extends StatelessWidget {
             .map(
               (s) => FlSpot(
                 s.timestamp.millisecondsSinceEpoch.toDouble(),
-                s.temperature,
+                s.temperatureIn(temperatureUnit),
               ),
             )
             .toList();
@@ -266,7 +266,7 @@ class SensorChart extends StatelessWidget {
           // Left (Y - Temperature Axis)
           leftTitles: AxisTitles(
             axisNameWidget: Text(
-              'Temp (°C)',
+              'Temp (°${temperatureUnit.value})',
               style: TextStyle(color: tempColor),
             ),
             axisNameSize: 24, // Space for axis title
