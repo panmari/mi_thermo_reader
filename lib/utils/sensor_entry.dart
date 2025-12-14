@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
 import 'package:proto_annotations/proto_annotations.dart';
+import 'package:region_settings/region_settings.dart';
 
 part 'sensor_entry.g.dart';
 
@@ -25,6 +26,14 @@ class SensorEntry {
   @override
   String toString() {
     return 'Index: $index, t: $timestamp, temp: $temperature, h: $humidity, v: $voltageBattery';
+  }
+
+  double temperatureIn(TemperatureUnit unit) {
+    if (unit == TemperatureUnit.celsius) {
+      return temperature;
+    }
+    // Convert to Fahrenheit.
+    return (temperature * 9 / 5) + 32;
   }
 
   double get batteryPercentage {

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
+import 'package:region_settings/region_settings.dart';
 
 void main() {
   group('Sensor entry', () {
@@ -33,6 +34,8 @@ void main() {
         equals(DateTime.fromMillisecondsSinceEpoch(1740874191000)),
       );
       expect(parsed.temperature, equals(22.23));
+      expect(parsed.temperatureIn(TemperatureUnit.fahrenheit), equals(72.014));
+      expect(parsed.temperatureIn(TemperatureUnit.celsius), equals(22.23));
       expect(parsed.humidity, equals(43.58));
       expect(parsed.voltageBattery, equals(2936));
     });

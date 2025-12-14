@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
-import 'dart:math'; // Import for min/max
+import 'dart:math';
+import 'package:region_settings/region_settings.dart';
 
 class SensorChart extends StatelessWidget {
   final List<SensorEntry> sensorEntries;
+  final TemperatureUnit temperatureUnit;
 
   final Color tempColor = Colors.orange;
   final Color humidityColor = Colors.blue;
 
-  const SensorChart({super.key, required this.sensorEntries});
+  const SensorChart({
+    super.key,
+    required this.sensorEntries,
+    required this.temperatureUnit,
+  });
 
   // Helper to format dates on the X-axis based on the total time range.
   // For short time ranges, a more detailed format is used.
@@ -100,8 +106,12 @@ class SensorChart extends StatelessWidget {
     );
 
     // Temperature range (Y-axis Left - Primary)
-    final minTemp = sensorEntries.map((e) => e.temperature).reduce(min);
-    final maxTemp = sensorEntries.map((e) => e.temperature).reduce(max);
+    final minTemp = sensorEntries
+        .map((e) => e.temperatureIn(temperatureUnit))
+        .reduce(min);
+    final maxTemp = sensorEntries
+        .map((e) => e.temperatureIn(temperatureUnit))
+        .reduce(max);
     final double tempPadding = (maxTemp - minTemp) * 0.15; // Add 15% padding
     final double finalMinY =
         (minTemp - tempPadding)
@@ -151,7 +161,7 @@ class SensorChart extends StatelessWidget {
             .map(
               (s) => FlSpot(
                 s.timestamp.millisecondsSinceEpoch.toDouble(),
-                s.temperature,
+                s.temperatureIn(temperatureUnit),
               ),
             )
             .toList();
@@ -256,7 +266,7 @@ class SensorChart extends StatelessWidget {
           // Left (Y - Temperature Axis)
           leftTitles: AxisTitles(
             axisNameWidget: Text(
-              'Temp (°C)',
+              'Temp (°${temperatureUnit.value})',
               style: TextStyle(color: tempColor),
             ),
             axisNameSize: 24, // Space for axis title

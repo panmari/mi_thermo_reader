@@ -10,6 +10,7 @@ import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:mi_thermo_reader/widgets/popup_menu.dart';
+import 'package:region_settings/region_settings.dart';
 import 'utils/sensor_entry.dart';
 import 'widgets/sensor_chart.dart';
 
@@ -30,6 +31,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   String? _error;
   int lastNdaysFilter = -1;
   late final BluetoothManager _bluetoothManager;
+  TemperatureUnit _temperatureUnit = TemperatureUnit.celsius;
 
   List<SensorEntry> _createFakeSensorData(int nElements) {
     double lastTemp = 21.0;
@@ -53,6 +55,15 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   void initState() {
     super.initState();
     _bluetoothManager = BluetoothManager(device: widget.device.bluetoothDevice);
+    if (!kIsWeb) {
+      // Package only supports non-web platforms.
+      RegionSettings.getSettings().then((settings) {
+        _temperatureUnit = settings.temperatureUnits;
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
   }
 
   @override
@@ -269,7 +280,10 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
                             ? Text(
                               "No entries available, click [Update] to fetch data",
                             )
-                            : SensorChart(sensorEntries: filteredSensorEntries),
+                            : SensorChart(
+                              sensorEntries: filteredSensorEntries,
+                              temperatureUnit: _temperatureUnit,
+                            ),
                   ),
                   _buildBatteryBar(cachedSensorHistory),
                 ] +
