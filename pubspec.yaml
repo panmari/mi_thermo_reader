@@ -16,7 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_blue_plus: ^2.0.1
   proto_annotations: ^6.0.0
-  protobuf: ^5.1.0
+  protobuf: ^6.0.0
   shared_preferences: ^2.5.2
   provider: ^6.1.2
   fl_chart: ^1.0.0
