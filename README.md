@@ -25,3 +25,9 @@ There are integration tests, configured to dump screenshots with a custom driver
 Riverpod and proto generators are used for generating some boilerplate code. To regenerate code, run
 
     dart run build_runner watch
+
+To regenerate the dart code after making changes to protos, use
+
+    protoc --proto_path=lib/proto --dart_out=lib/src/proto lib/proto/model.proto
+
+Full instructions: https://protobuf.dev/reference/dart/dart-generated/
