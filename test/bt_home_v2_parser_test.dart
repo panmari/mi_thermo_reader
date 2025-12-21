@@ -19,6 +19,22 @@ void main() {
       );
     });
 
+    test('Another scraped example', () {
+      final values = [64, 0, 178, 12, 116, 11, 16, 0, 17, 1];
+
+      final parsed = BTHomeV2Parser.parse(values);
+
+      expect(
+        parsed,
+        equals({
+          ObjectId.packedID: 178,
+          ObjectId.voltage: 2.932,
+          ObjectId.power: false,
+          ObjectId.opening: true,
+        }),
+      );
+    });
+
     test('All zeros', () {
       final values = [0x00, 0x00, 0x00, 0x00];
 

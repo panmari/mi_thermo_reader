@@ -6,7 +6,8 @@ enum ObjectId {
   temperature(0x02),
   humidity(0x03),
   voltage(0x0c),
-  power(0x10);
+  power(0x10),
+  opening(0x11);
 
   final int value;
   const ObjectId(this.value);
@@ -75,6 +76,9 @@ class BTHomeV2Parser {
           offset += 2;
           break;
         case ObjectId.power:
+          result[id] = byteData.getUint8(offset++) == 1;
+          break;
+        case ObjectId.opening:
           result[id] = byteData.getUint8(offset++) == 1;
           break;
       }
