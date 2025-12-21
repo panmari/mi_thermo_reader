@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
-import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
-import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/bt_home_v2_parser.dart';
 
 class ScanResultTile extends StatelessWidget {
   final ScanResult result;
