@@ -14,4 +14,6 @@ class BluetoothConstants {
 
   // See https://bthome.io/format/
   static final btHomeReversedGuid = Guid("fcd2");
+  // See https://github.com/pvvx/ATC_MiThermometer?tab=readme-ov-file#custom-format-all-data-little-endian
+  static final pvvxAdvertisingFormatGuid = Guid("181a");
 }
