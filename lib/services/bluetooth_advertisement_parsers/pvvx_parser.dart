@@ -29,7 +29,7 @@ class PvvxParser {
   /// Parses the Service Data buffer for UUID 0x181A.
   static PvvxData parse(List<int> serviceData) {
     // The JS code check: if(b.byteLength >= 15)
-    if (serviceData.isEmpty || serviceData.length < 15) {
+    if (serviceData.length < 15) {
       throw ArgumentError(
         'Invalid length for PVVX advertisement data: '
         '${serviceData.length}. Expected at least 15 bytes.',

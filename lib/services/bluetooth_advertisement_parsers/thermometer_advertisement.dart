@@ -4,17 +4,19 @@ import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/pvvx_p
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 
 class NoAdvertisementDataFound implements Exception {
-  String errMsg() => 'No advertisement data found.';
+  @override
+  String toString() => 'No advertisement data found.';
 }
 
 class AdvertisementDataFormatNotSupported implements Exception {
-  String errMsg() => 'Advertisement data format not supported.';
+  @override
+  String toString() => 'Advertisement data format not supported.';
 }
 
 class ThermometerAdvertisement {
-  double temperature;
-  double humidity;
-  int batteryLevel;
+  final double temperature;
+  final double humidity;
+  final int batteryLevel;
 
   static ThermometerAdvertisement create(AdvertisementData advertisementData) {
     if (advertisementData.serviceData.isEmpty) {
