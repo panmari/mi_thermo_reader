@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -21,6 +23,11 @@ class _MiThermoReaderHomePageState
     extends ConsumerState<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
+  List<ScanResult> _scanResults = [];
+  bool _isScanning = false;
+  String? _error;
+  late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
+  late StreamSubscription<bool> _isScanningSubscription;
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
   @override
@@ -35,10 +42,33 @@ class _MiThermoReaderHomePageState
         });
       }
     });
+
+    _scanResultsSubscription = FlutterBluePlus.scanResults.listen(
+      (results) {
+        _scanResults = results;
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      onError: (e, trace) {
+        log('Subscription got an error: $e', stackTrace: trace);
+        _error = e.toString();
+      },
+    );
+
+    _isScanningSubscription = FlutterBluePlus.isScanning.listen((state) {
+      _isScanning = state;
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   void dispose() {
+    FlutterBluePlus.stopScan();
+    _scanResultsSubscription.cancel();
+    _isScanningSubscription.cancel();
     _adapterStateStateSubscription.cancel();
     super.dispose();
   }
@@ -71,10 +101,32 @@ class _MiThermoReaderHomePageState
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
     if (knownDevices.isNotEmpty) {
+      // TODO(panmari): This will start scanning as soon as the app is opened, potentially
+      // showing a permission prompt.
+      if (!_isScanning) {
+        // TODO(panmari): De-duplicate with scan_screen.dart
+        FlutterBluePlus.startScan(
+          // withServices does not work on Android, the service is not advertised.
+          // withServices: [BluetoothConstants.memoServiceGuid],
+          // withServiceData works, but there's multiple formats for advertising.
+          // withServiceData [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)]
+          timeout: const Duration(seconds: 15),
+        );
+      }
       return ListView(
         children: [
           ...knownDevices
-              .map((d) => KnownDeviceTile(device: d))
+              .map(
+                (d) => KnownDeviceTile(
+                  device: d,
+                  advertisementData:
+                      _scanResults
+                          .firstWhereOrNull(
+                            (r) => r.device.remoteId.str == d.remoteId,
+                          )
+                          ?.advertisementData,
+                ),
+              )
               .toList()
               .cast<Widget>(),
           _addDeviceCard(),
