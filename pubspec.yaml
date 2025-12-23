@@ -31,7 +31,7 @@ dependencies:
   share_plus: ^12.0.1
   path_provider: ^2.1.5
   in_app_review: ^2.0.11
-  region_settings: ^1.4.1
+  region_settings: ^1.5.0
 
 dev_dependencies:
   flutter_test:
@@ -45,7 +45,7 @@ dev_dependencies:
   # proto_generator: ^7.0.4
   mockito: ^5.0.0
   shared_preferences_platform_interface: ^2.4.1
-  flutter_blue_plus_platform_interface: ^8.0.0
+  flutter_blue_plus_platform_interface: ^8.1.0
   integration_test:
     sdk: flutter
 
