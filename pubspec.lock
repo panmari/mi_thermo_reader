@@ -843,10 +843,10 @@ packages:
     dependency: "direct main"
     description:
       name: region_settings
-      sha256: "7b015dac992115cdf7cb6895d9c456384e1d3db823ed04634ec400667bf0b88b"
+      sha256: "5d7cf36e613d1248d5998fb6bac74cd6435825cb43e4b4489015834c95bdb5df"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.1"
+    version: "1.5.0"
   riverpod:
     dependency: transitive
     description:
