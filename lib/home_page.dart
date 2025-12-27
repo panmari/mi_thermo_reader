@@ -82,6 +82,11 @@ class _MiThermoReaderHomePageState
         setState(() {});
       }
     });
+    onRefresh();
+  }
+
+  Future<void> onRefresh() async {
+    FlutterBluePlus.stopScan();
     FlutterBluePlus.startScan(
       // withServices does not work on Android, the service is not advertised.
       // withServices: [BluetoothConstants.memoServiceGuid],
@@ -128,20 +133,23 @@ class _MiThermoReaderHomePageState
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
     if (knownDevices.isNotEmpty) {
-      return ListView(
-        children: [
-          ...knownDevices
-              .map(
-                (d) => KnownDeviceTile(
-                  device: d,
-                  isScanning: _isScanning,
-                  advertisement: _knownDeviceResults[d.remoteId],
-                ),
-              )
-              .toList()
-              .cast<Widget>(),
-          _addDeviceCard(),
-        ],
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: [
+            ...knownDevices
+                .map(
+                  (d) => KnownDeviceTile(
+                    device: d,
+                    isScanning: _isScanning,
+                    advertisement: _knownDeviceResults[d.remoteId],
+                  ),
+                )
+                .toList()
+                .cast<Widget>(),
+            _addDeviceCard(),
+          ],
+        ),
       );
     }
     switch (_adapterState) {
