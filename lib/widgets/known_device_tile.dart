@@ -67,8 +67,8 @@ class KnownDeviceTile extends ConsumerWidget {
   Widget _advertisementDataRow() {
     if (advertisement == null) {
       return isScanning
-          ? SizedBox(width: 10, height: 10, child: CircularProgressIndicator())
-          : Icon(Icons.cloud_off, size: 15.0);
+          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator())
+          : Icon(Icons.sensors_off, size: 20.0);
     }
     return Text(
       'Temperature: ${advertisement!.temperature}°C, Humidity: ${advertisement!.humidity}%',
