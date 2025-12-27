@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/scan_screen.dart';
+import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
@@ -23,7 +24,7 @@ class _MiThermoReaderHomePageState
     extends ConsumerState<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
-  List<ScanResult> _scanResults = [];
+  Map<String, ThermometerAdvertisement> _knownDeviceResults = {};
   bool _isScanning = false;
   String? _error;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
@@ -45,7 +46,26 @@ class _MiThermoReaderHomePageState
 
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen(
       (results) {
-        _scanResults = results;
+        // Get KnownDevices and remove them from the scan results
+        final knownDevices = KnownDevice.getAll(ref);
+        for (final result in results) {
+          if (knownDevices.any(
+            (d) => d.remoteId == result.device.remoteId.str,
+          )) {
+            try {
+              final parsed = ThermometerAdvertisement.create(
+                result.advertisementData,
+              );
+              // TODO(panmari): Handle this better with exception/null returns.
+              if (parsed.temperature.isFinite && parsed.humidity.isFinite) {
+                _knownDeviceResults[result.device.remoteId.str] = parsed;
+              }
+            } catch (e) {
+              log('Failed to parse advertisement data: $e');
+              continue;
+            }
+          }
+        }
         if (mounted) {
           setState(() {});
         }
@@ -62,6 +82,13 @@ class _MiThermoReaderHomePageState
         setState(() {});
       }
     });
+    FlutterBluePlus.startScan(
+      // withServices does not work on Android, the service is not advertised.
+      // withServices: [BluetoothConstants.memoServiceGuid],
+      // withServiceData works, but there's multiple formats for advertising.
+      // withServiceData [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)]
+      timeout: const Duration(seconds: 15),
+    );
   }
 
   @override
@@ -101,30 +128,14 @@ class _MiThermoReaderHomePageState
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
     if (knownDevices.isNotEmpty) {
-      // TODO(panmari): This will start scanning as soon as the app is opened, potentially
-      // showing a permission prompt.
-      if (!_isScanning) {
-        // TODO(panmari): De-duplicate with scan_screen.dart
-        FlutterBluePlus.startScan(
-          // withServices does not work on Android, the service is not advertised.
-          // withServices: [BluetoothConstants.memoServiceGuid],
-          // withServiceData works, but there's multiple formats for advertising.
-          // withServiceData [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)]
-          timeout: const Duration(seconds: 15),
-        );
-      }
       return ListView(
         children: [
           ...knownDevices
               .map(
                 (d) => KnownDeviceTile(
                   device: d,
-                  advertisementData:
-                      _scanResults
-                          .firstWhereOrNull(
-                            (r) => r.device.remoteId.str == d.remoteId,
-                          )
-                          ?.advertisementData,
+                  isScanning: _isScanning,
+                  advertisement: _knownDeviceResults[d.remoteId],
                 ),
               )
               .toList()

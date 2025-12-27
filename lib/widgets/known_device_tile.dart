@@ -9,11 +9,13 @@ import 'package:mi_thermo_reader/utils/known_device.dart';
 
 class KnownDeviceTile extends ConsumerWidget {
   final KnownDevice device;
-  final AdvertisementData? advertisementData;
+  final bool isScanning;
+  final ThermometerAdvertisement? advertisement;
 
   const KnownDeviceTile({
     required this.device,
-    this.advertisementData,
+    required this.isScanning,
+    this.advertisement,
     super.key,
   });
 
@@ -63,23 +65,14 @@ class KnownDeviceTile extends ConsumerWidget {
   }
 
   Widget _advertisementDataRow() {
-    if (advertisementData == null) {
-      return SizedBox(
-        width: 10,
-        height: 10,
-        child: CircularProgressIndicator(),
-      );
+    if (advertisement == null) {
+      return isScanning
+          ? SizedBox(width: 10, height: 10, child: CircularProgressIndicator())
+          : Icon(Icons.cloud_off, size: 15.0);
     }
-    try {
-      final advertisement = ThermometerAdvertisement.create(advertisementData!);
-      return Text(
-        'Temperature: ${advertisement.temperature}°C, Humidity: ${advertisement.humidity}%',
-      );
-    } catch (e) {
-      log('Failed to parse advertisement data: $e');
-      return Text('Advertisement data: Not parsable');
-    }
-    // TODO(panmari): Add handling for when scanning ended and no data is available.
+    return Text(
+      'Temperature: ${advertisement!.temperature}°C, Humidity: ${advertisement!.humidity}%',
+    );
   }
 
   @override
