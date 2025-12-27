@@ -70,7 +70,7 @@ class KnownDeviceTile extends ConsumerWidget {
             height: 20,
             child: CircularProgressIndicator(),
           )
-          : const Icon(Icons.sensors_off, size: 20.0);
+          : Text('Sensor reading not available');
     }
     return Text('Temperature: ${ad.temperature}°C, Humidity: ${ad.humidity}%');
   }
