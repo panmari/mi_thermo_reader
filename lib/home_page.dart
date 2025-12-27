@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -24,9 +23,8 @@ class _MiThermoReaderHomePageState
     extends ConsumerState<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
-  Map<String, ThermometerAdvertisement> _knownDeviceResults = {};
+  final Map<String, ThermometerAdvertisement> _knownDeviceResults = {};
   bool _isScanning = false;
-  String? _error;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
   late StreamSubscription<bool> _isScanningSubscription;
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
@@ -46,8 +44,8 @@ class _MiThermoReaderHomePageState
 
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen(
       (results) {
-        // Get KnownDevices and remove them from the scan results
         final knownDevices = KnownDevice.getAll(ref);
+        bool found = false;
         for (final result in results) {
           if (knownDevices.any(
             (d) => d.remoteId == result.device.remoteId.str,
@@ -59,6 +57,7 @@ class _MiThermoReaderHomePageState
               // TODO(panmari): Handle this better with exception/null returns.
               if (parsed.temperature.isFinite && parsed.humidity.isFinite) {
                 _knownDeviceResults[result.device.remoteId.str] = parsed;
+                found = true;
               }
             } catch (e) {
               log('Failed to parse advertisement data: $e');
@@ -66,13 +65,12 @@ class _MiThermoReaderHomePageState
             }
           }
         }
-        if (mounted) {
+        if (found && mounted) {
           setState(() {});
         }
       },
       onError: (e, trace) {
         log('Subscription got an error: $e', stackTrace: trace);
-        _error = e.toString();
       },
     );
 

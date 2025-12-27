@@ -1,7 +1,4 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
@@ -65,14 +62,17 @@ class KnownDeviceTile extends ConsumerWidget {
   }
 
   Widget _advertisementDataRow() {
-    if (advertisement == null) {
+    final ad = advertisement;
+    if (ad == null) {
       return isScanning
-          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator())
-          : Icon(Icons.sensors_off, size: 20.0);
+          ? const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(),
+          )
+          : const Icon(Icons.sensors_off, size: 20.0);
     }
-    return Text(
-      'Temperature: ${advertisement!.temperature}°C, Humidity: ${advertisement!.humidity}%',
-    );
+    return Text('Temperature: ${ad.temperature}°C, Humidity: ${ad.humidity}%');
   }
 
   @override
