@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
+import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 
 class KnownDeviceTile extends ConsumerWidget {
   final KnownDevice device;
+  final bool isScanning;
+  final ThermometerAdvertisement? advertisement;
 
-  const KnownDeviceTile({required this.device, super.key});
+  const KnownDeviceTile({
+    required this.device,
+    required this.isScanning,
+    this.advertisement,
+    super.key,
+  });
 
   String _bestName() {
     if (device.advName.isNotEmpty) {
@@ -53,6 +61,20 @@ class KnownDeviceTile extends ConsumerWidget {
     return KnownDevice.remove(ref, device);
   }
 
+  Widget _advertisementDataRow() {
+    final ad = advertisement;
+    if (ad == null) {
+      return isScanning
+          ? const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(),
+          )
+          : Text('Sensor reading not available');
+    }
+    return Text('Temperature: ${ad.temperature}°C, Humidity: ${ad.humidity}%');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
@@ -67,6 +89,8 @@ class KnownDeviceTile extends ConsumerWidget {
                   Icon(Icons.device_thermostat, size: 50.0),
                   SizedBox(height: 8.0),
                   Text(_bestName()),
+                  SizedBox(height: 8.0),
+                  _advertisementDataRow(),
                   SizedBox(height: 8.0),
                   OutlinedButton(
                     onPressed:
