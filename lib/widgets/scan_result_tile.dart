@@ -39,7 +39,7 @@ class ScanResultTile extends StatelessWidget {
         result.advertisementData,
       );
       return Text(
-        "Temperature: ${advertisement.temperature}, Humidity: ${advertisement.humidity}, Battery: ${advertisement.batteryLevel}",
+        "Temperature: ${advertisement.temperature}°C, Humidity: ${advertisement.humidity}%, Battery: ${advertisement.batteryLevel}",
       );
     } on NoAdvertisementDataFound {
       return const Text('No data.');
