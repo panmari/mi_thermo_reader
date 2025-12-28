@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/scan_screen.dart';
+import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
@@ -21,6 +23,10 @@ class _MiThermoReaderHomePageState
     extends ConsumerState<MiThermoReaderHomePage> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
+  final Map<String, ThermometerAdvertisement> _knownDeviceResults = {};
+  bool _isScanning = false;
+  late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
+  late StreamSubscription<bool> _isScanningSubscription;
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
 
   @override
@@ -35,17 +41,85 @@ class _MiThermoReaderHomePageState
         });
       }
     });
+
+    _scanResultsSubscription = FlutterBluePlus.scanResults.listen(
+      (results) {
+        final knownDevices = KnownDevice.getAll(ref);
+        bool found = false;
+        for (final result in results) {
+          if (knownDevices.any(
+            (d) => d.remoteId == result.device.remoteId.str,
+          )) {
+            try {
+              final parsed = ThermometerAdvertisement.create(
+                result.advertisementData,
+              );
+              // TODO(panmari): Handle this better with exception/null returns.
+              if (parsed.temperature.isFinite && parsed.humidity.isFinite) {
+                _knownDeviceResults[result.device.remoteId.str] = parsed;
+                found = true;
+              }
+            } catch (e) {
+              log('Failed to parse advertisement data: $e');
+              continue;
+            }
+          }
+        }
+        if (found && mounted) {
+          setState(() {});
+        }
+      },
+      onError: (e, trace) {
+        log('Subscription got an error: $e', stackTrace: trace);
+      },
+    );
+
+    _isScanningSubscription = FlutterBluePlus.isScanning.listen((state) {
+      _isScanning = state;
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    onRefresh();
+  }
+
+  Future<void> onRefresh() async {
+    FlutterBluePlus.stopScan();
+    FlutterBluePlus.startScan(
+      // withServices does not work on Android, the service is not advertised.
+      // withServices: [BluetoothConstants.memoServiceGuid],
+      // withServiceData works, but there's multiple formats for advertising.
+      // withServiceData [ServiceDataFilter(BluetoothConstants.btHomeReversedGuid)]
+      timeout: const Duration(seconds: 15),
+    );
   }
 
   @override
   void dispose() {
+    FlutterBluePlus.stopScan();
+    _scanResultsSubscription.cancel();
+    _isScanningSubscription.cancel();
     _adapterStateStateSubscription.cancel();
     super.dispose();
   }
 
   Widget _addDeviceCard() {
-    if (_adapterState == BluetoothAdapterState.off) {
-      return Container();
+    if (_adapterState != BluetoothAdapterState.on) {
+      return Card(
+        margin: EdgeInsets.all(8.0),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: Column(
+              children: [
+                const Icon(Icons.bluetooth_disabled, size: 50.0),
+                const SizedBox(height: 10),
+                Text('Bluetooth is ${_adapterState.name}, cannot add devices'),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return Card(
       margin: EdgeInsets.all(8.0),
@@ -71,14 +145,23 @@ class _MiThermoReaderHomePageState
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
     if (knownDevices.isNotEmpty) {
-      return ListView(
-        children: [
-          ...knownDevices
-              .map((d) => KnownDeviceTile(device: d))
-              .toList()
-              .cast<Widget>(),
-          _addDeviceCard(),
-        ],
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: [
+            ...knownDevices
+                .map(
+                  (d) => KnownDeviceTile(
+                    device: d,
+                    isScanning: _isScanning,
+                    advertisement: _knownDeviceResults[d.remoteId],
+                  ),
+                )
+                .toList()
+                .cast<Widget>(),
+            _addDeviceCard(),
+          ],
+        ),
       );
     }
     switch (_adapterState) {
