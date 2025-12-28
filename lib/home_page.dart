@@ -104,8 +104,22 @@ class _MiThermoReaderHomePageState
   }
 
   Widget _addDeviceCard() {
-    if (_adapterState == BluetoothAdapterState.off) {
-      return Container();
+    if (_adapterState != BluetoothAdapterState.on) {
+      return Card(
+        margin: EdgeInsets.all(8.0),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: Column(
+              children: [
+                const Icon(Icons.bluetooth_disabled, size: 50.0),
+                const SizedBox(height: 10),
+                Text('Bluetooth is ${_adapterState.name}, cannot add devices'),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return Card(
       margin: EdgeInsets.all(8.0),
