@@ -12,15 +12,21 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-enum Selection { about, rate, fixTime, export }
+enum Selection { about, rate, fixTime, export, deleteRange }
 
 /// For retrieving PackageInfo async, the actual PopupMenu is wrapped
 /// in this stateful widget.
 class PopupMenu extends StatefulWidget {
   final Function? getAndFixTime;
+  final Function? deleteSensorEntries;
   final List<SensorEntry>? sensorEntries;
 
-  const PopupMenu({super.key, this.getAndFixTime, this.sensorEntries});
+  const PopupMenu({
+    super.key,
+    this.getAndFixTime,
+    this.deleteSensorEntries,
+    this.sensorEntries,
+  });
 
   @override
   State<PopupMenu> createState() => _PopupMenuState();
@@ -106,6 +112,9 @@ class _PopupMenuState extends State<PopupMenu> {
               case Selection.export:
                 _exportAndShare(context);
                 break;
+              case Selection.deleteRange:
+                widget.deleteSensorEntries!();
+                break;
             }
           },
           itemBuilder: (BuildContext context) => _menuItemBuilder(context),
@@ -125,6 +134,11 @@ class _PopupMenuState extends State<PopupMenu> {
         const PopupMenuItem<Selection>(
           value: Selection.export,
           child: Text('Export to CSV'),
+        ),
+      if (widget.deleteSensorEntries != null)
+        const PopupMenuItem<Selection>(
+          value: Selection.deleteRange,
+          child: Text('Delete date range'),
         ),
       if (!kIsWeb)
         const PopupMenuItem<Selection>(

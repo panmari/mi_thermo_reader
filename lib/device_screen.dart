@@ -236,6 +236,30 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     return Text("Battery: ${lastEntry.batteryPercentage.toStringAsFixed(0)}%");
   }
 
+  Future<void> _deleteSensorEntries() async {
+    final history = widget.device.getCachedSensorHistory(ref);
+    if (history == null || history.sensorEntries.isEmpty) {
+      return;
+    }
+
+    final dateRange = await showDateRangePicker(
+      context: context,
+      firstDate: history.sensorEntries.first.timestamp,
+      lastDate: history.sensorEntries.last.timestamp,
+      helpText: 'Select date range to delete',
+      saveText: 'Delete',
+    );
+
+    if (dateRange != null) {
+      final updatedHistory = history.copyWithEntriesFiltered(
+        dateRange.start,
+        dateRange.end,
+      );
+      widget.device.setCachedSensorHistory(ref, updatedHistory);
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     SensorHistory? cachedSensorHistory = widget.device.getCachedSensorHistory(
@@ -254,6 +278,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
           actions: [
             PopupMenu(
               getAndFixTime: getAndFixTime,
+              deleteSensorEntries: _deleteSensorEntries,
               sensorEntries: filteredSensorEntries,
             ),
           ],
