@@ -251,11 +251,22 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     );
 
     if (dateRange != null) {
+      // The picker returns dates with time 00:00:00, this makes sure all entries on that day are deleted.
+      final endOfRange = DateTime(
+        dateRange.end.year,
+        dateRange.end.month,
+        dateRange.end.day,
+        23,
+        59,
+        59,
+      );
+
       final updatedHistory = history.copyWithEntriesFiltered(
         dateRange.start,
-        dateRange.end,
+        endOfRange,
       );
-      widget.device.setCachedSensorHistory(ref, updatedHistory);
+      await widget.device.setCachedSensorHistory(ref, updatedHistory);
+      if (!mounted) return;
       setState(() {});
     }
   }
