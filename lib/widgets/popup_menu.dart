@@ -32,9 +32,7 @@ class _PopupMenuState extends State<PopupMenu> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _packageInfo = PackageInfo.fromPlatform();
-    });
+    _packageInfo = PackageInfo.fromPlatform();
   }
 
   String _sensorEntriesToCsv(List<SensorEntry> entries) {
@@ -46,6 +44,35 @@ class _PopupMenuState extends State<PopupMenu> {
       );
     }
     return buffer.toString();
+  }
+
+  Future<void> _exportAndShare(BuildContext context) async {
+    if (widget.sensorEntries == null) {
+      return;
+    }
+    try {
+      final csvData = _sensorEntriesToCsv(widget.sensorEntries!);
+      final formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final filename = 'mi_thermo_reader_export_$formattedDate.csv';
+      final tempDir = await getTemporaryDirectory();
+      final file = await File(
+        '${tempDir.path}/$filename',
+      ).writeAsBytes(utf8.encode(csvData));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'text/csv')],
+          text: 'Exported sensor data from Mi Thermo Reader',
+        ),
+      );
+    } catch (e, s) {
+      debugPrint('Error while exporting and sharing: $e');
+      debugPrintStack(stackTrace: s);
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error exporting data: $e')));
+      }
+    }
   }
 
   @override
@@ -67,7 +94,6 @@ class _PopupMenuState extends State<PopupMenu> {
                 break;
               case Selection.rate:
                 final InAppReview inAppReview = InAppReview.instance;
-
                 if (await inAppReview.isAvailable()) {
                   inAppReview.requestReview();
                 } else {
@@ -78,26 +104,7 @@ class _PopupMenuState extends State<PopupMenu> {
                 widget.getAndFixTime!();
                 break;
               case Selection.export:
-                if (widget.sensorEntries != null) {
-                  // TODO(panmari): Add error handling.
-                  final csvData = _sensorEntriesToCsv(widget.sensorEntries!);
-                  final formattedDate = DateFormat(
-                    'yyyy-MM-dd',
-                  ).format(DateTime.now());
-                  final filename = 'mi_thermo_reader_export_$formattedDate';
-                  // Save the file first
-                  final tempDir = await getTemporaryDirectory();
-                  final file = await File(
-                    '${tempDir.path}/$filename.csv',
-                  ).writeAsBytes(utf8.encode(csvData));
-                  // Then share it
-                  await SharePlus.instance.share(
-                    ShareParams(
-                      files: [XFile(file.path, mimeType: 'text/csv')],
-                      text: 'Exported sensor data from Mi Thermo Reader',
-                    ),
-                  );
-                }
+                _exportAndShare(context);
                 break;
             }
           },
@@ -110,7 +117,7 @@ class _PopupMenuState extends State<PopupMenu> {
   List<PopupMenuEntry<Selection>> _menuItemBuilder(BuildContext context) {
     return [
       if (widget.getAndFixTime != null)
-        PopupMenuItem<Selection>(
+        const PopupMenuItem<Selection>(
           value: Selection.fixTime,
           child: Text('Adjust time'),
         ),
@@ -120,11 +127,14 @@ class _PopupMenuState extends State<PopupMenu> {
           child: Text('Export to CSV'),
         ),
       if (!kIsWeb)
-        PopupMenuItem<Selection>(
+        const PopupMenuItem<Selection>(
           value: Selection.rate,
           child: Text('Rate this app'),
         ),
-      PopupMenuItem<Selection>(value: Selection.about, child: Text('About')),
+      const PopupMenuItem<Selection>(
+        value: Selection.about,
+        child: Text('About'),
+      ),
     ];
   }
 }
