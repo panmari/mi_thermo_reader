@@ -5,6 +5,8 @@ import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/popup_menu.dart';
+import 'package:mi_thermo_reader/utils/sensor_entry.dart';
+import 'package:mi_thermo_reader/utils/sensor_history.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
@@ -85,7 +87,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
-    testWidgets('shows correct popup menu content', (
+    testWidgets('shows correct popup menu content no sensor history', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -101,10 +103,76 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text("Adjust time"), findsOneWidget);
-      // No data to export, so this is not displayed.
-      expect(find.text("Export to CSV"), findsNothing);
       expect(find.text("Rate this app"), findsOneWidget);
       expect(find.text("About"), findsOneWidget);
+      // No data to export or delete, so this is not displayed.
+      expect(find.text("Export to CSV"), findsNothing);
+      expect(find.text("Delete date range"), findsNothing);
     });
+
+    testWidgets(
+      'shows correct popup menu content with sensor history and allows deleting',
+      (WidgetTester tester) async {
+        final now = DateTime.now();
+        final sensorHistory = SensorHistory(
+          sensorEntries: [
+            SensorEntry(
+              index: 0,
+              timestamp: now,
+              temperature: 20.0,
+              humidity: 50.0,
+              voltageBattery: 3000,
+            ),
+          ],
+        );
+        when(
+          mockPreferences.getString('00:11:22'),
+        ).thenReturn(sensorHistory.toBase64ProtoString());
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              fetchSharedPreferencesProvider.overrideWith(
+                (_) => mockPreferences,
+              ),
+            ],
+            child: MaterialApp(home: DeviceScreen(device: testKnownDevice)),
+          ),
+        );
+
+        await tester.tap(find.byType(PopupMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.text("Adjust time"), findsOneWidget);
+        expect(find.text("Rate this app"), findsOneWidget);
+        expect(find.text("About"), findsOneWidget);
+        expect(find.text("Export to CSV"), findsOneWidget);
+        expect(find.text("Delete date range"), findsOneWidget);
+
+        // Open the delete dialog.
+        await tester.tap(find.text("Delete date range"));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Select date range to delete'), findsOneWidget);
+
+        // Select date range.
+        await tester.tap(find.text(now.day.toString()));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(now.day.toString()));
+        await tester.pumpAndSettle();
+
+        // Click delete.
+        await tester.tap(find.text('Delete'));
+        await tester.pumpAndSettle();
+
+        // Verify data is deleted.
+        verify(
+          mockPreferences.setString(
+            '00:11:22',
+            SensorHistory(sensorEntries: []).toBase64ProtoString(),
+          ),
+        );
+      },
+    );
   });
 }
