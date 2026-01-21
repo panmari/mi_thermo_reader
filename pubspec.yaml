@@ -23,7 +23,7 @@ dependencies:
   intl: ^0.20.2
   fixnum: ^1.1.1 # For generated proto code.
   flutter_riverpod: ^3.0.0
-  riverpod_annotation: ^3.0.0
+  riverpod_annotation: ^4.0.0
   stats: ^3.0.0
   collection: ^1.19.1
   url_launcher: ^6.3.2
@@ -38,7 +38,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.10.5
-  riverpod_generator: ^3.0.0
+  riverpod_generator: ^4.0.0+1
   custom_lint:
   flutter_launcher_icons: "^0.14.4"
   # TODO(panmari: Reintroduce proto_generator when it works again.)

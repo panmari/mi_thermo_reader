@@ -105,7 +105,6 @@ void main() {
 
       // Wrap ListTile with MaterialApp or another suitable parent widget.
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: scanTile)));
-      debugDumpApp();
 
       final humidityFinder = find.textContaining('Humidity: NaN');
       final temperatureFinder = find.textContaining('Temperature: NaN');

@@ -10,7 +10,7 @@ part of 'main.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(fetchSharedPreferences)
-const fetchSharedPreferencesProvider = FetchSharedPreferencesProvider._();
+final fetchSharedPreferencesProvider = FetchSharedPreferencesProvider._();
 
 final class FetchSharedPreferencesProvider
     extends
@@ -22,7 +22,7 @@ final class FetchSharedPreferencesProvider
     with
         $FutureModifier<SharedPreferencesWithCache>,
         $FutureProvider<SharedPreferencesWithCache> {
-  const FetchSharedPreferencesProvider._()
+  FetchSharedPreferencesProvider._()
     : super(
         from: null,
         argument: null,
