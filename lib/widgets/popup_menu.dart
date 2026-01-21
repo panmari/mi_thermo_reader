@@ -124,18 +124,20 @@ class _PopupMenuState extends State<PopupMenu> {
   }
 
   List<PopupMenuEntry<Selection>> _menuItemBuilder(BuildContext context) {
+    final hasSensorEntries =
+        widget.sensorEntries != null && widget.sensorEntries!.isNotEmpty;
     return [
       if (widget.getAndFixTime != null)
         const PopupMenuItem<Selection>(
           value: Selection.fixTime,
           child: Text('Adjust time'),
         ),
-      if (widget.sensorEntries != null && widget.sensorEntries!.isNotEmpty)
+      if (hasSensorEntries)
         const PopupMenuItem<Selection>(
           value: Selection.export,
           child: Text('Export to CSV'),
         ),
-      if (widget.deleteSensorEntries != null)
+      if (hasSensorEntries)
         const PopupMenuItem<Selection>(
           value: Selection.deleteRange,
           child: Text('Delete date range'),
