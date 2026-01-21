@@ -95,5 +95,51 @@ void main() {
       );
       expect(history.stdInterval(), equals(Duration(minutes: 4, seconds: 30)));
     });
+
+    test('copyWithEntriesFiltered removes entries in the given range', () {
+      final firstTime = DateTime(2025, 01, 02);
+      final lastTime = firstTime.add(Duration(minutes: 30));
+      final history = SensorHistory(
+        sensorEntries: [
+          SensorEntry(
+            index: 0,
+            timestamp: firstTime,
+            temperature: 0,
+            humidity: 0,
+            voltageBattery: 0,
+          ),
+          SensorEntry(
+            index: 1,
+            timestamp: firstTime.add(Duration(minutes: 10)),
+            temperature: 0,
+            humidity: 0,
+            voltageBattery: 0,
+          ),
+          SensorEntry(
+            index: 2,
+            timestamp: firstTime.add(Duration(minutes: 20)),
+            temperature: 0,
+            humidity: 0,
+            voltageBattery: 0,
+          ),
+          SensorEntry(
+            index: 3,
+            timestamp: lastTime,
+            temperature: 0,
+            humidity: 0,
+            voltageBattery: 0,
+          ),
+        ],
+      );
+
+      final newHistory = history.copyWithEntriesFiltered(
+        firstTime.add(Duration(minutes: 5)),
+        firstTime.add(Duration(minutes: 25)),
+      );
+
+      expect(newHistory.sensorEntries.length, equals(2));
+      expect(newHistory.sensorEntries[0].timestamp, equals(firstTime));
+      expect(newHistory.sensorEntries[1].timestamp, equals(lastTime));
+    });
   });
 }

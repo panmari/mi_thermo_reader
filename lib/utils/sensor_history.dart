@@ -43,6 +43,16 @@ class SensorHistory {
     return SensorHistory(sensorEntries: updated);
   }
 
+  // Returns a new SensorHistory without entries in the range [start, end].
+  SensorHistory copyWithEntriesFiltered(DateTime start, DateTime end) {
+    final updated =
+        sensorEntries.where((entry) {
+          final ts = entry.timestamp;
+          return ts.isBefore(start) || ts.isAfter(end);
+        }).toList();
+    return SensorHistory(sensorEntries: updated);
+  }
+
   static SensorHistory from(String base64ProtoString) {
     final buffer = base64Decode(base64ProtoString);
     return GSensorHistory.fromBuffer(buffer).toSensorHistory();
