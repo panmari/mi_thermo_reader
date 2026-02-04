@@ -149,7 +149,7 @@ class _PopupMenuState extends State<PopupMenu> {
           value: Selection.deleteRange,
           child: Text('Delete date range'),
         ),
-      if (Platform.isAndroid)
+      if (!kIsWeb)
         const PopupMenuItem<Selection>(
           value: Selection.changeTempUnit,
           child: Text('Change temperature unit'),
