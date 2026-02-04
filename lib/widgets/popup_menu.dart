@@ -6,13 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 import 'package:mi_thermo_reader/widgets/about_dialog.dart';
+import 'package:mi_thermo_reader/widgets/change_temperature_unit_dialog.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-enum Selection { about, rate, fixTime, export, deleteRange }
+enum Selection { about, rate, fixTime, export, deleteRange, changeTempUnit }
 
 /// For retrieving PackageInfo async, the actual PopupMenu is wrapped
 /// in this stateful widget.
@@ -115,6 +116,12 @@ class _PopupMenuState extends State<PopupMenu> {
               case Selection.deleteRange:
                 widget.deleteSensorEntries!();
                 break;
+              case Selection.changeTempUnit:
+                showDialog(
+                  context: context,
+                  builder: (context) => ChangeTemperatureUnitDialog(),
+                );
+                break;
             }
           },
           itemBuilder: (BuildContext context) => _menuItemBuilder(context),
@@ -141,6 +148,11 @@ class _PopupMenuState extends State<PopupMenu> {
         const PopupMenuItem<Selection>(
           value: Selection.deleteRange,
           child: Text('Delete date range'),
+        ),
+      if (Platform.isAndroid)
+        const PopupMenuItem<Selection>(
+          value: Selection.changeTempUnit,
+          child: Text('Change temperature unit'),
         ),
       if (!kIsWeb)
         const PopupMenuItem<Selection>(
