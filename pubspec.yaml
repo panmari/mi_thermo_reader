@@ -32,6 +32,7 @@ dependencies:
   path_provider: ^2.1.5
   in_app_review: ^2.0.11
   region_settings: ^1.5.0
+  open_settings_plus: ^0.4.0
 
 dev_dependencies:
   flutter_test:
