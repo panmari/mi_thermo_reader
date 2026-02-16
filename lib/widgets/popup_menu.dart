@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -117,9 +118,15 @@ class _PopupMenuState extends State<PopupMenu> {
                 widget.deleteSensorEntries!();
                 break;
               case Selection.changeTempUnit:
+                // TODO(panmari): Avoid the await here by fetching device info via riverpod or similar.
+                AndroidDeviceInfo androidInfo =
+                    await DeviceInfoPlugin().androidInfo;
                 showDialog(
                   context: context,
-                  builder: (context) => ChangeTemperatureUnitDialog(),
+                  builder:
+                      (context) => ChangeTemperatureUnitDialog(
+                        androidSdk: androidInfo.version.sdkInt,
+                      ),
                 );
                 break;
             }
