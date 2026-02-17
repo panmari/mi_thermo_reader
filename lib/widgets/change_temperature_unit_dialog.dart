@@ -9,7 +9,8 @@ class ChangeTemperatureUnitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const firstAndroidVersionWithTemperatureUnitSetting = 14;
-    if (androidSdk < firstAndroidVersionWithTemperatureUnitSetting) {
+    if (Theme.of(context).platform == TargetPlatform.android &&
+        androidSdk < firstAndroidVersionWithTemperatureUnitSetting) {
       return AlertDialog(
         title: const Text('Change Temperature Unit'),
         content: const Text(
