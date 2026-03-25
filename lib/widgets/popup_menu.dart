@@ -119,18 +119,17 @@ class _PopupMenuState extends State<PopupMenu> {
                 break;
               case Selection.changeTempUnit:
                 // TODO(panmari): Avoid the await here by fetching device info via riverpod or similar.
-                int sdkInt = 0;  
-                if (!kIsWeb && Platform.isAndroid) {  
-                  final androidInfo = await DeviceInfoPlugin().androidInfo;  
-                  sdkInt = androidInfo.version.sdkInt;  
-                }  
+                int sdkInt = 0;
+                if (!kIsWeb && Platform.isAndroid) {
+                  final androidInfo = await DeviceInfoPlugin().androidInfo;
+                  sdkInt = androidInfo.version.sdkInt;
+                }
                 if (context.mounted) {
                   showDialog(
                     context: context,
                     builder:
-                        (context) => ChangeTemperatureUnitDialog(
-                          androidSdk: sdkInt,
-                        ),
+                        (context) =>
+                            ChangeTemperatureUnitDialog(androidSdk: sdkInt),
                   );
                 }
                 break;
