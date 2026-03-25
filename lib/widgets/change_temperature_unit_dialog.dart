@@ -2,10 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:open_settings_plus/open_settings_plus.dart';
 
 class ChangeTemperatureUnitDialog extends StatelessWidget {
-  const ChangeTemperatureUnitDialog({super.key});
+  final int androidSdk;
+
+  const ChangeTemperatureUnitDialog({super.key, required this.androidSdk});
 
   @override
   Widget build(BuildContext context) {
+    const firstAndroidVersionWithTemperatureUnitSetting = 14;
+    if (Theme.of(context).platform == TargetPlatform.android &&
+        androidSdk < firstAndroidVersionWithTemperatureUnitSetting) {
+      return AlertDialog(
+        title: const Text('Change Temperature Unit'),
+        content: const Text(
+          'Changing the temperature unit is currently only supported on Android 14 and above. Sorry about that. Please file a feature request',
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    }
     return AlertDialog(
       title: const Text('Change Temperature Unit'),
       content: const Text(
