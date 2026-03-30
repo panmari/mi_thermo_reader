@@ -18,7 +18,7 @@ dependencies:
   flutter_blue_plus: ^2.2.1
   proto_annotations: ^7.0.2
   protobuf: ^6.0.0
-  shared_preferences: ^2.5.2
+  shared_preferences: ^2.5.5
   provider: ^6.1.2
   fl_chart: ^1.2.0
   intl: ^0.20.2
