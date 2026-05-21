@@ -31,7 +31,7 @@ dependencies:
   package_info_plus: ^10.1.0
   share_plus: ^13.1.0
   path_provider: ^2.1.5
-  in_app_review: ^2.0.11
+  in_app_review: ^2.0.12
   region_settings: ^1.5.1
   open_settings_plus: ^0.4.2
 
