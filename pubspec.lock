@@ -362,10 +362,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_blue_plus
-      sha256: "80eab9325aaa6736eb0f59edb77ff42a98466fe2963d4d4c155c69c509504982"
+      sha256: fa4431a4ec07d752b3310080351c42ad435ff1e0fe2415884fb2de8d5bc6868f
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.2"
+    version: "2.3.3"
   flutter_blue_plus_android:
     dependency: transitive
     description:
@@ -406,6 +406,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.0.0"
+  flutter_blue_plus_winrt:
+    dependency: transitive
+    description:
+      name: flutter_blue_plus_winrt
+      sha256: "0000b2d818e6f79ad07764206fdd8afb69426fd44453c6254c35828fd16aa09f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.20"
   flutter_driver:
     dependency: transitive
     description: flutter
