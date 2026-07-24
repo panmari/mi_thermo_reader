@@ -3,7 +3,6 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -19,13 +18,6 @@ android {
     compileSdk = flutter.compileSdkVersion
     // From integration_test
     ndkVersion = "28.2.13676358"
-
-
-    kotlin {
-        jvmToolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
-        }
-    }
 
     defaultConfig {
         applicationId = "ch.panmari.mi_thermo_reader"
@@ -50,6 +42,17 @@ android {
         release {
             signingConfig = signingConfigs.getByName("release")
         }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
