@@ -55,7 +55,7 @@ class BluetoothManager {
       statusUpdate("Already initialized.");
       return;
     }
-    await device.connect(license: License.free);
+    await device.connect(license: License.nonprofit);
     statusUpdate("Connect: Success");
 
     final services = await device.discoverServices(
