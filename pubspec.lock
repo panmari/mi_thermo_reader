@@ -875,10 +875,10 @@ packages:
     dependency: "direct main"
     description:
       name: proto_annotations
-      sha256: eb319f7eb64e3a7222a04f0756b5ac97f95a6b5ff4961f333096b36eceff1108
+      sha256: "55e7c8a1c6eb7fb3bf917691301ce390a36b9017e9d82692f995c4add3b1fbcc"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.2"
+    version: "7.1.0"
   protobuf:
     dependency: "direct main"
     description:
