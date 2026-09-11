@@ -3,15 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:region_settings/region_settings.dart';
 
 class KnownDeviceTile extends ConsumerWidget {
   final KnownDevice device;
   final bool isScanning;
+  final TemperatureUnit temperatureUnit;
   final ThermometerAdvertisement? advertisement;
 
   const KnownDeviceTile({
     required this.device,
     required this.isScanning,
+    required this.temperatureUnit,
     this.advertisement,
     super.key,
   });
@@ -72,7 +75,10 @@ class KnownDeviceTile extends ConsumerWidget {
           )
           : Text('Sensor reading not available');
     }
-    return Text('Temperature: ${ad.temperature}°C, Humidity: ${ad.humidity}%');
+    final temp = ad.temperatureIn(temperatureUnit);
+    return Text(
+      'Temperature: ${temp.toStringAsFixed(2)}°${temperatureUnit.value}, Humidity: ${ad.humidity}%',
+    );
   }
 
   @override

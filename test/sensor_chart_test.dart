@@ -45,12 +45,12 @@ void main() {
     expect(tooltipData.getTooltipItems, isNotNull);
 
     final barData = LineChartBarData(spots: [const FlSpot(0, 68.0)]);
-    final tooltipItems = tooltipData.getTooltipItems!([
+    final tooltipItems = tooltipData.getTooltipItems([
       LineBarSpot(barData, 0, const FlSpot(0, 68.0)),
     ]);
 
     expect(tooltipItems, isNotNull);
-    final firstItem = tooltipItems!.first;
+    final firstItem = tooltipItems.first;
     expect(firstItem, isNotNull);
     expect(
       firstItem!.children?.any(

@@ -7,6 +7,7 @@ import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mockito/mockito.dart';
+import 'package:region_settings/region_settings.dart';
 
 import 'device_screen_test.mocks.dart';
 
@@ -123,5 +124,37 @@ void main() {
     expect(find.text('Temperature: 23.33°C, Humidity: 38.39%'), findsOneWidget);
     expect(find.byIcon(Icons.add), findsOneWidget);
     expect(find.text('Add device'), findsOneWidget);
+  });
+
+  testWidgets('HomePage shows known devices with fahrenheit unit', (
+    WidgetTester tester,
+  ) async {
+    when(mockPreferences.getStringList('known_devices')).thenReturn([
+      KnownDevice(
+        advName: 'some_device_adv',
+        platformName: 'some_device_plat',
+        remoteId: '1x:2y',
+      ).encode(),
+    ]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fetchSharedPreferencesProvider.overrideWith((_) => mockPreferences),
+          fetchTemperatureUnitProvider.overrideWith(
+            (_) => Future.value(TemperatureUnit.fahrenheit),
+          ),
+        ],
+        child: const MaterialApp(home: MiThermoReaderHomePage()),
+      ),
+    );
+
+    // Wait for stream and provider updates
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('some_device_adv'), findsOneWidget);
+    expect(find.text('Temperature: 73.99°F, Humidity: 38.39%'), findsOneWidget);
+    expect(find.byIcon(Icons.add), findsOneWidget);
   });
 }
