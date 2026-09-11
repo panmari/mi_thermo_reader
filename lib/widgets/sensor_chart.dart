@@ -394,7 +394,7 @@ class SensorChart extends StatelessWidget {
               touchedSpots.sort((a, b) => a.barIndex.compareTo(b.barIndex));
               final items = touchedSpots.map((LineBarSpot touchedSpot) {
                 if (touchedSpot.barIndex == 0) {
-                  return 'Temperature: ${touchedSpot.y.toStringAsFixed(1)}°C\n';
+                  return 'Temperature: ${touchedSpot.y.toStringAsFixed(1)}°${temperatureUnit.value}\n';
                 } else {
                   // The touchedSpot.y is NORMALIZED humidity. Reverse-normalize it.
                   final double originalHumidity =
