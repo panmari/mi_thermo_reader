@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/services/bluetooth_manager.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/utils/sensor_history.dart';
@@ -31,7 +32,6 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   String? _error;
   int lastNdaysFilter = -1;
   late final BluetoothManager _bluetoothManager;
-  TemperatureUnit _temperatureUnit = TemperatureUnit.celsius;
 
   List<SensorEntry> _createFakeSensorData(int nElements) {
     double lastTemp = 21.0;
@@ -55,15 +55,6 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
   void initState() {
     super.initState();
     _bluetoothManager = BluetoothManager(device: widget.device.bluetoothDevice);
-    if (!kIsWeb) {
-      // Package only supports non-web platforms.
-      RegionSettings.getSettings().then((settings) {
-        _temperatureUnit = settings.temperatureUnits;
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    }
   }
 
   @override
@@ -282,6 +273,9 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       );
     }
     final filteredSensorEntries = _filter(cachedSensorHistory);
+    final temperatureUnit =
+        ref.watch(fetchTemperatureUnitProvider).value ??
+        TemperatureUnit.celsius;
     return ScaffoldMessenger(
       child: Scaffold(
         appBar: AppBar(
@@ -318,7 +312,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
                             )
                             : SensorChart(
                               sensorEntries: filteredSensorEntries,
-                              temperatureUnit: _temperatureUnit,
+                              temperatureUnit: temperatureUnit,
                             ),
                   ),
                   _buildBatteryBar(cachedSensorHistory),

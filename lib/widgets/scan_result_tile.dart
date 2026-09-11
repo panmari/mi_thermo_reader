@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
+import 'package:region_settings/region_settings.dart';
 
 class ScanResultTile extends StatelessWidget {
   final ScanResult result;
   final VoidCallback onTap;
+  final TemperatureUnit temperatureUnit;
 
-  const ScanResultTile({super.key, required this.result, required this.onTap});
+  const ScanResultTile({
+    super.key,
+    required this.result,
+    required this.onTap,
+    required this.temperatureUnit,
+  });
 
   Widget _buildTitle(BuildContext context) {
     if (result.device.platformName.isNotEmpty) {
@@ -38,8 +45,9 @@ class ScanResultTile extends StatelessWidget {
       final advertisement = ThermometerAdvertisement.create(
         result.advertisementData,
       );
+      final temp = advertisement.temperatureIn(temperatureUnit);
       return Text(
-        "Temperature: ${advertisement.temperature}°C, Humidity: ${advertisement.humidity}%, Battery: ${advertisement.batteryLevel}",
+        "Temperature: ${temp.toStringAsFixed(2)}°${temperatureUnit.value}, Humidity: ${advertisement.humidity}%, Battery: ${advertisement.batteryLevel}",
       );
     } on NoAdvertisementDataFound {
       return const Text('No data.');

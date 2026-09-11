@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:mi_thermo_reader/src/proto/model.pb.dart';
+import 'package:mi_thermo_reader/utils/temperature.dart';
 import 'package:proto_annotations/proto_annotations.dart';
 import 'package:region_settings/region_settings.dart';
 
@@ -29,11 +30,7 @@ class SensorEntry {
   }
 
   double temperatureIn(TemperatureUnit unit) {
-    if (unit == TemperatureUnit.celsius) {
-      return temperature;
-    }
-    // Convert to Fahrenheit.
-    return (temperature * 9 / 5) + 32;
+    return temperature.inUnit(unit);
   }
 
   double get batteryPercentage {

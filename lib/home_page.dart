@@ -4,12 +4,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/scan_screen.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/thermometer_advertisement.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:mi_thermo_reader/widgets/known_device_tile.dart';
 import 'package:mi_thermo_reader/widgets/popup_menu.dart';
+import 'package:region_settings/region_settings.dart';
 
 class MiThermoReaderHomePage extends ConsumerStatefulWidget {
   const MiThermoReaderHomePage({super.key});
@@ -135,6 +137,9 @@ class _MiThermoReaderHomePageState
 
   Widget _centerContent() {
     final knownDevices = KnownDevice.getAll(ref);
+    final temperatureUnit =
+        ref.watch(fetchTemperatureUnitProvider).value ??
+        TemperatureUnit.celsius;
     if (knownDevices.isNotEmpty) {
       return RefreshIndicator(
         onRefresh: onRefresh,
@@ -146,6 +151,7 @@ class _MiThermoReaderHomePageState
                     device: d,
                     isScanning: _isScanning,
                     advertisement: _knownDeviceResults[d.remoteId],
+                    temperatureUnit: temperatureUnit,
                   ),
                 )
                 .toList()

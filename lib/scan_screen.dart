@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_thermo_reader/main.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
 import 'package:mi_thermo_reader/widgets/error_message.dart';
+import 'package:region_settings/region_settings.dart';
 
 import 'device_screen.dart';
 import 'widgets/scan_result_tile.dart';
@@ -131,11 +133,17 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     }
   }
 
-  List<Widget> _buildScanResultTiles(BuildContext context) {
+  List<Widget> _buildScanResultTiles(
+    BuildContext context,
+    TemperatureUnit temperatureUnit,
+  ) {
     return _scanResults
         .map(
-          (r) =>
-              ScanResultTile(result: r, onTap: () => onOpenPressed(r.device)),
+          (r) => ScanResultTile(
+            result: r,
+            onTap: () => onOpenPressed(r.device),
+            temperatureUnit: temperatureUnit,
+          ),
         )
         .toList();
   }
@@ -148,6 +156,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final temperatureUnit =
+        ref.watch(fetchTemperatureUnitProvider).value ??
+        TemperatureUnit.celsius;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Devices'),
@@ -162,7 +174,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           children: <Widget>[
             _error != null ? ErrorMessage(message: _error!) : SizedBox(),
             ..._buildSystemDeviceTiles(context),
-            ..._buildScanResultTiles(context),
+            ..._buildScanResultTiles(context, temperatureUnit),
           ],
         ),
       ),
