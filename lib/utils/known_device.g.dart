@@ -39,6 +39,7 @@ GKnownDevice _$KnownDeviceToProto(KnownDevice instance) {
   proto.advName = instance.advName;
   proto.platformName = instance.platformName;
   proto.remoteId = instance.remoteId;
+  proto.isUtc = instance.isUtc;
 
   return proto;
 }
@@ -48,6 +49,7 @@ KnownDevice _$KnownDeviceFromProto(GKnownDevice proto) {
     advName: proto.advName,
     platformName: proto.platformName,
     remoteId: proto.remoteId,
+    isUtc: proto.isUtc,
   );
 }
 

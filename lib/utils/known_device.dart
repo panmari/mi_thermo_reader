@@ -22,6 +22,8 @@ class KnownDevice {
   final String platformName;
   @ProtoField(4)
   final String remoteId;
+  @ProtoField(5)
+  final bool isUtc;
   // Intentionally not part of the proto, can not be encoded.
   BluetoothDevice? _bluetoothDevice;
 
@@ -29,16 +31,18 @@ class KnownDevice {
     required this.advName,
     required this.platformName,
     required this.remoteId,
+    required this.isUtc,
     BluetoothDevice? bluetoothDevice,
   }) {
     _bluetoothDevice = bluetoothDevice;
   }
 
-  static KnownDevice from(BluetoothDevice btDevice) {
+  static KnownDevice from(BluetoothDevice btDevice, {required bool isUtc}) {
     return KnownDevice(
       advName: btDevice.advName,
       platformName: btDevice.platformName,
       remoteId: btDevice.remoteId.str,
+      isUtc: isUtc,
       bluetoothDevice: btDevice,
     );
   }
@@ -116,7 +120,7 @@ class KnownDevice {
     return base64Encode(toProto().writeToBuffer());
   }
 
-  static Future add(WidgetRef ref, BluetoothDevice btDevice) async {
+  static Future add(WidgetRef ref, KnownDevice device) async {
     final preferences = await ref.read(fetchSharedPreferencesProvider.future);
 
     List<String> previousKnown = [];
@@ -125,7 +129,7 @@ class KnownDevice {
     } on ArgumentError {
       log('No known devices in shared preferences.');
     }
-    final encodedDevice = KnownDevice.from(btDevice).encode();
+    final encodedDevice = device.encode();
     if (!previousKnown.contains(encodedDevice)) {
       previousKnown.add(encodedDevice);
       await preferences.setStringList(_cacheKeyAllKnownDevices, previousKnown);

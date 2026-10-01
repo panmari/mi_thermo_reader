@@ -6,9 +6,10 @@ import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 
 class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
   final Function(String) statusUpdate;
+  final bool isUtc;
   final _sensorEntries = <SensorEntry>[];
 
-  MemoCommandProcessor({required this.statusUpdate})
+  MemoCommandProcessor({required this.statusUpdate, required this.isUtc})
     : super(timeout: const Duration(seconds: 60));
 
   @override
@@ -24,7 +25,7 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
     }
     if (data.lengthInBytes >= 13) {
       // Got an entry from memory. Convert it to a SensorEntry.
-      _sensorEntries.add(SensorEntry.parse(data));
+      _sensorEntries.add(SensorEntry.parse(data, isUtc: isUtc));
       return;
     }
     if (data.lengthInBytes >= 3) {

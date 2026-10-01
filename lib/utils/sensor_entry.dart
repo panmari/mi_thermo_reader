@@ -41,11 +41,12 @@ class SensorEntry {
     return percentage.clamp(0.0, 100.0);
   }
 
-  static SensorEntry parse(ByteData data) {
+  static SensorEntry parse(ByteData data, {required bool isUtc}) {
     return SensorEntry(
       index: data.getUint16(1, Endian.little),
       timestamp: DateTime.fromMillisecondsSinceEpoch(
         data.getUint32(3, Endian.little) * 1000,
+        isUtc: isUtc,
       ),
       temperature: data.getInt16(7, Endian.little) / 100,
       humidity: data.getUint16(9, Endian.little) / 100,

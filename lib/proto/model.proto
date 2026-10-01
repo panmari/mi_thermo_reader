@@ -17,6 +17,7 @@ message GKnownDevice
   string adv_name = 2;
   string platform_name = 3;
   string remote_id = 4;
+  bool is_utc = 5;
 
 }   
 
