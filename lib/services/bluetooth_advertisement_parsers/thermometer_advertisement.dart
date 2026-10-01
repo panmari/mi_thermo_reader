@@ -2,6 +2,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/bt_home_v2_parser.dart';
 import 'package:mi_thermo_reader/services/bluetooth_advertisement_parsers/pvvx_parser.dart';
 import 'package:mi_thermo_reader/services/bluetooth_constants.dart';
+import 'package:mi_thermo_reader/utils/temperature.dart';
+import 'package:region_settings/region_settings.dart';
 
 class NoAdvertisementDataFound implements Exception {
   @override
@@ -54,4 +56,8 @@ class ThermometerAdvertisement {
     required this.humidity,
     required this.batteryLevel,
   });
+
+  double temperatureIn(TemperatureUnit unit) {
+    return temperature.inUnit(unit);
+  }
 }

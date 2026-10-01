@@ -8,6 +8,7 @@ import 'package:mi_thermo_reader/device_screen.dart';
 import 'package:mi_thermo_reader/home_page.dart';
 import 'package:mi_thermo_reader/scan_screen.dart';
 import 'package:mi_thermo_reader/utils/known_device.dart';
+import 'package:region_settings/region_settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,6 +21,15 @@ Future<SharedPreferencesWithCache> fetchSharedPreferences(Ref ref) {
     // Device IDs are not available when the cache is constructed here.
     cacheOptions: SharedPreferencesWithCacheOptions(allowList: null),
   );
+}
+
+@riverpod
+Future<TemperatureUnit> fetchTemperatureUnit(Ref ref) async {
+  if (kIsWeb) {
+    return TemperatureUnit.celsius;
+  }
+  final settings = await RegionSettings.getSettings();
+  return settings.temperatureUnits;
 }
 
 void main() {
