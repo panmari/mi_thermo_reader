@@ -136,14 +136,16 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       }
       List<SensorEntry> newEntries = [];
       try {
-        newEntries = await _bluetoothManager.getMemoryData(numEntries, (
-          update,
-        ) {
-          _statusUpdates.add(update);
-          if (mounted) {
-            setState(() {});
-          }
-        });
+        newEntries = await _bluetoothManager.getMemoryData(
+          numEntries,
+          (update) {
+            _statusUpdates.add(update);
+            if (mounted) {
+              setState(() {});
+            }
+          },
+          isUtc: widget.device.isUtc,
+        );
       } on TimeoutException {
         _error = "Timeout while getting data. Move closer to the device.";
         return;

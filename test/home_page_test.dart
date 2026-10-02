@@ -96,6 +96,7 @@ void main() {
         advName: 'some_device_adv',
         platformName: 'some_device_plat',
         remoteId: '1x:2y',
+        isUtc: false,
       ).encode(),
     ]);
 
@@ -134,6 +135,7 @@ void main() {
         advName: 'some_device_adv',
         platformName: 'some_device_plat',
         remoteId: '1x:2y',
+        isUtc: false,
       ).encode(),
     ]);
 

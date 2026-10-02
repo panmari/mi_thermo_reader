@@ -12,6 +12,7 @@ import 'package:mi_thermo_reader/widgets/error_message.dart';
 import 'package:region_settings/region_settings.dart';
 
 import 'device_screen.dart';
+import 'widgets/device_property_dialog.dart';
 import 'widgets/scan_result_tile.dart';
 import 'widgets/system_device_tile.dart';
 
@@ -103,13 +104,34 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     }
   }
 
-  void onOpenPressed(BluetoothDevice btDevice) {
-    KnownDevice.add(ref, btDevice).then((_) {
-      log('Added to $btDevice known devices');
-    });
-    Navigator.of(
-      context,
-    ).pushNamed(DeviceScreen.routeName, arguments: KnownDevice.from(btDevice));
+  Future<void> onOpenPressed(BluetoothDevice btDevice) async {
+    final existing = KnownDevice.getAll(ref)
+        .where((d) => d.remoteId == btDevice.remoteId.str)
+        .firstOrNull;
+    if (existing != null) {
+      Navigator.of(
+        context,
+      ).pushNamed(DeviceScreen.routeName, arguments: existing);
+      return;
+    }
+
+    final isUtc = await showDialog<bool>(
+      context: context,
+      builder: (context) => DevicePropertyDialog(device: btDevice),
+    );
+
+    if (isUtc == null || !mounted) {
+      return;
+    }
+
+    final knownDevice = KnownDevice.from(btDevice, isUtc: isUtc);
+    await KnownDevice.add(ref, knownDevice);
+    log('Added to $btDevice known devices');
+    if (mounted) {
+      Navigator.of(
+        context,
+      ).pushNamed(DeviceScreen.routeName, arguments: knownDevice);
+    }
   }
 
   Future onRefresh() {
