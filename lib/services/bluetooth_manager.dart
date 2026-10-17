@@ -99,9 +99,13 @@ class BluetoothManager {
 
   Future<List<SensorEntry>> getMemoryData(
     int numEntries,
-    Function(String) statusUpdate,
-  ) async {
-    final processor = MemoCommandProcessor(statusUpdate: statusUpdate);
+    Function(String) statusUpdate, {
+    required bool isUtc,
+  }) async {
+    final processor = MemoCommandProcessor(
+      statusUpdate: statusUpdate,
+      isUtc: isUtc,
+    );
     statusUpdate('Requesting $numEntries from memory');
     return _execute(BluetoothCommands.getMemoCommand(numEntries), processor);
   }

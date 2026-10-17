@@ -8,9 +8,9 @@ A flutter app for connecting to bluetooth thermometers, then reading and visuali
 
 Runs on all platforms available for flutter:
 
-* [Try it on web](https://panmari.github.io/mi_thermo_reader/)
-* [On the play store](https://play.google.com/store/apps/details?id=ch.panmari.mi_thermo_reader)
-* Or manually install the APK of the [latest release](https://github.com/panmari/mi_thermo_reader/releases/latest)
+- [Try it on web](https://panmari.github.io/mi_thermo_reader/)
+- [On the play store](https://play.google.com/store/apps/details?id=ch.panmari.mi_thermo_reader)
+- Or manually install the APK of the [latest release](https://github.com/panmari/mi_thermo_reader/releases/latest)
 
 ![Play store QR code](screenshots/qr-code-play-store.png)
 
@@ -26,7 +26,7 @@ Riverpod and proto generators are used for generating some boilerplate code. To 
 
     dart run build_runner watch
 
-To regenerate the dart code after making changes to protos, use
+To regenerate the dart code after making changes to protos first install https://pub.dev/packages/protoc_plugin, then use
 
     protoc --proto_path=lib/proto --dart_out=lib/src/proto lib/proto/model.proto
 

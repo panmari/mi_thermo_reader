@@ -22,11 +22,13 @@ class GKnownDevice extends $pb.GeneratedMessage {
     $core.String? advName,
     $core.String? platformName,
     $core.String? remoteId,
+    $core.bool? isUtc,
   }) {
-    final result = create();
+    final result = GKnownDevice._();
     if (advName != null) result.advName = advName;
     if (platformName != null) result.platformName = platformName;
     if (remoteId != null) result.remoteId = remoteId;
+    if (isUtc != null) result.isUtc = isUtc;
     return result;
   }
 
@@ -34,17 +36,18 @@ class GKnownDevice extends $pb.GeneratedMessage {
 
   factory GKnownDevice.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      GKnownDevice()..mergeFromBuffer(data, registry);
   factory GKnownDevice.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      GKnownDevice()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'GKnownDevice',
-      createEmptyInstance: create)
+      createEmptyInstance: GKnownDevice.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'advName')
     ..aOS(3, _omitFieldNames ? '' : 'platformName')
     ..aOS(4, _omitFieldNames ? '' : 'remoteId')
+    ..aOB(5, _omitFieldNames ? '' : 'isUtc')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -58,12 +61,15 @@ class GKnownDevice extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use GKnownDevice() / GKnownDevice.new instead')
   static GKnownDevice create() => GKnownDevice._();
+  static $pb.GeneratedMessage $_createMessage() => GKnownDevice._();
   @$core.override
-  GKnownDevice createEmptyInstance() => create();
+  GKnownDevice createEmptyInstance() => GKnownDevice._();
   @$core.pragma('dart2js:noInline')
-  static GKnownDevice getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GKnownDevice>(create);
+  static GKnownDevice getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GKnownDevice>(
+          GKnownDevice.$_createMessage);
   static GKnownDevice? _defaultInstance;
 
   @$pb.TagNumber(2)
@@ -92,6 +98,15 @@ class GKnownDevice extends $pb.GeneratedMessage {
   $core.bool hasRemoteId() => $_has(2);
   @$pb.TagNumber(4)
   void clearRemoteId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get isUtc => $_getBF(3);
+  @$pb.TagNumber(5)
+  set isUtc($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(5)
+  $core.bool hasIsUtc() => $_has(3);
+  @$pb.TagNumber(5)
+  void clearIsUtc() => $_clearField(5);
 }
 
 class GSensorEntry extends $pb.GeneratedMessage {
@@ -102,7 +117,7 @@ class GSensorEntry extends $pb.GeneratedMessage {
     $core.double? humidity,
     $core.int? voltageBattery,
   }) {
-    final result = create();
+    final result = GSensorEntry._();
     if (index != null) result.index = index;
     if (timestamp != null) result.timestamp = timestamp;
     if (temperature != null) result.temperature = temperature;
@@ -115,14 +130,14 @@ class GSensorEntry extends $pb.GeneratedMessage {
 
   factory GSensorEntry.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      GSensorEntry()..mergeFromBuffer(data, registry);
   factory GSensorEntry.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      GSensorEntry()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'GSensorEntry',
-      createEmptyInstance: create)
+      createEmptyInstance: GSensorEntry.$_createMessage)
     ..aI(2, _omitFieldNames ? '' : 'index')
     ..aInt64(3, _omitFieldNames ? '' : 'timestamp')
     ..aD(4, _omitFieldNames ? '' : 'temperature')
@@ -141,12 +156,15 @@ class GSensorEntry extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use GSensorEntry() / GSensorEntry.new instead')
   static GSensorEntry create() => GSensorEntry._();
+  static $pb.GeneratedMessage $_createMessage() => GSensorEntry._();
   @$core.override
-  GSensorEntry createEmptyInstance() => create();
+  GSensorEntry createEmptyInstance() => GSensorEntry._();
   @$core.pragma('dart2js:noInline')
-  static GSensorEntry getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GSensorEntry>(create);
+  static GSensorEntry getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GSensorEntry>(
+          GSensorEntry.$_createMessage);
   static GSensorEntry? _defaultInstance;
 
   @$pb.TagNumber(2)
@@ -199,7 +217,7 @@ class GSensorHistory extends $pb.GeneratedMessage {
   factory GSensorHistory({
     $core.Iterable<GSensorEntry>? sensorEntries,
   }) {
-    final result = create();
+    final result = GSensorHistory._();
     if (sensorEntries != null) result.sensorEntries.addAll(sensorEntries);
     return result;
   }
@@ -208,16 +226,16 @@ class GSensorHistory extends $pb.GeneratedMessage {
 
   factory GSensorHistory.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      GSensorHistory()..mergeFromBuffer(data, registry);
   factory GSensorHistory.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      GSensorHistory()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'GSensorHistory',
-      createEmptyInstance: create)
+      createEmptyInstance: GSensorHistory.$_createMessage)
     ..pPM<GSensorEntry>(2, _omitFieldNames ? '' : 'sensorEntries',
-        subBuilder: GSensorEntry.create)
+        subBuilder: GSensorEntry.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -231,12 +249,15 @@ class GSensorHistory extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use GSensorHistory() / GSensorHistory.new instead')
   static GSensorHistory create() => GSensorHistory._();
+  static $pb.GeneratedMessage $_createMessage() => GSensorHistory._();
   @$core.override
-  GSensorHistory createEmptyInstance() => create();
+  GSensorHistory createEmptyInstance() => GSensorHistory._();
   @$core.pragma('dart2js:noInline')
-  static GSensorHistory getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GSensorHistory>(create);
+  static GSensorHistory getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GSensorHistory>(
+          GSensorHistory.$_createMessage);
   static GSensorHistory? _defaultInstance;
 
   @$pb.TagNumber(2)

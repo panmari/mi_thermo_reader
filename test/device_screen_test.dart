@@ -32,6 +32,7 @@ void main() {
     advName: "test adv name",
     platformName: "test platform name",
     remoteId: "00:11:22",
+    isUtc: false,
     bluetoothDevice: mockBtDevice,
   );
 

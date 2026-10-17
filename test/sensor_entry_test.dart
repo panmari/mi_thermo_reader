@@ -26,7 +26,7 @@ void main() {
       ];
       final uint8List = Uint8List.fromList(values);
       final data = ByteData.view(uint8List.buffer);
-      final parsed = SensorEntry.parse(data);
+      final parsed = SensorEntry.parse(data, isUtc: false);
 
       expect(parsed.index, equals(122));
       expect(
@@ -38,6 +38,14 @@ void main() {
       expect(parsed.temperatureIn(TemperatureUnit.celsius), equals(22.23));
       expect(parsed.humidity, equals(43.58));
       expect(parsed.voltageBattery, equals(2936));
+      expect(parsed.timestamp.isUtc, isFalse);
+
+      final parsedUtc = SensorEntry.parse(data, isUtc: true);
+      expect(parsedUtc.timestamp.isUtc, isTrue);
+      expect(
+        parsedUtc.timestamp,
+        equals(DateTime.fromMillisecondsSinceEpoch(1740874191000, isUtc: true)),
+      );
     });
   });
 }

@@ -42,11 +42,13 @@ void main() {
         advName: 'Living room thermometer',
         platformName: 'Living room',
         remoteId: '00:00:01:44',
+        isUtc: false,
       ).encode(),
       KnownDevice(
         advName: 'Bed room thermometer',
         platformName: 'Bed room',
         remoteId: '00:00:01:33',
+        isUtc: false,
       ).encode(),
     ]);
   });
