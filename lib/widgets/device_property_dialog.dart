@@ -15,9 +15,10 @@ class _DevicePropertyDialogState extends State<DevicePropertyDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final deviceName = widget.device.platformName.isNotEmpty
-        ? widget.device.platformName
-        : widget.device.advName.isNotEmpty
+    final deviceName =
+        widget.device.platformName.isNotEmpty
+            ? widget.device.platformName
+            : widget.device.advName.isNotEmpty
             ? widget.device.advName
             : widget.device.remoteId.str;
 
